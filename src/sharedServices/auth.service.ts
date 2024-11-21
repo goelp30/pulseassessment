@@ -19,7 +19,7 @@ export class AuthService {
   login(email : string, password : string) {
     this.fireauth.signInWithEmailAndPassword(email,password).then( res => {
         this.loggedIn = true;
-        this.router.navigate(['dashboard']);
+        this.router.navigate(['/dashboard']);
     }, err => {
         alert(err.message);
         this.router.navigate(['/login']);

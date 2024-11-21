@@ -1,4 +1,4 @@
 export type Subject = {
-    subjectId : number,
+    subjectId : any,
     subjectName : string
 }
