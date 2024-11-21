@@ -20,7 +20,6 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.subjectService.listensToSubjectChange().subscribe((res) => {
       this.subjects = res as Subject[];
-      console.log(this.subjects);
     });
   }
 
