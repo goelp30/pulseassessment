@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../sharedServices/auth.service';
-import { SubjectService } from '../../../sharedServices/subject.service'; 
+import { FireBaseService } from '../../../sharedServices/FireBaseService'; 
 import { Subject } from '../../models/subject';
+import { TableNames } from '../../enums/TableName';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,11 +16,12 @@ export class DashboardComponent implements OnInit {
   
   subjects: Subject[] = [];
 
-  constructor(private auth : AuthService, private subjectService: SubjectService) { }
+  constructor(private auth : AuthService, private fireBaseService: FireBaseService<Subject>) { }
 
   ngOnInit(): void {
-    this.subjectService.listensToSubjectChange().subscribe((res) => {
+    this.fireBaseService.listensToChange(TableNames.Subject).subscribe((res) => {
       this.subjects = res as Subject[];
+      console.log(this.subjects);
     });
   }
 
@@ -36,15 +38,20 @@ export class DashboardComponent implements OnInit {
    * Add new subject
    */
   addSubject() {
-    this.subjectService.createSubject(this.subjects.length + 1, (Math.random() + 1).toString(36).substring(7));
+    let sub: Subject = {
+      subjectId: this.subjects.length + 1,
+      subjectName: (Math.random() + 1).toString(36).substring(7)
+    }
+    this.fireBaseService.create(TableNames.Subject + '/' + this.subjects.length + 1, sub);
   }
 
   /**
    * get all subject
    */
   getSubject() {
-    this.subjectService.getAllSubjectChange().subscribe((res) => {
+    this.fireBaseService.getAllData(TableNames.Subject).subscribe((res) => {
       this.subjects = res as Subject[];
+      console.log(this.subjects);
     })
   }
 }
