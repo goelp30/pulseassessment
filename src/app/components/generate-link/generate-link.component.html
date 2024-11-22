@@ -1,0 +1,39 @@
+
+<!-- Assessments -->
+<h1 class="heading">Assessment List</h1>
+<input 
+  type="text" 
+  [(ngModel)]="searchQuery" 
+  (input)="filterAssessments()" 
+  placeholder="Search assessments..." 
+  class="search-bar"
+/>
+
+<div *ngFor="let assessment of filteredAssessments" class="assessment-item">
+  <p>{{ assessment.title }}</p>
+  <button (click)="openModal(generateLink(assessment.id))" class="btn btn-primary">
+    Generate Link
+  </button>
+</div>
+
+  
+  <!-- Modal -->
+    <div #modalLink id="modalLink" class="modal" tabindex="-1" role="dialog" style="display:none;">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Generated Link</h5>
+              <button type="button" class="close" (click)="closeModal()" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p>{{ selectedLink }}</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closeModal()">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
