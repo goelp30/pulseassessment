@@ -1,31 +1,33 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import assessmentData from '../../assets/assessment_mockData.json';
+import { ModalComponent } from '../modal/modal.component';
+import { SearchbarComponent } from '../common/searchbar/searchbar.component';
 
 @Component({
   selector: 'app-generate-link',
   standalone: true,
-  imports: [NgFor, FormsModule],
+  imports: [FormsModule, ModalComponent, SearchbarComponent],
   templateUrl: './generate-link.component.html',
-  styleUrl: './generate-link.component.css',
+  styleUrls: ['./generate-link.component.css'],
 })
 export class GenerateLinkComponent implements OnInit {
   assessments: any[] = [];
   filteredAssessments: any[] = [];
   selectedLink: string = '';
-  searchQuery: string = '';
-  
-  @ViewChild('modalLink') modalLink!: ElementRef;
+  isModalVisible: boolean = false;
+  assessmentType: 'internal' | 'external' = 'external'; // Default to external
 
   ngOnInit(): void {
     this.assessments = assessmentData;
-    this.filteredAssessments = [...this.assessments]; 
+    this.filteredAssessments = [...this.assessments];
   }
 
-  filterAssessments(): void {
+  // Method to filter assessments based on the search query
+  filterAssessments(query: string): void {
     this.filteredAssessments = this.assessments.filter((assessment) =>
-      assessment.assessmentText.toLowerCase().includes(this.searchQuery.toLowerCase())
+      assessment.assessmentText.toLowerCase().includes(query.toLowerCase())
     );
   }
 
@@ -33,16 +35,18 @@ export class GenerateLinkComponent implements OnInit {
     return `https://example.com/assessments/${id}`;
   }
 
-  openModal(link: string): void {
+  openModal(link: string, type: 'internal' | 'external'): void {
     this.selectedLink = link;
-    if (this.modalLink) {
-      this.modalLink.nativeElement.style.display = 'block';
-    }
+    this.assessmentType = type; // Set the assessment type
+    this.isModalVisible = true; // Show the modal
   }
 
   closeModal(): void {
-    if (this.modalLink) {
-      this.modalLink.nativeElement.style.display = 'none';
-    }
+    this.isModalVisible = false; // Hide the modal
+  }
+
+  // Handle search query change from SearchBarComponent
+  onSearchQueryChange(query: string): void {
+    this.filterAssessments(query);
   }
 }

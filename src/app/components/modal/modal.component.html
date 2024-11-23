@@ -1,0 +1,95 @@
+@if(isVisible){
+
+  <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-md p-6 relative">
+
+      <button
+        type="button"
+        class="absolute top-2 right-3 text-gray-500 hover:text-gray-700 text-2xl"
+        (click)="closeModal()"
+      >
+        &times;
+      </button>
+
+      <h5 class="text-xl font-semibold text-gray-800 mb-4 text-center">
+        Selected {{ assessmentType === 'external' ? 'Candidates' : 'Employees' }}
+      </h5>
+
+      <!-- Search Bar Component -->
+      <app-searchbar (searchQueryChange)="onSearchQueryChange($event)"></app-searchbar>
+
+      <!-- Select All Checkbox -->
+      <div class="flex items-center mb-4">
+        <input
+          type="checkbox"
+          id="selectAll"
+          [(ngModel)]="selectAll"
+          (change)="toggleSelectAll()"
+          class="mr-2"
+        />
+        <label for="selectAll" class="text-sm">Select All</label>
+      </div>
+
+      <!-- List of Names with Checkboxes -->
+      @if(filteredNames.length > 0){
+        <ul class="space-y-3">
+          @for(person of filteredNames; track person.id){ 
+            <li class="flex items-center">
+              <input
+                type="checkbox"
+                id="person-{{ person.id }}"
+                [(ngModel)]="person.selected"
+                (change)="toggleSelection(person)"
+                class="mr-2"
+              />
+              <label for="person-{{ person.id }}" class="text-sm">
+                {{ person.name }}
+              </label>
+            </li>
+          }
+        </ul>
+      }
+
+      <!-- Selected Names -->
+      @if(selectedNames.length > 0){
+        <div class="mt-4">
+          <p class="text-lg font-semibold">Selected:</p>
+          <div class="flex flex-wrap gap-2">
+            @for(name of selectedNames; track name.id){ 
+              <div class="flex items-center bg-gray-100 p-2 rounded-full">
+                <span>{{ name.name }}</span>
+                <button
+                  type="button"
+                  (click)="removeSelectedName(name)"
+                  class="ml-2 text-red-500 hover:text-red-700"
+                >
+                  &times;
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Expiry Date and Send Button -->
+      <div class="flex justify-between mt-4">
+        <input
+          type="date"
+          [(ngModel)]="expiryDate"
+          (change)="onExpiryDateChange($event)"
+          class="p-2 border border-gray-300 rounded"
+          placeholder="Select expiry date"
+        />
+        <button
+          type="button"
+          (click)="onSend()"
+          class="bg-indigo-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-600"
+        >
+          Send
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+}
