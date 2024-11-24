@@ -1,8 +1,12 @@
 [
-    { "id": 1, "name": "John Doe" },
-    { "id": 2, "name": "Jane Smith" },
-    { "id": 3, "name": "Michael Johnson" },
-    { "id": 4, "name": "Emily Davis" },
-    { "id": 5, "name": "William Brown" }
-  ]
-  
+  { "id": 1, "name": "John Doe", "email": "john.doe@gmail.com" },
+  { "id": 2, "name": "Jane Smith", "email": "jane.smith@gmail.com" },
+  { "id": 3, "name": "Michael Johnson", "email": "michael.johnson@gmail.com" },
+  { "id": 4, "name": "Emily Davis", "email": "emily.davis@gmail.com" },
+  { "id": 5, "name": "William Brown", "email": "william.brown@gmail.com" },
+  { "id": 6, "name": "Messi", "email": "messi@gmail.com" },
+  { "id": 7, "name": "Daniel", "email": "daniel@gmail.com" },
+  { "id": 8, "name": "Eustas Kid", "email": "eustas.kid@gmail.com" },
+  { "id": 9, "name": "D dragon", "email": "d.dragon@gmail.com" },
+  { "id": 10, "name": "Law", "email": "law@gmail.com" }
+]

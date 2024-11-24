@@ -1,7 +1,6 @@
 [
-    { "id": 1, "name": "Sanjay verma" },
-    { "id": 2, "name": "Bhupendra pratap maurya" },
-    { "id": 3, "name": "Mayank singh rathore" },
-    { "id": 4, "name": "Alka Yadav" }
-  ]
-  
+  { "id": 1, "name": "Sanjay Verma", "email": "sanjay.verma@gmail.com" },
+  { "id": 2, "name": "Bhupendra Pratap Maurya", "email": "bhupendra.maurya@gmail.com" },
+  { "id": 3, "name": "Mayank Singh Rathore", "email": "mayank.rathore@gmail.com" },
+  { "id": 4, "name": "Alka Yadav", "email": "alka.yadav@gmail.com" }
+]

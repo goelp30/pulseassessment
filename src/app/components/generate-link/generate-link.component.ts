@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import assessmentData from '../../assets/assessment_mockData.json';
 import { ModalComponent } from '../modal/modal.component';
@@ -17,36 +16,45 @@ export class GenerateLinkComponent implements OnInit {
   filteredAssessments: any[] = [];
   selectedLink: string = '';
   isModalVisible: boolean = false;
-  assessmentType: 'internal' | 'external' = 'external'; // Default to external
+  assessmentType: 'internal' | 'external' = 'external';
 
   ngOnInit(): void {
+    // Initialize assessments and set filteredAssessments to all available assessments
     this.assessments = assessmentData;
     this.filteredAssessments = [...this.assessments];
   }
 
-  // Method to filter assessments based on the search query
+  // Filter assessments based on search query
   filterAssessments(query: string): void {
     this.filteredAssessments = this.assessments.filter((assessment) =>
       assessment.assessmentText.toLowerCase().includes(query.toLowerCase())
     );
   }
 
+  // Generate the URL for the assessment link based on its ID
   generateLink(id: number): string {
     return `https://example.com/assessments/${id}`;
   }
 
+  // Open the modal and set the selected link and assessment type
   openModal(link: string, type: 'internal' | 'external'): void {
     this.selectedLink = link;
-    this.assessmentType = type; // Set the assessment type
-    this.isModalVisible = true; // Show the modal
+    this.assessmentType = type;
+    this.isModalVisible = true;
   }
 
+  // Close the modal
   closeModal(): void {
-    this.isModalVisible = false; // Hide the modal
+    this.isModalVisible = false;
   }
 
-  // Handle search query change from SearchBarComponent
+  // Handle search query change from Searchbar component
   onSearchQueryChange(query: string): void {
     this.filterAssessments(query);
+  }
+
+  // Track assessments by their unique assessmentId to optimize rendering
+  trackAssessment(index: number, assessment: any): number {
+    return assessment.assessmentId;
   }
 }
