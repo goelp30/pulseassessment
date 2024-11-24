@@ -43,4 +43,8 @@ export class FireBaseService<T> {
     getAllData(tableName: string) {
         return this.database.list(tableName).snapshotChanges().pipe(map(actions => actions.map(this.documentToDomainObject)));
     }
+
+    delete(tableName: string, key: string) {
+        return this.database.object(`${tableName}/${key}`).remove();
+      }
 }

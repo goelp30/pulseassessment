@@ -4,11 +4,13 @@ import { AuthService } from '../../../sharedServices/auth.service';
 import { FireBaseService } from '../../../sharedServices/FireBaseService'; 
 import { Subject } from '../../models/subject';
 import { TableNames } from '../../enums/TableName';
+import { TableComponent } from '../../common/table/table.component';
+import { HeaderComponent } from '../../common/header/header.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [],
+  imports: [TableComponent,HeaderComponent],
   templateUrl: './dashboard.component.html'
 })
 
@@ -55,4 +57,5 @@ export class DashboardComponent implements OnInit {
       console.log(this.subjects);
     })
   }
+  
 }
