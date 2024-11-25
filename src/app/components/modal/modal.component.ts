@@ -32,7 +32,7 @@ export class ModalComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // If assesment type changed the will be reloaded
+    // If assesment type changed it will be reloaded
     if (changes['assessmentType']) {
       this.loadData();
     }

@@ -56,5 +56,5 @@ export class GenerateLinkComponent implements OnInit {
   // Track assessments by their unique assessmentId to optimize rendering
   trackAssessment(index: number, assessment: any): number {
     return assessment.assessmentId;
-  }
+  } 
 }
