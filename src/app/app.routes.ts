@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { RegisterComponent } from './components/register/register.component';
-import { AssessmentListComponent } from './components/assessment-list/assessment-list.component';
+import { AssessmentListComponent } from './components/assessment/assessment-list/assessment-list.component';
 import { AuthGuard } from '@angular/fire/auth-guard';
 
 export const routes: Routes = [
@@ -11,13 +11,15 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     component: DashboardComponent,
-    canActivate: [AuthGuard],
+    // canActivate: [AuthGuard],
   },
   // { path: 'register', component: RegisterComponent },
   {
     path: 'assessment-list',
     component: AssessmentListComponent,
-    canActivate: [AuthGuard],
+    // canActivate: [AuthGuard],
   },
-  { path: '**', component: DashboardComponent, canActivate: [AuthGuard] },
+  { path: '**', component: DashboardComponent, 
+    // canActivate: [AuthGuard] 
+  },
 ];
