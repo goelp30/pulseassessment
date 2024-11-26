@@ -1,6 +1,13 @@
 <!-- <p>dashboard</p> <button type="button" class="btn btn-info" (click)="logout()">Logout</button>
 <button type="button" class="btn btn-info" (click)="addSubject()">Add subject</button>
 <button type="button" class="btn btn-info" (click)="getSubject()">get subject</button> -->
-<app-header></app-header>
- <app-table></app-table>
-
+<!-- <app-header></app-header> -->
+<div class="gap-20">
+    <button (click)="logout()" class="btn btn-info">Logout</button>
+    <button (click)="addSubject()" class="btn btn-info">Add New Subject</button>
+    <button (click)="getSubject()" class="btn btn-info">Get All Subjects</button>
+    <button type="button" class="btn btn-info" [routerLink]="['/subject-list']">Subject List</button>
+  
+    <!-- Pass tableColumns and subjects to the TableComponent -->
+  </div>
+  
