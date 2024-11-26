@@ -3,7 +3,7 @@ import { LoginComponent } from './components/login/login.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { RegisterComponent } from './components/register/register.component';
 import { AuthGuard } from '@angular/fire/auth-guard';
-import { GenerateLinkComponent } from './components/generate-link/generate-link.component';
+import { GenerateLinkComponent } from './components/linkGeneration/generate-link/generate-link.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full' },

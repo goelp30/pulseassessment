@@ -1,13 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import assessmentData from '../../assets/assessment_mockData.json';
-import { ModalComponent } from '../modal/modal.component';
-import { SearchbarComponent } from '../common/searchbar/searchbar.component';
+import assessmentData from '../../../assets/assessment_mockData.json';
+// import { ModalComponent } from '../modal/modal.component';
+import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
+import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';
+import { ButtonComponent } from "../../common/button/button.component";
+import { ModalComponent } from '../link-generation-modal/modal.component';
 
 @Component({
   selector: 'app-generate-link',
   standalone: true,
-  imports: [FormsModule, ModalComponent, SearchbarComponent],
+  imports: [FormsModule, SearchbarComponent, PopupModuleComponent, ButtonComponent, ModalComponent],
   templateUrl: './generate-link.component.html',
   styleUrls: ['./generate-link.component.css'],
 })

@@ -1,9 +1,9 @@
 import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import employeesData from '../../assets/employees.json';  
-import candidatesData from '../../assets/candidates.json'; 
-import { SearchbarComponent } from '../common/searchbar/searchbar.component';
+import employeesData from '../../../assets/employees.json';  
+import candidatesData from '../../../assets/candidates.json'; 
 import { FormsModule } from '@angular/forms';
+import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
 
 @Component({
   selector: 'app-modal',
@@ -32,9 +32,12 @@ export class ModalComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // If assesment type changed it will be reloaded
     if (changes['assessmentType']) {
       this.loadData();
+    }
+
+    if (changes['searchQuery']) {
+      this.filterNames();  // Reapply filtering when the search query changes
     }
   }
 

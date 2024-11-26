@@ -3,11 +3,10 @@
 </h1>
 
 <!-- Search Bar -->
-<div class="mb-8 max-w-3xl mx-auto px-4">
+<div class="mb-8 mx-auto px-4 max-w-lg">
   <!-- Search Bar with custom placeholder for generate link -->
-  <app-searchbar [placeholder]="'Search assessments...'" (searchQueryChange)="onSearchQueryChange($event)">
+  <app-searchbar [placeholder]="'Search assessments...'" (searchQueryChange)="onSearchQueryChange($event)" [class]=" 'block w-full px-4 py-2 mb-6 border border-gray-300 rounded-full text-base shadow-md outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300' ">
   </app-searchbar>
-
 </div>
 
 <!-- Assessment Cards -->
@@ -29,5 +28,25 @@
 </div>
 
 <!-- Modal Component -->
-<app-modal [link]="selectedLink" [isVisible]="isModalVisible" [assessmentType]="assessmentType"
-  (closeModalEvent)="closeModal()"></app-modal> 
+<!-- <app-modal [link]="selectedLink" [isVisible]="isModalVisible" [assessmentType]="assessmentType"
+  (closeModalEvent)="closeModal()"></app-modal>  -->
+
+<!-- <app-popup-module [isVisible]="isModalVisible" [assessmentType]="assessmentType"
+(closeModalEvent)="closeModal()"></app-popup-module> -->
+
+<app-popup-module 
+  [isVisible]="isModalVisible"
+  (closeModalEvent)="closeModal()"
+>
+  <!-- Custom Title using named slot -->
+  <div modalTitle>
+    <h2 class="text-lg font-semibold text-indigo-600 text-xl font-semibold">Generate</h2>
+  </div>
+
+  
+  <app-modal></app-modal>
+  <app-button [label]="'Send'" ></app-button>
+  
+
+
+</app-popup-module>
