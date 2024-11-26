@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { GenerateLinkComponent } from './generate-link.component';
 
 describe('GenerateLinkComponent', () => {
