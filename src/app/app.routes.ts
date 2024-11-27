@@ -10,18 +10,10 @@ import { EvaluateAssessmentComponent } from './components/evaluation/evaluate-as
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
-  {
-    path: 'dashboard',
-    component: DashboardComponent,
-    canActivate: [AuthGuard],
-  },
+  {path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard],},
   { path: 'register', component: RegisterComponent },
-  {
-    path: 'evaluation',
-    component: EvaluationDashboardComponent,
-  },
-  { path: 'view', component: ViewAssessmentComponent },
-  { path: 'evaluate', component: EvaluateAssessmentComponent },
-
+  {path: 'evaluation', component: EvaluationDashboardComponent,},
+  { path: 'evaluation/view/:id', component: ViewAssessmentComponent },
+  { path: 'evaluation/assessment/:id', component: EvaluateAssessmentComponent },
   { path: '**', component: DashboardComponent, canActivate: [AuthGuard] },
 ];
