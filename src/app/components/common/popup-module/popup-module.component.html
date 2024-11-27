@@ -1,30 +1,26 @@
-@if(isVisible) {
-<div
-  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
->
-  <div [ngClass]="containerClass" class="relative max-h-[90vh] overflow-y-auto">
-    <div [ngClass]="headerClass" class="relative">
+@if(isVisible){
+<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+  <!-- Modal container -->
+  <div [ngClass]="containerClass">
+  
+    <!-- Modal Header (Title) -->
+    <div [ngClass]="headerClass">
       <ng-content select="[modalTitle]">
-        @if(!hasProjectedModalTitle()) {
+        <!-- Default title if not provided -->
+         @if(!hasProjectedModalTitle()){
         <ng-container>
-          <h2 class="text-2xl font-semibold text-gray-800">
-            {{ modalTitle || "Default Modal Title" }}
-          </h2>
+          <h2 >{{ modalTitle || 'Default Modal Title' }}</h2>
         </ng-container>
-        }
+      }
       </ng-content>
-
-      <button
-        type="button"
-        class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-3xl font-bold"
-        (click)="closeModal()"
-      >
+      <!-- Close Button -->
+      <button type="button" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl" (click)="closeModal()">
         &times;
       </button>
     </div>
-
-    <div [ngClass]="bodyClass" class="p-2">
-      <ng-content></ng-content>
+    <!-- Modal Body for generic content-->
+    <div [ngClass]="bodyClass">
+      <ng-content></ng-content>  
     </div>
   </div>
 </div>
