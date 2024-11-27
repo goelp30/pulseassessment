@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./searchbar.component.css']
 })
 export class SearchbarComponent { 
+
   @Input() placeholder: string = 'Search...'; // Default placeholder
   @Input() class: string = 'Search...'; // Default placeholder
   @Output() searchQueryChange = new EventEmitter<string>(); // Output event to send the search query

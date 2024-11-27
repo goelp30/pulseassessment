@@ -37,6 +37,8 @@ export class PopupModuleComponent implements AfterContentInit {
     this.closeModalEvent.emit();  // Emit event to close modal
   }
 
+
+
   // Check if modalTitle content was projected
   hasProjectedModalTitle(): boolean {
     return this.projectedTitle;
