@@ -1,0 +1,71 @@
+<div class="relative flex flex-col w-full text-gray-700 bg-white shadow-md rounded-xl bg-clip-border">
+  <div class="relative mx-4 overflow-hidden text-gray-700 bg-white rounded-none bg-clip-border">
+    <div class="flex items-center justify-between gap-8 mb-2">
+      <div class="flex flex-col gap-2 shrink-0 sm:flex-row">
+      </div>
+    </div>
+    <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
+      <div class="block w-full overflow-hidden md:w-max"></div>
+    </div>
+  </div>
+  <div class="p-6 px-0 overflow-scroll">
+      <table class="w-full text-left table-auto min-w-max">
+          <thead>
+            <tr>
+              <th *ngFor="let column of tableColumns" class="p-4 border-y border-blue-gray-100 bg-blue-gray-50/50">
+                <ng-container *ngFor="let alias of getColumnAliases(column)">
+                  <!-- Display multiple aliases in separate lines -->
+                  <div>{{ alias }}</div>
+                </ng-container>
+              </th>
+              <th class="p-4 border-y border-blue-gray-100 bg-blue-gray-50/50 text-center">
+                Action
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of getPaginatedData()">
+              <td *ngFor="let column of tableColumns" class="p-4 border-b border-blue-gray-50">
+                <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
+                  {{ row[column] }}
+                </p>
+              </td>
+              <td class="p-4 border-b border-blue-gray-50">
+                <div class="flex justify-center gap-4">
+                  <button class="select-none rounded-lg border bg-blue-500 py-2 px-4 text-center align-middle font-sans text-xs font-bold uppercase text-white transition-all hover:opacity-75 focus:ring focus:ring-blue-300 active:opacity-[0.85]" type="button">
+                    Edit
+                  </button>
+                  <button class="select-none rounded-lg border bg-green-500 py-2 px-4 text-center align-middle font-sans text-xs font-bold uppercase text-white transition-all hover:opacity-75 focus:ring focus:ring-yellow-300 active:opacity-[0.85]" type="button">
+                    Manage
+                  </button>
+                  <button class="select-none rounded-lg border bg-red-500 py-2 px-4 text-center align-middle font-sans text-xs font-bold uppercase text-white transition-all hover:opacity-75 focus:ring focus:ring-red-300 active:opacity-[0.85]" type="button">
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+
+    <div class="flex items-center justify-between p-4 border-t border-blue-gray-50">
+      <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
+        Page {{ currentPage }} of {{ totalPages }}
+      </p>
+      <div class="flex gap-2">
+        <button (click)="previousPage()" 
+                class="select-none rounded-lg border border-gray-900 py-2 px-4 text-center align-middle font-sans text-xs font-bold uppercase text-gray-900 transition-all hover:opacity-75 focus:ring focus:ring-gray-300 active:opacity-[0.85]" 
+                [disabled]="currentPage <= 1" 
+                type="button">
+          Previous
+        </button>
+        <button (click)="nextPage()" 
+                class="select-none rounded-lg border border-gray-900 py-2 px-4 text-center align-middle font-sans text-xs font-bold uppercase text-gray-900 transition-all hover:opacity-75 focus:ring focus:ring-gray-300 active:opacity-[0.85]" 
+                [disabled]="currentPage >= totalPages" 
+                type="button">
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
