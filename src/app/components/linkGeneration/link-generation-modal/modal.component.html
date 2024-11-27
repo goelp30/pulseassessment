@@ -2,12 +2,12 @@
   [placeholder]="'Search names...'"
   (searchQueryChange)="onSearchQueryChange($event)"
   [class]="
-    'mb-2 px-4 py-2 border border-gray-300 rounded-lg shadow-md w-full focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500'
+    'mb-1 px-3 py-1 border border-gray-300 rounded-lg shadow-md w-full focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500'
   "
 >
 </app-searchbar>
 
-<div class="flex justify-between items-center my-4">
+<div class="flex justify-between items-center my-2">
   <div class="flex items-center">
     <input
       type="checkbox"
@@ -16,73 +16,100 @@
       (change)="toggleSelectAll()"
       class="mr-2 text-blue-600 focus:ring-2 focus:ring-blue-500"
     />
-    <label for="selectAll" class="text-sm font-medium text-gray-700"
-      >Select All</label
-    >
+    <label for="selectAll" class="text-xs font-medium text-gray-700">
+      Select All
+    </label>
   </div>
-  <div class="text-sm text-gray-500">({{ filteredNames.length }} items)</div>
+  <div class="text-xs text-gray-500">({{ filteredNames.length }} items)</div>
 </div>
 
 <div
-  class="max-h-50 overflow-y-auto mb-4 p-4 bg-gray-50 rounded-lg shadow-lg border border-gray-200"
+  class="max-h-40 overflow-y-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-lg border border-gray-200"
 >
-  <ul class="space-y-2">
-    @if(filteredNames.length > 0) { @for(person of filteredNames; track
-    person.id) {
-    <li class="flex items-center">
-      <input
-        type="checkbox"
-        id="person-{{ person.id }}"
-        [(ngModel)]="person.selected"
-        (change)="toggleSelection(person)"
-        class="mr-2 text-blue-600 focus:ring-2 focus:ring-blue-500"
-      />
-      <label for="person-{{ person.id }}" class="text-sm text-gray-800">{{
-        person.name
-      }}</label>
+  <ul class="space-y-1">
+    <!-- Display filtered names here -->
+    <li *ngFor="let person of filteredNames">
+      <div class="flex items-center">
+        <input
+          type="checkbox"
+          id="person-{{ person.id }}"
+          [(ngModel)]="person.selected"
+          (change)="toggleSelection(person)"
+          class="mr-2 text-blue-600 focus:ring-2 focus:ring-blue-500"
+        />
+        <label for="person-{{ person.id }}" class="text-xs text-gray-800">{{
+          person.name
+        }}</label>
+      </div>
     </li>
-    } } @else {
-    <div class="p-2 text-center text-gray-500">User Not Found</div>
-    }
   </ul>
 </div>
 
-@if(selectedNames.length > 0) {
+<!-- Display selected names -->
 <div
-  class="max-h-50 overflow-y-auto mt-4 p-3 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl shadow-2xl border border-gray-300"
+  *ngIf="selectedNames.length > 0"
+  class="max-h-40 overflow-y-auto mt-2 mb-3 p-2 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-md shadow-md border border-gray-300"
 >
-  <p class="text-xl font-semibold mb-3 text-gray-800">
+  <p class="text-sm font-semibold mb-2 text-gray-800">
     Selected {{ assessmentType === "internal" ? "Employees" : "Candidates" }}
   </p>
-  <div class="flex flex-wrap gap-3">
-    @for(name of selectedNames; track name.id) {
-    <div class="flex items-center bg-indigo-100 px-3 py-2 rounded-md">
-      <span class="text-md font-medium text-gray-800">{{ name.name }}</span>
+  <div class="flex flex-wrap gap-2">
+    <div
+      *ngFor="let name of selectedNames"
+      class="flex items-center bg-indigo-100 px-2 py-1 rounded-md"
+    >
+      <span class="text-xs font-medium text-gray-800">{{ name.name }}</span>
       <button
         type="button"
         (click)="removeSelectedName(name)"
-        class="ml-2 text-red-500 font-bold hover:text-red-700 focus:outline-none transition-all duration-200 ease-in-out"
+        class="ml-1 text-red-500 font-bold hover:text-red-700 focus:outline-none transition-all duration-200 ease-in-out"
       >
         &times;
       </button>
     </div>
-    }
   </div>
 </div>
-}
 
-<div class="flex justify-between items-center mt-6 space-x-4">
-  <input
-    type="date"
-    [(ngModel)]="expiryDate"
-    (change)="onExpiryDateChange($event)"
-    class="p-3 border border-gray-300 rounded-md shadow-sm w-full sm:w-auto bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-  />
+<div class="flex justify-between items-center space-x-4">
+<div class="flex justify-start items-center space-x-2">
+    <!-- Date field -->
+    <div class="flex flex-col items-center">
+      <input
+        type="date"
+        id="expiryDate"
+        [(ngModel)]="expiryDate"
+        (change)="onExpiryDateChange($event)"
+        class="bg-transparent text-center border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 py-2 px-2"
+      />
+    </div>
+  
+    <!-- Time field -->
+    <div class="flex flex-col items-center">
+      <input
+        type="time"
+        id="expiryTime"
+        [(ngModel)]="expiryTime"
+        (change)="onExpiryTimeChange($event)"
+        class="bg-transparent text-center border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 py-2 px-2"
+      />
+    </div>
+  
+</div>
+  <!-- Send button -->
   <app-button
-    [label]="'Send'"
+    [label]="isSending ? 'Sending...' : 'Send'"
     [colorClass]="
-      'px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none'
+      'px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none transition-all duration-200 ease-in-out'
     "
     (click)="onSend()"
   ></app-button>
+</div>
+
+<div class="flex flex-col justify-center mt-4">
+  <!-- Display success message -->
+  @if (sendMessage) {
+  <h3 class=" text-center text-green-500 font-medium">
+    {{ sendMessage }}
+  </h3>
+  }
 </div>

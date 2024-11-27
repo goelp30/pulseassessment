@@ -1,3 +1,93 @@
+<app-searchbar
+  [placeholder]="'Search names...'"
+  (searchQueryChange)="onSearchQueryChange($event)"
+  [class]="
+    'mb-1 px-3 py-1 border border-gray-300 rounded-lg shadow-md w-full focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500'
+  "
+>
+</app-searchbar>
+
+<div class="flex justify-between items-center my-2">
+  <div class="flex items-center">
+    <input
+      type="checkbox"
+      id="selectAll"
+      [(ngModel)]="selectAll"
+      (change)="toggleSelectAll()"
+      class="mr-1 text-blue-600 focus:ring-2 focus:ring-blue-500"
+    />
+    <label for="selectAll" class="text-xs font-medium text-gray-700"
+      >Select All</label
+    >
+  </div>
+  <div class="text-xs text-gray-500">({{ filteredNames.length }} items)</div>
+</div>
+
+<div
+  class="max-h-40 overflow-y-auto mb-2 p-3 bg-gray-50 rounded-lg shadow-lg border border-gray-200"
+>
+  <ul class="space-y-2">
+    @if(filteredNames.length > 0) { @for(person of filteredNames; track
+    person.id) {
+    <li class="flex items-center">
+      <input
+        type="checkbox"
+        id="person-{{ person.id }}"
+        [(ngModel)]="person.selected"
+        (change)="toggleSelection(person)"
+        class="mr-1 text-blue-600 focus:ring-2 focus:ring-blue-500"
+      />
+      <label for="person-{{ person.id }}" class="text-xs text-gray-800">{{
+        person.name
+      }}</label>
+    </li>
+    } } @else {
+    <div class="p-1 text-center text-gray-500">User Not Found</div>
+    }
+  </ul>
+</div>
+
+@if(selectedNames.length > 0) {
+<div
+  class="max-h-40 overflow-y-auto mt-2 p-2 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl shadow-lg border border-gray-300"
+>
+  <p class="text-sm font-semibold mb-2 text-gray-800">
+    Selected {{ assessmentType === "internal" ? "Employees" : "Candidates" }}
+  </p>
+  <div class="flex flex-wrap gap-2">
+    @for(name of selectedNames; track name.id) {
+    <div class="flex items-center bg-indigo-100 px-2 py-1 rounded-md">
+      <span class="text-sm font-medium text-gray-800">{{ name.name }}</span>
+      <button
+        type="button"
+        (click)="removeSelectedName(name)"
+        class="ml-1 text-red-500 font-bold hover:text-red-700 focus:outline-none transition-all duration-200 ease-in-out"
+      >
+        &times;
+      </button>
+    </div>
+    }
+  </div>
+</div>
+}
+
+<div class="flex justify-between items-center mt-4 space-x-2">
+  <input
+    type="date"
+    [(ngModel)]="expiryDate"
+    (change)="onExpiryDateChange($event)"
+    class="p-2 border border-gray-300 rounded-md shadow-sm w-full sm:w-auto bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+  />
+  <app-button
+    [label]="'Send'"
+    [colorClass]="
+      'px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none'
+    "
+    (click)="onSend()"
+  ></app-button>
+</div>
+
+
 import {
   Component,
   EventEmitter,
@@ -34,12 +124,6 @@ export class ModalComponent implements OnInit, OnChanges {
   searchQuery: string = '';
   selectAll: boolean = false;
   expiryDate: string = '';
-  expiryTime: string = '';
-
-  // Flag to control whether the Send button is disabled or not
-  isSending: boolean = false;
-  // Message to show after data is sent
-  sendMessage: string = '';
 
   ngOnInit(): void {
     this.loadData();
@@ -56,20 +140,18 @@ export class ModalComponent implements OnInit, OnChanges {
   }
 
   loadData(): void {
-    // Load either employees or candidates based on assessment type
     if (this.assessmentType === 'internal') {
       this.employees = employeesData;
-      this.filteredNames = this.employees;
+      this.filteredNames = [...this.employees];
     } else {
       this.candidates = candidatesData;
-      this.filteredNames = this.candidates;
+      this.filteredNames = [...this.candidates];
     }
 
     this.filterNames();
   }
 
   filterNames(): void {
-    // Filter names based on search query
     if (this.assessmentType === 'external') {
       this.filteredNames = this.candidates.filter((item) =>
         item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
@@ -84,7 +166,6 @@ export class ModalComponent implements OnInit, OnChanges {
   }
 
   toggleSelection(name: any): void {
-    // Toggle selection of a name from the filtered list
     const index = this.selectedNames.indexOf(name);
 
     if (index === -1) {
@@ -97,7 +178,6 @@ export class ModalComponent implements OnInit, OnChanges {
   }
 
   toggleSelectAll(): void {
-    // Select or deselect all names in the filtered list
     if (this.selectAll) {
       this.selectedNames = [...this.filteredNames];
       this.filteredNames.forEach((name) => {
@@ -112,24 +192,20 @@ export class ModalComponent implements OnInit, OnChanges {
   }
 
   updateSelectAllState(): void {
-    // Update the state of the 'Select All' checkbox
     this.selectAll = this.selectedNames.length === this.filteredNames.length;
   }
 
   closeModal(): void {
-    // Reset data and close the modal
     this.resetSelectionData();
     this.closeModalEvent.emit();
   }
 
   onSearchQueryChange(query: string): void {
-    // Handle search query change and filter names accordingly
     this.searchQuery = query;
     this.filterNames();
   }
 
   removeSelectedName(name: any): void {
-    // Remove a selected name from the list
     const index = this.selectedNames.indexOf(name);
     if (index !== -1) {
       this.selectedNames.splice(index, 1);
@@ -144,48 +220,24 @@ export class ModalComponent implements OnInit, OnChanges {
   }
 
   onExpiryDateChange(event: any): void {
-    // Handle expiry date change
-  }
-
-  onExpiryTimeChange(event: any): void {
-    // Handle expiry time change
+    this.expiryDate = event.target.value;
   }
 
   onSend(): void {
-    // Prevent sending data multiple times
-    if (this.isSending) {
-      return;
-    }
-
-    this.isSending = true; // Disable button while sending
-
     console.log('Sending data:', {
       selectedNames: this.selectedNames,
       expiryDate: this.expiryDate,
-      expiryTime: this.expiryTime,
       link: this.link,
     });
 
-    // Simulate a network request by setting a timeout (3 seconds)
-    setTimeout(() => {
-      this.sendMessage = 'Data has been sent successfully!'; 
-      // Hide the success message after 3 seconds
-      setTimeout(() => {
-        this.sendMessage = ''; // Clear the message
-      }, 3000);
-
-      this.resetSelectionData(); // Reset data
-      this.isSending = false; // Re-enable the Send button after 3 seconds
-      this.closeModal(); // Close the modal after sending
-    }, 3000);
+    this.resetSelectionData();
+    this.closeModal();
   }
 
   resetSelectionData(): void {
-    // Reset all selection data
     this.selectedNames = [];
     this.selectAll = false;
     this.filteredNames.forEach((name) => (name.selected = false));
     this.expiryDate = '';
-    this.expiryTime = '';
   }
 }
