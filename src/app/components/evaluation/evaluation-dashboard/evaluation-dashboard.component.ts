@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-evaluation-dashboard',
   standalone: true,
-  imports: [],
+  imports: [RouterOutlet],
   templateUrl: './evaluation-dashboard.component.html',
   styleUrl: './evaluation-dashboard.component.css'
 })
