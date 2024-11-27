@@ -46,6 +46,9 @@ export class ModalComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isVisible'] && !changes['isVisible'].currentValue) {
+      this.resetSelectionData(); // Reset only when modal is closing  
+    }
     if (changes['assessmentType']) {
       this.loadData();
     }
@@ -119,6 +122,7 @@ export class ModalComponent implements OnInit, OnChanges {
   closeModal(): void {
     // Reset data and close the modal
     this.resetSelectionData();
+    this.searchQuery = '';
     this.closeModalEvent.emit();
   }
 
@@ -168,11 +172,11 @@ export class ModalComponent implements OnInit, OnChanges {
 
     // Simulate a network request by setting a timeout (3 seconds)
     setTimeout(() => {
-      this.sendMessage = 'Data has been sent successfully!'; 
-      // Hide the success message after 3 seconds
+      this.sendMessage = 'Data has been sent successfully!';
+      // Hide the success message after 2 seconds
       setTimeout(() => {
         this.sendMessage = ''; // Clear the message
-      }, 3000);
+      }, 2000);
 
       this.resetSelectionData(); // Reset data
       this.isSending = false; // Re-enable the Send button after 3 seconds

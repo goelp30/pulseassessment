@@ -26,9 +26,14 @@
 <div
   class="max-h-40 overflow-y-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-lg border border-gray-200"
 >
+  <!-- Check if filteredNames is empty -->
+  @if (filteredNames.length === 0) {
+  <p class="text-center text-gray-500 font-medium">User not found</p>
+  } @else {
   <ul class="space-y-1">
     <!-- Display filtered names here -->
-    <li *ngFor="let person of filteredNames">
+    @for (person of filteredNames; track $index) {
+    <li>
       <div class="flex items-center">
         <input
           type="checkbox"
@@ -37,27 +42,27 @@
           (change)="toggleSelection(person)"
           class="mr-2 text-blue-600 focus:ring-2 focus:ring-blue-500"
         />
-        <label for="person-{{ person.id }}" class="text-xs text-gray-800">{{
-          person.name
-        }}</label>
+        <label for="person-{{ person.id }}" class="text-xs text-gray-800">
+          {{ person.name }}
+        </label>
       </div>
     </li>
+    }
   </ul>
+  }
 </div>
 
 <!-- Display selected names -->
+@if (selectedNames.length > 0) {
 <div
-  *ngIf="selectedNames.length > 0"
   class="max-h-40 overflow-y-auto mt-2 mb-3 p-2 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-md shadow-md border border-gray-300"
 >
   <p class="text-sm font-semibold mb-2 text-gray-800">
     Selected {{ assessmentType === "internal" ? "Employees" : "Candidates" }}
   </p>
   <div class="flex flex-wrap gap-2">
-    <div
-      *ngFor="let name of selectedNames"
-      class="flex items-center bg-indigo-100 px-2 py-1 rounded-md"
-    >
+    @for (name of selectedNames; track $index) {
+    <div class="flex items-center bg-indigo-100 px-2 py-1 rounded-md">
       <span class="text-xs font-medium text-gray-800">{{ name.name }}</span>
       <button
         type="button"
@@ -67,11 +72,13 @@
         &times;
       </button>
     </div>
+    }
   </div>
 </div>
+}
 
 <div class="flex justify-between items-center space-x-4">
-<div class="flex justify-start items-center space-x-2">
+  <div class="flex justify-start items-center space-x-2">
     <!-- Date field -->
     <div class="flex flex-col items-center">
       <input
@@ -82,7 +89,7 @@
         class="bg-transparent text-center border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 py-2 px-2"
       />
     </div>
-  
+
     <!-- Time field -->
     <div class="flex flex-col items-center">
       <input
@@ -93,8 +100,7 @@
         class="bg-transparent text-center border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 py-2 px-2"
       />
     </div>
-  
-</div>
+  </div>
   <!-- Send button -->
   <app-button
     [label]="isSending ? 'Sending...' : 'Send'"
@@ -106,10 +112,13 @@
 </div>
 
 <div class="flex flex-col justify-center mt-4">
-  <!-- Display success message -->
-  @if (sendMessage) {
-  <h3 class=" text-center text-green-500 font-medium">
+  <!-- Display success message with fade-in transition -->
+  <h3
+    *ngIf="sendMessage"
+    class="text-center text-green-500 font-medium transition-opacity duration-500 ease-in-out opacity-0"
+    [ngClass]="{ 'opacity-100': sendMessage }"
+  >
     {{ sendMessage }}
   </h3>
-  }
 </div>
+
