@@ -1,71 +1,75 @@
+<!-- search bar -->
 <div class="flex justify-center w-full">
-  <app-searchbar
+  <app-searchbar 
     [searchQuery]="searchQuery"
     [class]="
-    'm-2 w-[50vw] border-2 p-2  rounded-3xl border-gray-300 shadow-md  focus:outline-none focus:ring'
+    'mb-1 w-[50vw] border-2 p-2  rounded-3xl border-gray-300  shadow-md focus:outline-none focus:ring'
   "
-    placeholder="Search Subjects"
+    placeholder="Search Assessments" 
     (searchQueryChange)="onSearchQueryChange($event)" >
   </app-searchbar>
 </div>
+<!-- table div -->
+<div class="relative flex flex-col w-full text-gray-700 bg-white shadow-md rounded-xl bg-clip-border overflow-y-auto ">
  
-<div class="relative flex flex-col w-full text-gray-700 bg-white  rounded-xl bg-clip-border overflow-y-auto">
   <div class="relative mx-4 overflow-hidden text-gray-700 bg-white rounded-none bg-clip-border">
     <div class="flex items-center justify-between gap-8 mb-2">
       <div class="flex flex-col gap-2 shrink-0 sm:flex-row"></div>
     </div>
-    <div class="flex flex-col items-center justify-between gap-4 md:flex-row"></div>
+    <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
       <div class="block w-full overflow-hidden md:w-max"></div>
     </div>
   </div>
 
-  <!-- Content area with table and pagination -->
   <div class="p-6 px-0">
+    
     <table class="w-full text-left table-auto min-w-max">
       <thead>
         <tr>
-          @for(column of tableColumns; track column) {
+          @for(column of tableColumns; track column){
             <th class="p-4 border-y border-blue-gray-100 bg-blue-gray-50/50">
-              @for(alias of getColumnAliases(column); track alias) {
+              @for(alias of getColumnAliases(column); track alias){
                 <ng-container>
                   <div>{{ alias }}</div>
                 </ng-container>
               }
             </th>
           }
-          <th class="p-4 border-y border-blue-gray-100 bg-blue-gray-50/50 text-center">Action</th>
+          <th class="p-4 border-y border-blue-gray-100 bg-blue-gray-50/50 text-center">
+            Action
+          </th>
         </tr>
       </thead>
       <tbody class="overflow-y-auto max-h-96">
-        @for(row of getPaginatedData(); track row) {
-          <tr>
-            @for(column of tableColumns; track column) {
-              <td class="p-4 border-b border-blue-gray-50">
-                <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
-                  {{ row[column] }}
-                </p>
-              </td>
-            }
+        @for(row of getPaginatedData(); track row){
+        <tr>
+          @for(column of tableColumns; track column){
             <td class="p-4 border-b border-blue-gray-50">
-              <div class="flex justify-center gap-4">
-                <!-- Button array -->
-                @for(button of buttons ; track button) {
-                  <app-button 
-                    [label]="button.label" 
-                    [colorClass]="button.colorClass" 
-                    (action)="button.action(row)">
-                  </app-button>
-                }@empty {
-                  <p>No Actions</p>
-                }
-              </div>
+              <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
+                {{ row[column] }}
+              </p>
             </td>
-          </tr>
-        }
+          }
+          
+          <td class="p-4 border-b border-blue-gray-50">
+            <div class="flex justify-center gap-4">
+              <!-- button array -->
+               @for(button of buttons ; track button){
+                <app-button 
+                [label]="button.label" 
+                [colorClass]="button.colorClass" 
+                (action)="button.action(row)">
+              </app-button>
+               }@empty{
+                <p>No Actions</p>
+               }
+            </div>
+          </td>
+        </tr>
+      }
       </tbody>
     </table>
 
-    <!-- Pagination controls -->
     <div class="flex items-center justify-between p-4 border-t border-blue-gray-50">
       <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
         Page {{ currentPage }} of {{ totalPages }}
@@ -76,3 +80,4 @@
       </div>
     </div>
   </div>
+</div>

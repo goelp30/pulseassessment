@@ -1,3 +1,4 @@
+// table.component.ts
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { CommonModule } from '@angular/common';
@@ -11,14 +12,14 @@ interface Row {
 @Component({
   selector: 'app-table',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, SearchbarComponent],
+  imports: [CommonModule,ButtonComponent,SearchbarComponent],
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.css']
 })
 export class TableComponent implements OnInit, OnChanges {
   @Input() tableName: string = '';
-  @Input() tableData: any[] = [];         // Data for the table to display
-  @Input() tableColumns: string[] = [];    // Columns for the table
+  @Input() tableData: any[] = [];         // Data for the table to display(rows)
+  @Input() tableColumns: string[] = [];    // Columns for the table(column heads)
   @Input() columnAliases: { [key: string]: string[] } = {};
   @Input() buttons: { label: string, colorClass: string, action: Function }[] = [];
   @Input() searchQuery: string = '';      // Search query input
@@ -59,9 +60,6 @@ export class TableComponent implements OnInit, OnChanges {
     } else {
       this.filteredData = [...this.tableData];  // If no search, show all data
     }
-
-    // Filter out disabled rows from the displayed data
-    this.filteredData = this.filteredData.filter(row => !row.isDisabled);
 
     this.totalPages = Math.ceil(this.filteredData.length / this.itemsPerPage);
     this.currentPage = 1; // Reset to first page after filtering

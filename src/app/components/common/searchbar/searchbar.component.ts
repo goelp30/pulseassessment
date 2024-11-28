@@ -12,10 +12,9 @@ import { FormsModule } from '@angular/forms';
 export class SearchbarComponent { 
   @Input() searchQuery: string = '';
   @Input() placeholder: string = 'Search...'; // Default placeholder
-  @Input() class: string = ''; // Default placeholder
+  @Input() class: string = '';  //user defined classes for styling
   @Output() searchQueryChange = new EventEmitter<string>(); // Output event to send the search query
 
-  // searchQuery: string = ''; // Local variable for the search query
 
   onSearchInput(): void {
     this.searchQueryChange.emit(this.searchQuery); // Emit the search query to the parent component
