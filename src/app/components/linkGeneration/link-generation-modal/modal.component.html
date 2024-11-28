@@ -24,7 +24,7 @@
 </div>
 
 <div
-  class="max-h-40 overflow-y-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-lg border border-gray-200"
+  class="max-h-40 overflow-y-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
 >
   <!-- Check if filteredNames is empty -->
   @if (filteredNames.length === 0) {
@@ -55,7 +55,7 @@
 <!-- Display selected names -->
 @if (selectedNames.length > 0) {
 <div
-  class="max-h-40 overflow-y-auto mt-2 mb-3 p-2 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-md shadow-md border border-gray-300"
+  class="max-h-40 overflow-y-auto mt-2 mb-3 p-2 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-md shadow-sm border border-gray-300"
 >
   <p class="text-sm font-semibold mb-2 text-gray-800">
     Selected {{ assessmentType === "internal" ? "Employees" : "Candidates" }}

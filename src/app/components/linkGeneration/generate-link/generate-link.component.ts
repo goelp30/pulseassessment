@@ -55,3 +55,4 @@ export class GenerateLinkComponent implements OnInit {
     return assessment.assessmentId;
   } 
 }
+
