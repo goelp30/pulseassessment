@@ -5,11 +5,13 @@ import { FireBaseService } from '../../../sharedServices/FireBaseService';
 import { Subject } from '../../models/subject';
 import { TableNames } from '../../enums/TableName';
 import { Router, RouterModule } from '@angular/router';
+import { ToastRef, ToastrModule, ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports:  [RouterModule],
+  imports:  [RouterModule,ToastrModule], // Add this if necessary
+  providers: [ToastrService],
   templateUrl: './dashboard.component.html'
 })
 
@@ -17,7 +19,7 @@ export class DashboardComponent implements OnInit {
   
   subjects: Subject[] = [];
 
-  constructor(private auth : AuthService, private fireBaseService: FireBaseService<Subject>,private router: Router) { }
+  constructor(private auth : AuthService, private fireBaseService: FireBaseService<Subject>,private router: Router,private toastr: ToastrService) { }
 
   ngOnInit(): void {
     this.fireBaseService.listensToChange(TableNames.Subject).subscribe((res) => {
@@ -62,4 +64,9 @@ export class DashboardComponent implements OnInit {
   getAssessmentList() {
     this.router.navigate(['/assessment-list']);
   }
+  showSuccess() {
+    this.toastr.info ('Hello, world!', 'Success!', {
+      timeOut: 1000
+  })
+}
 }

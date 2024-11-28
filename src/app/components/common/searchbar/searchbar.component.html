@@ -1,14 +1,14 @@
 <!-- Prefix Slot for icon-->
-  <div class="flex items-center">
-    <ng-content select="[prefix]"></ng-content> 
+<div class="flex items-center justify-center">
+  <ng-content select="[prefix]"></ng-content>
 
-    <input
-      type="text"
-      [(ngModel)]="searchQuery"
-      (input)="onSearchInput()"
-      [placeholder]="placeholder" 
-      [class]="class"
-    />
+  <input
+    type="text"
+    [(ngModel)]="searchQuery"
+    (input)="onSearchInput()"
+    [placeholder]="placeholder"
+    [ngClass]="class"
+  />
+ 
 
-  </div>
-
+</div>
