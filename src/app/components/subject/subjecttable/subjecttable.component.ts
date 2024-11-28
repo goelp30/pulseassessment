@@ -7,15 +7,18 @@ import { TableComponent } from '../../common/table/table.component';
 import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ToastrModule, ToastrService } from 'ngx-toastr';
+import { HeaderComponent } from '../../common/header/header.component';
 
 @Component({
   selector: 'app-subjecttable',
   standalone: true,
-  imports: [TableComponent,PopupModuleComponent,CommonModule,FormsModule],
+  imports: [TableComponent, PopupModuleComponent, CommonModule, FormsModule, ToastrModule,HeaderComponent],
   templateUrl: './subjecttable.component.html',
   styleUrls: ['./subjecttable.component.css']
 })
 export class SubjectTableComponent implements OnInit {
+
   subjects: Subject[] = [];
   tableColumns: string[] = ['subjectId', 'subjectName'];
   columnAliases: { [key: string]: string[] } = {
@@ -24,7 +27,8 @@ export class SubjectTableComponent implements OnInit {
   };
   tableName: string = TableNames.Subject;
   searchQuery: string = '';
-  isModalVisible: boolean = false;  // Controls modal visibility
+  isModalVisible: boolean = false;  // Controls modal visibility for editing and adding subjects
+  isAddModal: boolean = false;  // Indicates whether the modal is for adding a new subject or editing
   selectedSubject: Subject | null = null;  // Holds data for the selected subject
 
   buttons = [
@@ -45,7 +49,7 @@ export class SubjectTableComponent implements OnInit {
     },
   ];
 
-  constructor(private auth: AuthService, private fireBaseService: FireBaseService<Subject>) {}
+  constructor(private auth: AuthService, private fireBaseService: FireBaseService<Subject>, private toastr: ToastrService) {}
 
   ngOnInit(): void {
     this.fireBaseService.getAllData(this.tableName).subscribe((res) => {
@@ -57,74 +61,79 @@ export class SubjectTableComponent implements OnInit {
   logout() {
     this.auth.logout();
   }
+
   onSearchQueryChange(newQuery: string): void {
-    this.searchQuery = newQuery;  // Update the search query
+    this.searchQuery = newQuery;
   }
 
   addSubject() {
-    const uniqueId = crypto.randomUUID();
-    const subject: Subject = {
-      subjectId: uniqueId,
-      subjectName: (Math.random() + 1).toString(36).substring(7),
+    console.log("add new subject", this.selectedSubject);
+    this.selectedSubject = {
+      subjectId: crypto.randomUUID(),  // Generate a GUID for the subject ID
+      subjectName: '',
       createdOn: Date.now(),
-      UpdatedOn: Date.now()
+      UpdatedOn: Date.now(),
+      isDisabled: false,
     };
-    this.fireBaseService.create(TableNames.Subject + '/' + uniqueId, subject);
+    this.isModalVisible = true;
+    this.isAddModal = true; // Indicate that the modal is for adding a new subject
   }
-
-  getSubject() {
-    this.fireBaseService.getAllData(this.tableName).subscribe((res) => {
-      this.subjects = res as Subject[];
-      console.log(this.subjects);
-    });
-  }
-
-  // Button actions
-// This method sets the selectedSubject and opens the modal for editing.
-editSubject(row: any) {
-  console.log('Editing subject:', row);
-  this.selectedSubject = { ...row };  // Create a copy of the selected subject to work with
-  this.isModalVisible = true;  // Show the modal
-}
-
-// This method updates the subject in the database and closes the modal.
-updateSubject() {
-  if (this.selectedSubject) {
-    console.log('Updating subject:', this.selectedSubject);
-
-    // Update the subject data in Firebase (or your data service)
-    this.fireBaseService.update(
-      `${this.tableName}/${this.selectedSubject.subjectId}`,
-      this.selectedSubject
-    ).then(() => {
-      console.log('Subject updated successfully');
-      this.isModalVisible = false;  // Close the modal after updating
-    }).catch(error => {
-      console.error('Error updating subject:', error);
-    });
-  }
-}
-
-
-deleteSubject(row: any) {
-  console.log('Deleting subject:', row);
   
-  // Find the subject in the array and set isDisabled to true
-  const subjectToDelete = this.subjects.find(subject => subject.subjectId === row.subjectId);
-  if (subjectToDelete) {
-    subjectToDelete.isDisabled = true;  // Set isDisabled to true
 
-    // Update the subject in the database
-    this.fireBaseService.update(`${this.tableName}/${subjectToDelete.subjectId}`, subjectToDelete)
-      .then(() => {
-        console.log('Subject disabled successfully');
-      })
-      .catch(error => {
-        console.error('Error disabling subject:', error);
-      });
+  saveNewSubject() {
+    if (this.selectedSubject) {
+      console.log('Saving new subject:', this.selectedSubject);
+      this.toastr.success('Subject added successfully', 'Added', { timeOut: 2000 });
+
+      this.fireBaseService.create(`${this.tableName}/${this.selectedSubject.subjectId}`, this.selectedSubject)
+        .then(() => {
+          this.isModalVisible = false;  // Close the modal after saving
+          this.selectedSubject = null;  // Reset selected subject
+        }).catch(error => {
+          console.error('Error adding subject:', error);
+        });
+    }
   }
-}
 
+  editSubject(row: any) {
+    console.log('Editing subject:', row);
+    this.selectedSubject = { ...row };
+    this.isModalVisible = true;
+    this.isAddModal = false;  // Indicate that the modal is for editing
+  }
+
+  updateSubject() {
+    if (this.selectedSubject) {
+      console.log('Updating subject:', this.selectedSubject);
+      this.toastr.info('Subject updated successfully', 'Updated', { timeOut: 2000 });
+
+      this.fireBaseService.update(`${this.tableName}/${this.selectedSubject.subjectId}`, this.selectedSubject)
+        .then(() => {
+          this.isModalVisible = false;  // Close the modal after updating
+          this.selectedSubject = null;  // Reset selected subject
+        }).catch(error => {
+          console.error('Error updating subject:', error);
+        });
+    }
+  }
+
+  deleteSubject(row: any) {
+    console.log('Deleting subject:', row);
+    this.toastr.error("Subject Removed Successfully", "Removed", { timeOut: 2000 });
+
+    const subjectToDelete = this.subjects.find(subject => subject.subjectId === row.subjectId);
+    if (subjectToDelete) {
+      subjectToDelete.isDisabled = true;
+
+      this.fireBaseService.update(`${this.tableName}/${subjectToDelete.subjectId}`, subjectToDelete)
+        .then(() => {
+          console.log('Subject disabled successfully');
+        })
+        .catch(error => {
+          console.error('Error disabling subject:', error);
+        });
+    }
+  }
 
   manageSubject(row: any) {
     console.log('Managing subject:', row);

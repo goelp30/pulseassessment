@@ -1,10 +1,9 @@
 <app-popup-module
   [isVisible]="isModalVisible"
-  [modalTitle]="'Edit Subject'"
+  [modalTitle]="isAddModal ? 'Add Subject' : 'Edit Subject'"
   (closeModalEvent)="isModalVisible = false"
 >
   <div *ngIf="selectedSubject">
-    <!-- Input field for editing the subject name -->
     <div>
       <label for="subjectName">Subject Name:</label>
       <input
@@ -15,20 +14,26 @@
       />
     </div>
 
-    <!-- Update button to save changes -->
     <div class="mt-4">
       <button
         type="button"
-        (click)="updateSubject()"
+        (click)="isAddModal ? saveNewSubject() : updateSubject()"
         class="bg-blue-500 text-white py-2 px-4 rounded-md"
       >
-        Update
+        {{ isAddModal ? 'Add' : 'Update' }}
       </button>
     </div>
   </div>
 </app-popup-module>
 
-<!-- The rest of your table component template -->
+<app-header 
+  [title]="'List of Subjects'" 
+  [subtitle]="'Manage your subjects here'"
+  [buttonLabel]="'Add Subject'"
+  [buttonTailwindClasses]="'bg-blue-500 text-white rounded-md px-4 py-2'"
+  (addSubjectEvent)="addSubject()">
+</app-header>
+
 <app-table 
   [tableName]="tableName" 
   [tableData]="subjects" 
@@ -36,6 +41,5 @@
   [columnAliases]="columnAliases" 
   [searchQuery]="searchQuery"
   [onSearchQueryChange]="onSearchQueryChange.bind(this)"
-  [buttons]="buttons" >
+  [buttons]="buttons">
 </app-table>
-  

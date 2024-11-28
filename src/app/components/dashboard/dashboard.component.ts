@@ -10,7 +10,7 @@ import { ToastRef, ToastrModule, ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports:  [RouterModule,ToastrModule], // Add this if necessary
+  imports:  [RouterModule],
   providers: [ToastrService],
   templateUrl: './dashboard.component.html'
 })
@@ -19,7 +19,7 @@ export class DashboardComponent implements OnInit {
   
   subjects: Subject[] = [];
 
-  constructor(private auth : AuthService, private fireBaseService: FireBaseService<Subject>,private router: Router,private toastr: ToastrService) { }
+  constructor(private auth : AuthService, private fireBaseService: FireBaseService<Subject>,private router: Router) { }
 
   ngOnInit(): void {
     this.fireBaseService.listensToChange(TableNames.Subject).subscribe((res) => {
@@ -64,9 +64,4 @@ export class DashboardComponent implements OnInit {
   getAssessmentList() {
     this.router.navigate(['/assessment-list']);
   }
-  showSuccess() {
-    this.toastr.info ('Hello, world!', 'Success!', {
-      timeOut: 1000
-  })
-}
 }
