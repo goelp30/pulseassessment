@@ -1,17 +1,95 @@
-<!-- assess-table.component.html -->
-<div class=" mx-auto p-4">
+<div class="mx-auto p-4">
   <h1 class="text-2xl font-semibold">Assessments Table</h1>
 
+  <!-- Popup modal for editing assessment -->
+  <app-popup-module
+    [isVisible]="isModalVisible"
+    [modalTitle]="'Edit Assessment'"
+    (closeModalEvent)="isModalVisible = false"
+  >
+    <div *ngIf="selectedAssessment">
+      <!-- Input field for editing the assessment name -->
+      <div>
+        <label for="assessmentName">Assessment Name:</label>
+        <input
+          id="assessmentName"
+          type="text"
+          [(ngModel)]="selectedAssessment.assessmentName"
+          class="border border-gray-300 rounded-md p-2"
+        />
+      </div>
+
+      <!-- Radio buttons for assessment type -->
+      <div class="mt-4">
+        <label for="assessmentType" class="mr-2">Assessment Type:</label>
+        <label>
+          <input
+            type="radio"
+            name="assessmentType"
+            value="internal"
+            [(ngModel)]="selectedAssessment.assessmentType"
+            class="mr-2"
+          />
+          Internal
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="assessmentType"
+            value="external"
+            [(ngModel)]="selectedAssessment.assessmentType"
+            class="mr-2"
+          />
+          External
+        </label>
+      </div>
+
+      <!-- Disabled input field for the current date created -->
+      <div class="mt-4">
+        <label for="dateCreated">Date Created:</label>
+        <input
+          id="dateCreated"
+          type="text"
+          [value]="selectedAssessment.dateCreated | date:'yyyy-MM-dd HH:mm:ss'"
+          disabled
+          class="border border-gray-300 rounded-md p-2"
+        />
+      </div>
+
+      <!-- Disabled input field for last updated -->
+      <div class="mt-4">
+        <label for="lastUpdated">Last Updated:</label>
+        <input
+          id="lastUpdated"
+          type="text"
+          [value]="selectedAssessment.dateUpdated | date:'yyyy-MM-dd HH:mm:ss'"
+          disabled
+          class="border border-gray-300 rounded-md p-2"
+        />
+      </div>
+
+      <!-- Update button to save changes -->
+      <div class="mt-4">
+        <button
+          type="button"
+          (click)="updateAssessment()"
+          class="bg-blue-500 text-white py-2 px-4 rounded-md"
+        >
+          Update
+        </button>
+      </div>
+    </div>
+  </app-popup-module>
+
+  <!-- Table displaying assessments -->
   <app-table
-  [tableName]="tableName"  
-  [tableColumns]="tableColumns" 
-  [tableData]="assessments" 
-  [columnAliases]="columnAliases"
-  [buttons]="buttons" 
-  [searchQuery]="searchQuery"
-  [onSearchQueryChange]="onSearchQueryChange.bind(this)">
-</app-table>
-
-
-  <!-- Optional buttons for adding assessments or logging out -->
+    [tableName]="tableName"
+    [tableColumns]="tableColumns"
+    [tableData]="assessments"
+    [columnAliases]="columnAliases"
+    [searchQuery]="searchQuery"
+    [onSearchQueryChange]="onSearchQueryChange.bind(this)"
+    [buttons]="buttons"
+  >
+  </app-table>
 </div>
