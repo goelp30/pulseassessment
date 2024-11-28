@@ -18,8 +18,8 @@ interface Row {
 })
 export class TableComponent implements OnInit, OnChanges {
   @Input() tableName: string = '';
-  @Input() tableData: any[] = [];         // Data for the table to display
-  @Input() tableColumns: string[] = [];    // Columns for the table
+  @Input() tableData: any[] = [];         // Data for the table to display(rows)
+  @Input() tableColumns: string[] = [];    // Columns for the table(column heads)
   @Input() columnAliases: { [key: string]: string[] } = {};
   @Input() buttons: { label: string, colorClass: string, action: Function }[] = [];
   @Input() searchQuery: string = '';      // Search query input

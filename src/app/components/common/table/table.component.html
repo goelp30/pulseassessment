@@ -1,8 +1,15 @@
-<app-searchbar 
-    [searchQuery]="searchQuery" class="border-blue-gray-800 p-3 border rounded-4"
+<!-- search bar -->
+<div class="flex justify-center w-full">
+  <app-searchbar 
+    [searchQuery]="searchQuery"
+    [class]="
+    'mb-1 w-[50vw] border-2 p-2  rounded-3xl border-gray-300  shadow-md focus:outline-none focus:ring'
+  "
     placeholder="Search Assessments" 
     (searchQueryChange)="onSearchQueryChange($event)" >
   </app-searchbar>
+</div>
+<!-- table div -->
 <div class="relative flex flex-col w-full text-gray-700 bg-white shadow-md rounded-xl bg-clip-border overflow-y-auto ">
  
   <div class="relative mx-4 overflow-hidden text-gray-700 bg-white rounded-none bg-clip-border">

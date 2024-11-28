@@ -31,17 +31,17 @@ export class AssessTableComponent implements OnInit {
   buttons = [
     {
       label: 'Edit',
-      colorClass: 'bg-blue-500 py-2 px-4 text-white',
+      colorClass: 'bg-blue-500 py-2 px-4 text-white rounded-md',
       action: (row: any) => this.editAssessment(row),
     },
     {
       label: 'Delete',
-      colorClass: 'bg-red-500 py-2 px-4 text-white',
+      colorClass: 'bg-red-500 py-2 px-4 text-white rounded-md',
       action: (row: any) => this.deleteAssessment(row),
     },
     {
       label: 'View',
-      colorClass: 'bg-green-500 py-2 px-4 text-white',
+      colorClass: 'bg-green-500 py-2 px-4 text-white rounded-md',
       action: (row: any) => this.viewAssessment(row),
     },
   ];
