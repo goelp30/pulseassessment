@@ -70,6 +70,11 @@ export class QuestionsComponent {
 
     type = "radio"
 
+    AssessementName: string = "Angular Quiz"
+  obtainMark:number = 50;
+  TotalMark: number = 49;
+  
+
 
 }
 

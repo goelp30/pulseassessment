@@ -7,6 +7,7 @@ import { EvaluationDashboardComponent } from './components/evaluation/evaluation
 import { ViewAssessmentComponent } from './components/evaluation/view-assessment/view-assessment.component';
 import { EvaluateAssessmentComponent } from './components/evaluation/evaluate-assessment/evaluate-assessment.component';
 import { QuestionsComponent } from './components/evaluation/commonEvaluationComponent/questions/questions.component';
+import { MarksComponent } from './components/evaluation/commonEvaluationComponent/marks/marks.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -23,7 +24,6 @@ export const routes: Routes = [
   },
   { path: 'view', component: ViewAssessmentComponent },
   { path: 'evaluate', component: EvaluateAssessmentComponent },
-  // { path: 'common', component: QuestionsComponent },
 
   { path: '**', component: DashboardComponent, canActivate: [AuthGuard] },
 ];
