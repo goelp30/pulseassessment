@@ -14,18 +14,37 @@ import { TableComponent } from '../../common/table/table.component';
 })
 export class AssessTableComponent implements OnInit {
   assessments: Assessment[] = [];
-  tableColumns: string[] = ['assessmentId', 'assessmentName','assessmentType'];  // Column names to be passed to TableComponent
-
-  // Define column aliases for the table
+  tableColumns: string[] = ['assessmentId', 'assessmentName', 'assessmentType'];  // Column names to be passed to TableComponent
   columnAliases: { [key: string]: string[] } = {
     assessmentId: ['Assessment ID'],
     assessmentName: ['Assessment Name'],
     assessmentType: ['Assessment Type']
   };
-  
-
-  // Define the tableName that can be used in the child component
   tableName: string = TableNames.Assessment;
+  searchQuery: string = '';
+
+  onSearchQueryChange(newQuery: string): void {
+    this.searchQuery = newQuery;  // Update the search query
+  }
+
+  // Define the button array to pass to TableComponent
+  buttons = [
+    {
+      label: 'Edit',
+      colorClass: 'bg-blue-500 py-2 px-4 text-white',
+      action: (row: any) => this.editAssessment(row),
+    },
+    {
+      label: 'Delete',
+      colorClass: 'bg-red-500 py-2 px-4 text-white',
+      action: (row: any) => this.deleteAssessment(row),
+    },
+    {
+      label: 'View',
+      colorClass: 'bg-green-500 py-2 px-4 text-white',
+      action: (row: any) => this.viewAssessment(row),
+    },
+  ];
 
   constructor(private auth: AuthService, private fireBaseService: FireBaseService<Assessment>) { }
 
@@ -58,5 +77,22 @@ export class AssessTableComponent implements OnInit {
       this.assessments = res as Assessment[];
       console.log(this.assessments);
     });
+  }
+
+  // Button actions
+  editAssessment(row: any) {
+    console.log('Editing assessment:', row);
+    // Implement your edit logic here
+  }
+
+  deleteAssessment(row: any) {
+    console.log('Deleting assessment:', row);
+   
+  }
+  
+
+  viewAssessment(row: any) {
+    console.log('Viewing assessment:', row);
+    // Implement your view logic here
   }
 }

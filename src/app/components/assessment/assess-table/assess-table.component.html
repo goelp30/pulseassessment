@@ -1,14 +1,17 @@
-<!-- <p>dashboard</p> <button type="button" class="btn btn-info" (click)="logout()">Logout</button>
-<button type="button" class="btn btn-info" (click)="addSubject()">Add subject</button>
-<button type="button" class="btn btn-info" (click)="getSubject()">get subject</button> -->
+<!-- assess-table.component.html -->
+<div class=" mx-auto p-4">
+  <h1 class="text-2xl font-semibold">Assessments Table</h1>
 
-    <!-- Pass tableColumns and subjects to the TableComponent -->
-     <h1>hii</h1>
-     <app-table 
-     [tableName]="tableName"  
-     [tableColumns]="tableColumns" 
-     [tableData]="assessments" 
-     [columnAliases]="columnAliases">
-   </app-table>
-   
-  
+  <app-table
+  [tableName]="tableName"  
+  [tableColumns]="tableColumns" 
+  [tableData]="assessments" 
+  [columnAliases]="columnAliases"
+  [buttons]="buttons" 
+  [searchQuery]="searchQuery"
+  [onSearchQueryChange]="onSearchQueryChange.bind(this)">
+</app-table>
+
+
+  <!-- Optional buttons for adding assessments or logging out -->
+</div>

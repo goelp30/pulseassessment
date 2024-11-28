@@ -60,4 +60,5 @@ export class DashboardComponent implements OnInit {
   getAssessmentList() {
     this.router.navigate(['/assessment-list']);
   }
+
 }
