@@ -4,14 +4,15 @@ import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Assessment } from '../../../models/assessment';
 import { TableNames } from '../../../enums/TableName';
 import { TableComponent } from '../../common/table/table.component';
-import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';  // Import the popup modal component
+import { PopupModuleComponent } from '../../common/popup-module/popup-module.component'; // Import the popup modal component
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ToastrService, ToastrModule } from 'ngx-toastr';
 
 @Component({
   selector: 'app-assess-table',
   standalone: true,
-  imports: [TableComponent, PopupModuleComponent, CommonModule, FormsModule],  // Import required modules
+  imports: [TableComponent, PopupModuleComponent, CommonModule, FormsModule, ToastrModule],  // Import required modules
   templateUrl: './assess-table.component.html',
   styleUrls: ['./assess-table.component.css']
 })
@@ -25,9 +26,10 @@ export class AssessTableComponent implements OnInit {
   };
   tableName: string = TableNames.Assessment;
   searchQuery: string = '';
-  
-  isModalVisible: boolean = false;  // Controls modal visibility for editing
+
+  isModalVisible: boolean = false;  // Controls modal visibility for editing or viewing
   selectedAssessment: Assessment | null = null;  // Holds data for the selected assessment for editing
+  isEditMode: boolean = false;  // Flag to toggle between Edit and View mode
 
   buttons = [
     {
@@ -47,7 +49,7 @@ export class AssessTableComponent implements OnInit {
     },
   ];
 
-  constructor(private auth: AuthService, private fireBaseService: FireBaseService<Assessment>) { }
+  constructor(private auth: AuthService, private fireBaseService: FireBaseService<Assessment>, private toastr: ToastrService) { }
 
   ngOnInit(): void {
     this.getAssessments();  // Fetch all assessments when the component loads
@@ -86,37 +88,45 @@ export class AssessTableComponent implements OnInit {
   editAssessment(row: any) {
     console.log('Editing assessment:', row);
     this.selectedAssessment = { ...row };  // Create a copy of the selected assessment
+    this.isEditMode = true;  // Set to edit mode
     this.isModalVisible = true;  // Display the modal for editing
   }
   
   // Update the selected assessment in Firebase
+  showSuccess() {
+    this.toastr.info('Updated!', 'Assessment Updated', { timeOut: 1000 });
+  }
+
   updateAssessment() {
     if (this.selectedAssessment) {
       console.log('Updating assessment:', this.selectedAssessment);
       // Update the `dateUpdated` field to the current time
       this.selectedAssessment.dateUpdated = Date.now();
-      
+
       this.fireBaseService.update(
         `${this.tableName}/${this.selectedAssessment.assessmentId}`,
         this.selectedAssessment
       ).then(() => {
         console.log('Assessment updated successfully');
         this.isModalVisible = false;  // Close the modal after successful update
+        this.showSuccess();
       }).catch(error => {
         console.error('Error updating assessment:', error);
       });
     }
   }
-  
+
   // Mark assessment as deleted (disabled)
   deleteAssessment(row: any) {
     console.log('Deleting assessment:', row);
-    
+    // Implement the delete logic if needed
   }
 
   // View the details of the assessment
   viewAssessment(row: any) {
     console.log('Viewing assessment:', row);
-    // Implement additional logic to view the assessment's details, for example, in a new modal or view page
+    this.selectedAssessment = { ...row };  // Create a copy of the selected assessment
+    this.isEditMode = false;  // Set to view mode
+    this.isModalVisible = true;  // Display the modal for viewing
   }
 }

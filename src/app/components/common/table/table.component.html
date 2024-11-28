@@ -9,6 +9,33 @@
     (searchQueryChange)="onSearchQueryChange($event)" >
   </app-searchbar>
 </div>
+<!-- Dynamic Tabs Section -->
+ <div class="flex justify-center pt-5">
+<div class="flex flex-col items-center justify-between gap-4 md:flex-row ">
+  <div class="block w-full overflow-hidden md:w-max">
+    <nav>
+      <ul role="tablist" class="relative flex flex-row p-1 rounded-lg bg-blue-gray-50 bg-opacity-60">
+        <!-- Loop through the tabs passed as input -->
+        <li *ngFor="let tab of tabs" role="tab" 
+            class="relative flex items-center justify-center w-full h-full px-2 py-1 font-sans text-base antialiased font-normal leading-relaxed text-center bg-transparent cursor-pointer select-none text-blue-gray-900"
+            [class.bg-white]="activeTab === tab"
+            (click)="selectTab(tab)">
+          <div class="z-20 text-inherit">
+            &nbsp;&nbsp;{{ tab }}&nbsp;&nbsp;
+          </div>
+          <div *ngIf="activeTab === tab" class="absolute inset-0 z-10 h-full bg-white rounded-md shadow"></div>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
+</div>
+
+<!-- Search Bar Section (Already Present in Your Code) -->
+
+<!-- Table Section (Already Present in Your Code) -->
+
+
 <!-- table div -->
 <div class="relative flex flex-col w-full text-gray-700 bg-white shadow-md rounded-xl bg-clip-border overflow-y-auto ">
  

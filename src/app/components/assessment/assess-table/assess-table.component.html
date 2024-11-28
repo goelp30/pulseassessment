@@ -1,76 +1,127 @@
 <div class="mx-auto p-4">
   <h1 class="text-2xl font-semibold">Assessments Table</h1>
 
-  <!-- Popup modal for editing assessment -->
+  <!-- Popup modal for editing or viewing the assessment -->
   <app-popup-module
     [isVisible]="isModalVisible"
-    [modalTitle]="'Edit Assessment'"
+    [modalTitle]="selectedAssessment ? (isEditMode ? 'Edit Assessment' : 'View Assessment Details') : ''"
     (closeModalEvent)="isModalVisible = false"
   >
     <div *ngIf="selectedAssessment">
-      <!-- Input field for editing the assessment name -->
-      <div>
-        <label for="assessmentName">Assessment Name:</label>
-        <input
-          id="assessmentName"
-          type="text"
-          [(ngModel)]="selectedAssessment.assessmentName"
-          class="border border-gray-300 rounded-md p-2"
-        />
-      </div>
-
-      <!-- Radio buttons for assessment type -->
-      <div class="mt-4">
-        <label for="assessmentType" class="mr-2">Assessment Type:</label>
-        <label>
+      <!-- Conditional rendering for Edit or View mode -->
+      <div *ngIf="isEditMode; else viewMode">
+        <!-- Edit mode: Input fields for editing assessment details -->
+        <div>
+          <label for="assessmentName">Assessment Name:</label>
           <input
-            type="radio"
-            name="assessmentType"
-            value="internal"
-            [(ngModel)]="selectedAssessment.assessmentType"
-            class="mr-2"
+            id="assessmentName"
+            type="text"
+            [(ngModel)]="selectedAssessment.assessmentName"
+            class="border border-gray-300 rounded-md p-2"
           />
-          Internal
-        </label>
-        <label>
+        </div>
+
+        <div class="mt-4">
+          <label for="assessmentType" class="mr-2">Assessment Type:</label>
+          <label>
+            <input
+              type="radio"
+              name="assessmentType"
+              value="internal"
+              [(ngModel)]="selectedAssessment.assessmentType"
+              class="mr-2"
+            />
+            Internal
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="assessmentType"
+              value="external"
+              [(ngModel)]="selectedAssessment.assessmentType"
+              class="mr-2"
+            />
+            External
+          </label>
+        </div>
+
+        <!-- Disabled input field for the current date created -->
+        <div class="mt-4">
+          <label for="dateCreated">Date Created:</label>
           <input
-            type="radio"
-            name="assessmentType"
-            value="external"
-            [(ngModel)]="selectedAssessment.assessmentType"
-            class="mr-2"
+            id="dateCreated"
+            type="text"
+            [value]="selectedAssessment.dateCreated | date:'yyyy-MM-dd HH:mm:ss'"
+            disabled
+            class="border border-gray-300 rounded-md p-2"
           />
-          External
-        </label>
+        </div>
+
+        <!-- Disabled input field for last updated -->
+        <div class="mt-4">
+          <label for="lastUpdated">Last Updated:</label>
+          <input
+            id="lastUpdated"
+            type="text"
+            [value]="selectedAssessment.dateUpdated | date:'yyyy-MM-dd HH:mm:ss'"
+            disabled
+            class="border border-gray-300 rounded-md p-2"
+          />
+        </div>
+
+        <!-- Update button to save changes -->
+        <div class="mt-4">
+          <button
+            type="button"
+            (click)="updateAssessment()"
+            class="bg-blue-500 text-white py-2 px-4 rounded-md"
+          >
+            Update
+          </button>
+        </div>
       </div>
 
-      <!-- Disabled input field for the current date created -->
-      <div class="mt-4">
-        <label for="dateCreated">Date Created:</label>
-        <input
-          id="dateCreated"
-          type="text"
-          [value]="selectedAssessment.dateCreated | date:'yyyy-MM-dd HH:mm:ss'"
-          disabled
-          class="border border-gray-300 rounded-md p-2"
-        />
-      </div>
+      <!-- View mode: Table-like display of assessment details -->
+      <ng-template #viewMode>
+        <table class="table-auto w-full border-separate border border-gray-300 mt-4">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="border px-4 py-2">Field</th>
+              <th class="border px-4 py-2">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="border px-4 py-2">Assessment Name</td>
+              <td class="border px-4 py-2">{{ selectedAssessment.assessmentName }}</td>
+            </tr>
+            <tr>
+              <td class="border px-4 py-2">Assessment Type</td>
+              <td class="border px-4 py-2">{{ selectedAssessment.assessmentType }}</td>
+            </tr>
+            <tr>
+              <td class="border px-4 py-2">Date Created</td>
+              <td class="border px-4 py-2">{{ selectedAssessment.dateCreated | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+            </tr>
+            <tr>
+              <td class="border px-4 py-2">Last Updated</td>
+              <td class="border px-4 py-2">{{ selectedAssessment.dateUpdated | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-template>
 
-      <!-- Disabled input field for last updated -->
-      <div class="mt-4">
-        <label for="lastUpdated">Last Updated:</label>
-        <input
-          id="lastUpdated"
-          type="text"
-          [value]="selectedAssessment.dateUpdated | date:'yyyy-MM-dd HH:mm:ss'"
-          disabled
-          class="border border-gray-300 rounded-md p-2"
-        />
-      </div>
-
-      <!-- Update button to save changes -->
-      <div class="mt-4">
+      <!-- Close and Update buttons -->
+      <div class="mt-4 flex justify-end">
         <button
+          type="button"
+          (click)="isModalVisible = false"
+          class="bg-gray-500 text-white py-2 px-4 rounded-md mr-2"
+        >
+          Close
+        </button>
+        <button
+          *ngIf="isEditMode"
           type="button"
           (click)="updateAssessment()"
           class="bg-blue-500 text-white py-2 px-4 rounded-md"
@@ -90,6 +141,8 @@
     [searchQuery]="searchQuery"
     [onSearchQueryChange]="onSearchQueryChange.bind(this)"
     [buttons]="buttons"
+    [tabs]="['all', 'internal', 'external']"
+    [filterKey]="'assessmentType'"
   >
   </app-table>
 </div>
