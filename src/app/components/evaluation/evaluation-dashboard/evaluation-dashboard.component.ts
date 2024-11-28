@@ -1,14 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+
 import { Router, RouterOutlet } from '@angular/router';
 import evaluationList from '../assets/Evaluation_list_mock.json'
 import { ButtonComponent } from '../../common/button/button.component';
 import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
 
+
 @Component({
   selector: 'app-evaluation-dashboard',
   standalone: true,
+
   imports: [CommonModule ,ButtonComponent,SearchbarComponent],
+
   templateUrl: './evaluation-dashboard.component.html',
   styleUrl: './evaluation-dashboard.component.css'
 })
