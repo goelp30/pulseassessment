@@ -1,63 +1,77 @@
-import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import employeesData from '../../../assets/employees.json';  
-import candidatesData from '../../../assets/candidates.json'; 
+import employeesData from '../../../assets/employees.json';
+import candidatesData from '../../../assets/candidates.json';
 import { FormsModule } from '@angular/forms';
 import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
-import { ButtonComponent } from "../../common/button/button.component";
+import { ButtonComponent } from '../../common/button/button.component';
 
 @Component({
   selector: 'app-modal',
   standalone: true,
   imports: [CommonModule, SearchbarComponent, FormsModule, ButtonComponent],
   templateUrl: './modal.component.html',
-  styleUrls: ['./modal.component.css']
+  styleUrls: ['./modal.component.css'],
 })
 export class ModalComponent implements OnInit, OnChanges {
   @Input() link: string = '';
   @Input() isVisible: boolean = false;
-  @Input() assessmentType: 'internal' | 'external' = 'external'; // Assessment type to determine data source
+  @Input() assessmentType: 'internal' | 'external' = 'external';
   @Output() closeModalEvent = new EventEmitter<void>();
 
-  employees: any[] = [];   
-  candidates: any[] = [];  
-  filteredNames: any[] = [];  
-  selectedNames: any[] = [];  
-  searchQuery: string = '';   
-  selectAll: boolean = false;  
-  expiryDate: string = ''; 
+  employees: any[] = [];
+  candidates: any[] = [];
+  filteredNames: any[] = [];
+  selectedNames: any[] = [];
+  searchQuery: string = '';
+  selectAll: boolean = false;
+  expiryDate: string = '';
+  expiryTime: string = '';
+
+  // Flag to control whether the Send button is disabled or not
+  isSending: boolean = false;
+  // Message to show after data is sent
+  sendMessage: string = '';
 
   ngOnInit(): void {
-    // Initially load data based on the assessmentType
     this.loadData();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isVisible'] && !changes['isVisible'].currentValue) {
+      this.resetSelectionData(); // Reset only when modal is closing  
+    }
     if (changes['assessmentType']) {
       this.loadData();
     }
 
     if (changes['searchQuery']) {
-      this.filterNames();  // Reapply filtering when the search query changes
+      this.filterNames();
     }
   }
 
-  // Loading data based on the assessment type
   loadData(): void {
+    // Load either employees or candidates based on assessment type
     if (this.assessmentType === 'internal') {
-      this.employees = employeesData;  
-      this.filteredNames = [...this.employees]; 
+      this.employees = employeesData;
+      this.filteredNames = this.employees;
     } else {
-      this.candidates = candidatesData;  
-      this.filteredNames = [...this.candidates];  
+      this.candidates = candidatesData;
+      this.filteredNames = this.candidates;
     }
-
-    // Reapplying the search filter after loading data
     this.filterNames();
   }
 
-  // Filter names based on the search query
   filterNames(): void {
+    // Filter names based on search query
     if (this.assessmentType === 'external') {
       this.filteredNames = this.candidates.filter((item) =>
         item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
@@ -67,107 +81,110 @@ export class ModalComponent implements OnInit, OnChanges {
         item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     }
-
-    // After filtering names, check if "Select All" should be checked
     this.updateSelectAllState();
   }
 
-  // Handle individual name selection
   toggleSelection(name: any): void {
+    // Toggle selection of a name from the filtered list
     const index = this.selectedNames.indexOf(name);
-
     if (index === -1) {
-      // If the name is not selected, add it to the list
       this.selectedNames.push(name);
     } else {
-      // If the name is already selected, remove it
       this.selectedNames.splice(index, 1);
     }
-
-    // After individual selection, check if "Select All" should be checked
     this.updateSelectAllState();
   }
 
-  // Select or Deselect all names
   toggleSelectAll(): void {
+    // Select or deselect all names in the filtered list
     if (this.selectAll) {
-      // If "Select All" is checked, select all names in filteredNames
       this.selectedNames = [...this.filteredNames];
-
-      // Also update the 'selected' property for all filteredNames to true
-      this.filteredNames.forEach(name => {
-        name.selected = true; 
+      this.filteredNames.forEach((name) => {
+        name.selected = true;
       });
     } else {
-      // If "Select All" is unchecked, clear selectedNames
       this.selectedNames = [];
-
-      // Also update the 'selected' property for all filteredNames to false
-      this.filteredNames.forEach(name => {
-        name.selected = false;  
+      this.filteredNames.forEach((name) => {
+        name.selected = false;
       });
     }
   }
 
-  // Check if "Select All" should be checked or unchecked based on individual selections
   updateSelectAllState(): void {
+    // Update the state of the 'Select All' checkbox
     this.selectAll = this.selectedNames.length === this.filteredNames.length;
   }
 
   closeModal(): void {
-  this.resetSelectionData();
-  // Emit the event to close the modal
-  this.closeModalEvent.emit();
-}
-
-
-  // Handle search query change from the search barr
-  onSearchQueryChange(query: string): void {
-    this.searchQuery = query;
-    this.filterNames();  
+    // Reset data and close the modal
+    this.resetSelectionData();
+    this.searchQuery = '';
+    this.closeModalEvent.emit();
   }
 
-  // Remove a selected name
+  onSearchQueryChange(query: string): void {
+    // Handle search query change and filter names accordingly
+    this.searchQuery = query;
+    this.filterNames();
+  }
+
   removeSelectedName(name: any): void {
+    // Remove a selected name from the list
     const index = this.selectedNames.indexOf(name);
     if (index !== -1) {
       this.selectedNames.splice(index, 1);
     }
-
-    // After removing a name, update "Select All" state
+    const personIndex = this.filteredNames.findIndex(
+      (person) => person.id === name.id
+    );
+    if (personIndex !== -1) {
+      this.filteredNames[personIndex].selected = false;
+    }
     this.updateSelectAllState();
   }
 
-  // Handle expiry date change
   onExpiryDateChange(event: any): void {
-    this.expiryDate = event.target.value;
+    // Handle expiry date change
+  }
+
+  onExpiryTimeChange(event: any): void {
+    // Handle expiry time change
   }
 
   onSend(): void {
-    // Log the data being sent (optional)
+    // Prevent sending data multiple times
+    if (this.isSending) {
+      return;
+    }
+
+    this.isSending = true; // Disable button while sending
     console.log('Sending data:', {
       selectedNames: this.selectedNames,
       expiryDate: this.expiryDate,
-      link: this.link
+      expiryTime: this.expiryTime,
+      link: this.link,
     });
-  
-    // Reset the selection-related data after sending
-    this.resetSelectionData();
-  
-    // Optionally, close the modal after sending
-    this.closeModal();
+
+    // Simulate a network request by setting a timeout (3 seconds)
+    setTimeout(() => {
+      this.sendMessage = 'Data has been sent successfully!';
+      // Hide the success message after 2 seconds
+      setTimeout(() => {
+        this.sendMessage = ''; // Clear the message
+      }, 2000);
+
+      this.resetSelectionData(); // Reset data
+      this.isSending = false; // Re-enable the Send button after 3 seconds
+      this.closeModal(); // Close the modal after sending
+    }, 3000);
   }
-  
-  // Helper function to reset the selection data (only selections, not names or other data)
+
   resetSelectionData(): void {
-    // Reset selected names and related states
-    this.selectedNames = [];  // Clear the selected names
-    this.selectAll = false;   // Uncheck "Select All"
-    this.filteredNames.forEach(name => name.selected = false); // Deselect all filtered names
-    
-    // Optionally clear expiry date or other related fields if needed
-    this.expiryDate = '';    
-  }  
-  
-  
+    // Reset all selection data
+    this.selectedNames = [];
+    this.selectAll = false;
+    this.filteredNames.forEach((name) => (name.selected = false));
+    this.expiryDate = '';
+    this.expiryTime = '';
+  }
 }
