@@ -1,0 +1,35 @@
+[
+    {
+      "quizId": "Q123",
+      "assessmentId": "ANGULAR001",
+      "title": "Angular Basics",
+      "status": "Pending",
+      "isEvaluation": true,
+      "candidateId": "C456"
+    },
+    {
+      "quizId": "Q124",
+      "assessmentId": "REACT001",
+      "title": "React Fundamentals",
+      "status": "Complete",
+      "isEvaluation": false,
+      "candidateId": "C457"
+    },
+    {
+      "quizId": "Q125",
+      "assessmentId": "ANGULAR002",
+      "title": "Angular Advanced Topics",
+      "status": "Pending",
+      "isEvaluation": true,
+      "candidateId": "C458"
+    },
+    {
+      "quizId": "Q126",
+      "assessmentId": "REACT002",
+      "title": "React State Management with Redux",
+      "status": "Complete",
+      "isEvaluation": false,
+      "candidateId": "C459"
+    }
+  ]
+  
