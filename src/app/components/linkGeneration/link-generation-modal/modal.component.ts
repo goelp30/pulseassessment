@@ -67,7 +67,6 @@ export class ModalComponent implements OnInit, OnChanges {
       this.candidates = candidatesData;
       this.filteredNames = this.candidates;
     }
-
     this.filterNames();
   }
 
@@ -82,20 +81,17 @@ export class ModalComponent implements OnInit, OnChanges {
         item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     }
-
     this.updateSelectAllState();
   }
 
   toggleSelection(name: any): void {
     // Toggle selection of a name from the filtered list
     const index = this.selectedNames.indexOf(name);
-
     if (index === -1) {
       this.selectedNames.push(name);
     } else {
       this.selectedNames.splice(index, 1);
     }
-
     this.updateSelectAllState();
   }
 
@@ -162,7 +158,6 @@ export class ModalComponent implements OnInit, OnChanges {
     }
 
     this.isSending = true; // Disable button while sending
-
     console.log('Sending data:', {
       selectedNames: this.selectedNames,
       expiryDate: this.expiryDate,
