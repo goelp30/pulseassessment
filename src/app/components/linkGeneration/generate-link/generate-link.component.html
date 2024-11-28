@@ -9,9 +9,9 @@
   </app-searchbar>
 </div>
 
-<!-- Assessment Cards -->
+<!-- Assessment Cards --> 
 <div class="space-y-2 px-4 max-w-3xl mx-auto">
-  @for(assessment of filteredAssessments; track assessment.assessmentId) {
+  @for(assessment of filteredAssessments; track assessment.assessmentId) { 
   <div
     class="bg-white border border-gray-200 rounded-lg p-6 shadow-md hover:shadow-lg transition-all transform hover:scale-105 duration-300 mb-2">
     <div class="flex justify-between items-center ">
@@ -47,8 +47,7 @@
 
   
   <app-modal></app-modal>
-  <app-button [label]="'Send'" ></app-button>
-  
+  <app-button [label]="'Send'" ></app-button>  
 
 
 </app-popup-module>

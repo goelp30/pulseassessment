@@ -4,11 +4,12 @@ import employeesData from '../../../assets/employees.json';
 import candidatesData from '../../../assets/candidates.json'; 
 import { FormsModule } from '@angular/forms';
 import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
+import { ButtonComponent } from "../../common/button/button.component";
 
 @Component({
   selector: 'app-modal',
   standalone: true,
-  imports: [CommonModule, SearchbarComponent, FormsModule],
+  imports: [CommonModule, SearchbarComponent, FormsModule, ButtonComponent],
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.css']
 })
