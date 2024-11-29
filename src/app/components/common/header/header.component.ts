@@ -29,5 +29,5 @@ export class HeaderComponent {
 
   onAddSubjectClick() {
     this.addSubjectEvent.emit();  // Emit event to trigger subject addition
-  }``
+  }
 }

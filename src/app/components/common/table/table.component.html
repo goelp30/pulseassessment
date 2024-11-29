@@ -3,7 +3,7 @@
   <app-searchbar 
     [searchQuery]="searchQuery"
     [class]="
-    'mb-1 w-[50vw] border-2 p-2  rounded-3xl border-gray-300  shadow-md focus:outline-none focus:ring'
+    'block w-[50vw] px-4 py-2 mb-2 border border-gray-300 rounded-full text-lg shadow-md outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 transition-all duration-100 transform'
   "
     placeholder="Search Assessments" 
     (searchQueryChange)="onSearchQueryChange($event)" >
