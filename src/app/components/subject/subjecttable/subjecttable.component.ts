@@ -9,11 +9,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrModule, ToastrService } from 'ngx-toastr';
 import { HeaderComponent } from '../../common/header/header.component';
+import { ButtonComponent } from '../../common/button/button.component';
 
 @Component({
   selector: 'app-subjecttable',
   standalone: true,
-  imports: [TableComponent, PopupModuleComponent, CommonModule, FormsModule, ToastrModule,HeaderComponent],
+  imports: [TableComponent, PopupModuleComponent, CommonModule, FormsModule, ToastrModule,HeaderComponent,ButtonComponent],
   templateUrl: './subjecttable.component.html',
   styleUrls: ['./subjecttable.component.css']
 })
@@ -22,8 +23,8 @@ export class SubjectTableComponent implements OnInit {
   subjects: Subject[] = [];
   tableColumns: string[] = ['subjectId', 'subjectName'];
   columnAliases: { [key: string]: string[] } = {
-    subjectId: ['subject ID'],
-    subjectName: ['subject Name'],
+    subjectId: ['Subject ID'],
+    subjectName: ['Subject Name'],
   };
   tableName: string = TableNames.Subject;
   searchQuery: string = '';
@@ -48,6 +49,7 @@ export class SubjectTableComponent implements OnInit {
       action: (row: any) => this.deleteSubject(row),
     },
   ];
+modaltitle: string='Add Subject';
 
   constructor(private auth: AuthService, private fireBaseService: FireBaseService<Subject>, private toastr: ToastrService) {}
 
@@ -120,23 +122,10 @@ export class SubjectTableComponent implements OnInit {
   deleteSubject(row: any) {
     console.log('Deleting subject:', row);
     this.toastr.error("Subject Removed Successfully", "Removed", { timeOut: 2000 });
-
-    const subjectToDelete = this.subjects.find(subject => subject.subjectId === row.subjectId);
-    if (subjectToDelete) {
-      subjectToDelete.isDisabled = true;
-
-      this.fireBaseService.update(`${this.tableName}/${subjectToDelete.subjectId}`, subjectToDelete)
-        .then(() => {
-          console.log('Subject disabled successfully');
-        })
-        .catch(error => {
-          console.error('Error disabling subject:', error);
-        });
-    }
   }
+  
 
   manageSubject(row: any) {
     console.log('Managing subject:', row);
-    // Implement manage logic here
   }
 }

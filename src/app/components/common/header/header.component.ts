@@ -15,7 +15,7 @@ export class HeaderComponent {
   @Input() title: string = '';  // Title for the header
   @Input() subtitle: string = '';  // Subtitle for additional information
   @Input() buttonLabel: string = 'Add Subjects';  // Label for the button
-  @Input() buttonTailwindClasses: string = '';  // Tailwind CSS classes for the button
+  @Input() buttonClasses: string = '';  // CSS classes for the button
   @Output() addSubjectEvent = new EventEmitter<void>();  // Event emitter for adding a subject
 
   constructor(private fireBaseService: FireBaseService<Subject>) {}

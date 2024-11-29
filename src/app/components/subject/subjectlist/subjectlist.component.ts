@@ -5,7 +5,7 @@ import { HeaderComponent } from '../../common/header/header.component';
 @Component({
   selector: 'app-subjectlist',
   standalone: true,
-  imports: [SubjectTableComponent,HeaderComponent],
+  imports: [SubjectTableComponent],
   templateUrl: './subjectlist.component.html',
   styleUrl: './subjectlist.component.css'
 })

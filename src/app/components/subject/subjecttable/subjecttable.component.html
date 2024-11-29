@@ -10,18 +10,16 @@
         id="subjectName"
         type="text"
         [(ngModel)]="selectedSubject.subjectName"
-        class="border border-gray-300 rounded-md p-2"
+        class="border border-gray-300 rounded-md ml-5 px-3 py-2"
       />
     </div>
 
     <div class="mt-4">
-      <button
-        type="button"
-        (click)="isAddModal ? saveNewSubject() : updateSubject()"
-        class="bg-blue-500 text-white py-2 px-4 rounded-md"
-      >
-        {{ isAddModal ? 'Add' : 'Update' }}
-      </button>
+      <app-button
+        [label]="isAddModal ? 'Add' : 'Update'"
+        [colorClass]="'bg-blue-500 text-white rounded-md px-4 py-2'"
+        (action)="isAddModal ? saveNewSubject() : updateSubject()"
+      ></app-button>
     </div>
   </div>
 </app-popup-module>
@@ -30,8 +28,13 @@
   [title]="'List of Subjects'" 
   [subtitle]="'Manage your subjects here'"
   [buttonLabel]="'Add Subject'"
-  [buttonTailwindClasses]="'bg-blue-500 text-white rounded-md px-4 py-2'"
+  [buttonClasses]="'bg-blue-500 text-white rounded-md px-4 py-2'"
   (addSubjectEvent)="addSubject()">
+  <app-button
+  [label]="'Add Subject'"
+  [colorClass]="'bg-blue-500 text-white rounded-md px-4 py-2'"
+  (action)="addSubject()"
+></app-button>
 </app-header>
 
 <app-table 
