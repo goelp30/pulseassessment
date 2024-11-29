@@ -2,10 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
 import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';
-import { ButtonComponent } from '../../common/button/button.component';
 import { ModalComponent } from '../link-generation-modal/modal.component';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Assessment } from '../../../models/assessment';
+
 @Component({
   selector: 'app-generate-link',
   standalone: true,
@@ -13,61 +13,71 @@ import { Assessment } from '../../../models/assessment';
     FormsModule,
     SearchbarComponent,
     PopupModuleComponent,
-    ButtonComponent,
     ModalComponent,
   ],
   templateUrl: './generate-link.component.html',
   styleUrls: ['./generate-link.component.css'],
 })
 export class GenerateLinkComponent implements OnInit {
-  filteredAssessments: any[] = [];
-  selectedLink: string = '';
-  isModalVisible: boolean = false;
-  assessmentType: 'internal' | 'external' = 'external';
-  constructor(private firebaseService: FireBaseService<Assessment>) {} // Inject Firebase service
+  assessments: Assessment[] = []; // Original list of assessments
+  filteredAssessments: Assessment[] = []; // Displayed list after filtering
+  selectedLink: string = ''; // Link for the modal
+  isModalVisible: boolean = false; // Modal visibility toggle
+  assessmentType: 'internal' | 'external' = 'external'; // Default filter type
+
+  constructor(private firebaseService: FireBaseService<Assessment>) {}
+
   ngOnInit(): void {
-    this.getAssessments(); // Fetch assessments from Firebase on init
+    this.getAssessments(); // Fetch assessments on initialization
   }
-  // Fetch data from Firebase
+
   getAssessments(): void {
     this.firebaseService.getAllData('assessment').subscribe(
       (data) => {
-        this.filteredAssessments = data;
+        this.assessments = data;
+        console.log(this.assessments); 
+        this.filteredAssessments = [...data]; // Initialize filtered list
       },
-      (error) => {
-        console.error('Error fetching assessments:', error);
-      }
+      (error) => console.error('Error fetching assessments:', error)
     );
   }
 
+  // Filter assessments based on the search query
   filterAssessments(query: string): void {
-    this.filteredAssessments.filter(
-      (assessment) =>
-        assessment.assessmentName.toLowerCase().includes(query.toLowerCase()) // Use assessmentName field
+    this.filteredAssessments = this.assessments.filter((assessment) =>
+      assessment.assessmentName?.toLowerCase().includes(query.toLowerCase())
     );
   }
 
-  generateLink(id: string): string {
-    // Update to use string ID
-    return `https://example.com/assessment/${id}`;
+  // Handle search input changes and reset filter if empty
+  onSearchQueryChange(query: string): void {
+    this.filteredAssessments = query
+      ? this.assessments.filter((assessment) =>
+          assessment.assessmentName.toLowerCase().includes(query.toLowerCase())
+        )
+      : [...this.assessments];
   }
 
+  // Generate a link based on the assessment ID
+  generateLink(id: string):any {
+    console.log(this.assessmentType)
+    return `https://example.com/${id}`;
+  }
+
+  // Open the modal with the selected link and type
   openModal(link: string, type: 'internal' | 'external'): void {
     this.selectedLink = link;
     this.assessmentType = type;
     this.isModalVisible = true;
-    // console.log(this.selectedLink);
   }
 
+  // Close the modal and reset visibility
   closeModal(): void {
     this.isModalVisible = false;
   }
 
-  onSearchQueryChange(query: string): void {
-    this.filterAssessments(query);
-  }
-
-  trackAssessment(index: number, assessment: any): string {
-    return assessment.assessmentId; // Use unique assessment ID as track key
+  // Efficiently track assessments in lists for rendering optimization
+  trackAssessment(index: number, assessment: Assessment): string {
+    return assessment.assessmentId;
   }
 }

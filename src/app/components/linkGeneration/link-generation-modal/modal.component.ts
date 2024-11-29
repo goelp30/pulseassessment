@@ -13,6 +13,8 @@ import candidatesData from '../../../assets/candidates.json';
 import { FormsModule } from '@angular/forms';
 import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
 import { ButtonComponent } from '../../common/button/button.component';
+import { FireBaseService } from '../../../../sharedServices/FireBaseService';
+import { Candidate } from '../../../models/candidate';
 
 @Component({
   selector: 'app-modal',
@@ -40,14 +42,37 @@ export class ModalComponent implements OnInit, OnChanges {
   isSending: boolean = false;
   // Message to show after data is sent
   sendMessage: string = '';
+  constructor(private firebaseService: FireBaseService<Candidate>) {}
+
+  createCandidate(): void {
+    const newCandidate: Candidate = {
+      candidateId: Date.now().toString(), 
+      candidateName: 'Sanjay',          
+      candidateEmail: 'bhuppi@example.com',
+      candidateContact: this.generatePhoneNumber(), 
+    };
+  
+    this.firebaseService.create('candidates/' + newCandidate.candidateId, newCandidate)
+      .then(() => console.log('Candidate added successfully!'))
+      .catch((error) => console.error('Error adding candidate:', error));
+  }
+  
+  // Helper function to generate a random 10-digit phone number
+  generatePhoneNumber(): string {
+    const prefix = '+91'; 
+    const randomNumber = Math.floor(1000000000 + Math.random() * 9000000000); 
+    return prefix + randomNumber.toString(); 
+  }
+  
 
   ngOnInit(): void {
     this.loadData();
+    // this.createCandidate();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isVisible'] && !changes['isVisible'].currentValue) {
-      this.resetSelectionData(); // Reset only when modal is closing  
+      this.resetSelectionData(); // Reset only when modal is closing
     }
     if (changes['assessmentType']) {
       this.loadData();
@@ -110,11 +135,13 @@ export class ModalComponent implements OnInit, OnChanges {
     }
   }
 
+  // updateSelectAllState(): void {
+  //   // Update the state of the 'Select All' checkbox
+  //   this.selectAll = this.selectedNames.length === this.filteredNames.length;
+  // }
   updateSelectAllState(): void {
-    // Update the state of the 'Select All' checkbox
-    this.selectAll = this.selectedNames.length === this.filteredNames.length;
+    this.selectAll = this.filteredNames.length > 0 && this.selectedNames.length === this.filteredNames.length;
   }
-
   closeModal(): void {
     // Reset data and close the modal
     this.resetSelectionData();
