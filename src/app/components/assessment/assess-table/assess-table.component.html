@@ -7,9 +7,11 @@
     [modalTitle]="selectedAssessment ? (isEditMode ? 'Edit Assessment' : 'View Assessment Details') : ''"
     (closeModalEvent)="isModalVisible = false"
   >
-    <div *ngIf="selectedAssessment">
+  @if(selectedAssessment){
+    <div >
       <!-- Conditional rendering for Edit or View mode -->
-      <div *ngIf="isEditMode; else viewMode">
+       @if(isEditMode){
+      <div>
         <!-- Edit mode: Input fields for editing assessment details -->
         <div>
           <label for="assessmentName">Assessment Name:</label>
@@ -70,7 +72,7 @@
         </div>
 
         <!-- Update button to save changes -->
-        <div class="mt-4">
+        <!-- <div class="mt-4">
           <button
             type="button"
             (click)="updateAssessment()"
@@ -78,11 +80,12 @@
           >
             Update
           </button>
-        </div>
-      </div>
+        </div> -->
+      </div>}
 
       <!-- View mode: Table-like display of assessment details -->
-      <ng-template #viewMode>
+       @else(){
+      <div>
         <table class="table-auto w-full border-separate border border-gray-300 mt-4">
           <thead>
             <tr class="bg-gray-100">
@@ -109,7 +112,8 @@
             </tr>
           </tbody>
         </table>
-      </ng-template>
+      </div>
+    }
 
       <!-- Close and Update buttons -->
       <div class="mt-4 flex justify-end">
@@ -120,16 +124,17 @@
         >
           Close
         </button>
+        @if(isEditMode){
         <button
-          *ngIf="isEditMode"
           type="button"
           (click)="updateAssessment()"
           class="bg-blue-500 text-white py-2 px-4 rounded-md"
         >
           Update
         </button>
+      }
       </div>
-    </div>
+    </div>}
   </app-popup-module>
 
   <!-- Table displaying assessments -->
