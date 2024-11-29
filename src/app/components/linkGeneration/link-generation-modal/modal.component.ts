@@ -44,25 +44,25 @@ export class ModalComponent implements OnInit, OnChanges {
   sendMessage: string = '';
   constructor(private firebaseService: FireBaseService<Candidate>) {}
 
-  createCandidate(): void {
-    const newCandidate: Candidate = {
-      candidateId: Date.now().toString(), 
-      candidateName: 'Sanjay',          
-      candidateEmail: 'bhuppi@example.com',
-      candidateContact: this.generatePhoneNumber(), 
-    };
+  // createCandidate(): void {
+  //   const newCandidate: Candidate = {
+  //     candidateId: Date.now().toString(), 
+  //     candidateName: 'Sanjay',          
+  //     candidateEmail: 'bhuppi@example.com',
+  //     candidateContact: this.generatePhoneNumber(), 
+  //   };
   
-    this.firebaseService.create('candidates/' + newCandidate.candidateId, newCandidate)
-      .then(() => console.log('Candidate added successfully!'))
-      .catch((error) => console.error('Error adding candidate:', error));
-  }
+  //   this.firebaseService.create('candidates/' + newCandidate.candidateId, newCandidate)
+  //     .then(() => console.log('Candidate added successfully!'))
+  //     .catch((error) => console.error('Error adding candidate:', error));
+  // }
   
-  // Helper function to generate a random 10-digit phone number
-  generatePhoneNumber(): string {
-    const prefix = '+91'; 
-    const randomNumber = Math.floor(1000000000 + Math.random() * 9000000000); 
-    return prefix + randomNumber.toString(); 
-  }
+  // // Helper function to generate a random 10-digit phone number
+  // generatePhoneNumber(): string {
+  //   const prefix = '+91'; 
+  //   const randomNumber = Math.floor(1000000000 + Math.random() * 9000000000); 
+  //   return prefix + randomNumber.toString(); 
+  // }
   
 
   ngOnInit(): void {
