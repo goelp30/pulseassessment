@@ -1,0 +1,48 @@
+<app-popup-module
+  [isVisible]="isModalVisible"
+  [modalTitle]="isAddModal ? 'Add Subject' : 'Edit Subject'"
+  (closeModalEvent)="isModalVisible = false"
+>
+  <div *ngIf="selectedSubject">
+    <div>
+      <label for="subjectName">Subject Name:</label>
+      <input
+        id="subjectName"
+        type="text"
+        [(ngModel)]="selectedSubject.subjectName"
+        class="border border-gray-300 rounded-md ml-5 px-3 py-2"
+      />
+    </div>
+
+    <div class="mt-4">
+      <app-button
+        [label]="isAddModal ? 'Add' : 'Update'"
+        [colorClass]="'bg-blue-500 text-white rounded-md px-4 py-2'"
+        (action)="isAddModal ? saveNewSubject() : updateSubject()"
+      ></app-button>
+    </div>
+  </div>
+</app-popup-module>
+
+<app-header 
+  [title]="'List of Subjects'" 
+  [subtitle]="'Manage your subjects here'"
+  [buttonLabel]="'Add Subject'"
+  [buttonClasses]="'bg-blue-500 text-white rounded-md px-4 py-2'"
+  (addSubjectEvent)="addSubject()">
+  <app-button
+  [label]="'Add Subject'"
+  [colorClass]="'bg-blue-500 text-white rounded-md px-4 py-2'"
+  (action)="addSubject()"
+></app-button>
+</app-header>
+
+<app-table 
+  [tableName]="tableName" 
+  [tableData]="subjects" 
+  [tableColumns]="tableColumns" 
+  [columnAliases]="columnAliases" 
+  [searchQuery]="searchQuery"
+  [onSearchQueryChange]="onSearchQueryChange.bind(this)"
+  [buttons]="buttons">
+</app-table>

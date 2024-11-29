@@ -4,11 +4,14 @@ import { AuthService } from '../../../sharedServices/auth.service';
 import { FireBaseService } from '../../../sharedServices/FireBaseService'; 
 import { Subject } from '../../models/subject';
 import { TableNames } from '../../enums/TableName';
+import { Router, RouterModule } from '@angular/router';
+import { ToastRef, ToastrModule, ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [],
+  imports:  [RouterModule],
+  providers: [ToastrService],
   templateUrl: './dashboard.component.html'
 })
 
@@ -16,7 +19,7 @@ export class DashboardComponent implements OnInit {
   
   subjects: Subject[] = [];
 
-  constructor(private auth : AuthService, private fireBaseService: FireBaseService<Subject>) { }
+  constructor(private auth : AuthService, private fireBaseService: FireBaseService<Subject>,private router: Router) { }
 
   ngOnInit(): void {
     this.fireBaseService.listensToChange(TableNames.Subject).subscribe((res) => {
@@ -41,7 +44,9 @@ export class DashboardComponent implements OnInit {
     const uniqueId = crypto.randomUUID();
     let sub: Subject = {
       subjectId: uniqueId,
-      subjectName: (Math.random() + 1).toString(36).substring(7)
+      subjectName: (Math.random() + 1).toString(36).substring(7),
+      createdOn:Date.now(),
+      UpdatedOn:Date.now(),
     }
     this.fireBaseService.create(TableNames.Subject + '/' + uniqueId, sub);
   }
@@ -54,5 +59,9 @@ export class DashboardComponent implements OnInit {
       this.subjects = res as Subject[];
       console.log(this.subjects);
     })
+  }
+
+  getAssessmentList() {
+    this.router.navigate(['/assessment-list']);
   }
 }
