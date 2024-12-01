@@ -7,7 +7,7 @@ import {
   OnChanges,
   SimpleChanges,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgFor } from '@angular/common';
 import employeesData from '../../../assets/employees.json';
 import candidatesData from '../../../assets/candidates.json';
 import { FormsModule } from '@angular/forms';
@@ -19,7 +19,7 @@ import { Candidate } from '../../../models/candidate';
 @Component({
   selector: 'app-modal',
   standalone: true,
-  imports: [CommonModule, SearchbarComponent, FormsModule, ButtonComponent],
+  imports: [CommonModule, SearchbarComponent, FormsModule, ButtonComponent, NgFor],
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.css'],
 })
@@ -43,27 +43,6 @@ export class ModalComponent implements OnInit, OnChanges {
   // Message to show after data is sent
   sendMessage: string = '';
   constructor(private firebaseService: FireBaseService<Candidate>) {}
-
-  // createCandidate(): void {
-  //   const newCandidate: Candidate = {
-  //     candidateId: Date.now().toString(), 
-  //     candidateName: 'Sanjay',          
-  //     candidateEmail: 'bhuppi@example.com',
-  //     candidateContact: this.generatePhoneNumber(), 
-  //   };
-  
-  //   this.firebaseService.create('candidates/' + newCandidate.candidateId, newCandidate)
-  //     .then(() => console.log('Candidate added successfully!'))
-  //     .catch((error) => console.error('Error adding candidate:', error));
-  // }
-  
-  // // Helper function to generate a random 10-digit phone number
-  // generatePhoneNumber(): string {
-  //   const prefix = '+91'; 
-  //   const randomNumber = Math.floor(1000000000 + Math.random() * 9000000000); 
-  //   return prefix + randomNumber.toString(); 
-  // }
-  
 
   ngOnInit(): void {
     this.loadData();
@@ -94,16 +73,24 @@ export class ModalComponent implements OnInit, OnChanges {
     }
     this.filterNames();
   }
+  
+  trackById(index: number, person: any): string | number {
+    const id = person.employeeId || person.candidateId || index;
+    console.log(`Index: ${index}, ID: ${id}`);
+    return id;
+  }
 
   filterNames(): void {
     // Filter names based on search query
     if (this.assessmentType === 'external') {
       this.filteredNames = this.candidates.filter((item) =>
-        item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        item.candidateName
+          .toLowerCase()
+          .includes(this.searchQuery.toLowerCase())
       );
     } else {
       this.filteredNames = this.employees.filter((item) =>
-        item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        item.employeeName.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     }
     this.updateSelectAllState();
@@ -114,8 +101,24 @@ export class ModalComponent implements OnInit, OnChanges {
     const index = this.selectedNames.indexOf(name);
     if (index === -1) {
       this.selectedNames.push(name);
+      console.log(this.selectedNames);
     } else {
       this.selectedNames.splice(index, 1);
+    }
+    this.updateSelectAllState();
+  }
+
+  removeSelectedName(name: any): void {
+    // Remove a selected name from the list
+    const index = this.selectedNames.indexOf(name);
+    if (index !== -1) {
+      this.selectedNames.splice(index, 1);
+    }
+    const personIndex = this.filteredNames.findIndex(
+      (person) => person.id === name.id
+    );
+    if (personIndex !== -1) {
+      this.filteredNames[personIndex].selected = false;
     }
     this.updateSelectAllState();
   }
@@ -140,7 +143,9 @@ export class ModalComponent implements OnInit, OnChanges {
   //   this.selectAll = this.selectedNames.length === this.filteredNames.length;
   // }
   updateSelectAllState(): void {
-    this.selectAll = this.filteredNames.length > 0 && this.selectedNames.length === this.filteredNames.length;
+    this.selectAll =
+      this.filteredNames.length > 0 &&
+      this.selectedNames.length === this.filteredNames.length;
   }
   closeModal(): void {
     // Reset data and close the modal
@@ -153,21 +158,6 @@ export class ModalComponent implements OnInit, OnChanges {
     // Handle search query change and filter names accordingly
     this.searchQuery = query;
     this.filterNames();
-  }
-
-  removeSelectedName(name: any): void {
-    // Remove a selected name from the list
-    const index = this.selectedNames.indexOf(name);
-    if (index !== -1) {
-      this.selectedNames.splice(index, 1);
-    }
-    const personIndex = this.filteredNames.findIndex(
-      (person) => person.id === name.id
-    );
-    if (personIndex !== -1) {
-      this.filteredNames[personIndex].selected = false;
-    }
-    this.updateSelectAllState();
   }
 
   onExpiryDateChange(event: any): void {
