@@ -7,7 +7,7 @@ import {
   OnChanges,
   SimpleChanges,
 } from '@angular/core';
-import { CommonModule, NgFor } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import employeesData from '../../../assets/employees.json';
 import candidatesData from '../../../assets/candidates.json';
 import { FormsModule } from '@angular/forms';
@@ -19,9 +19,10 @@ import { Candidate } from '../../../models/candidate';
 @Component({
   selector: 'app-modal',
   standalone: true,
-  imports: [CommonModule, SearchbarComponent, FormsModule, ButtonComponent, NgFor],
+  imports: [CommonModule, SearchbarComponent, FormsModule, ButtonComponent],
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.css'],
+  providers: [DatePipe],
 })
 export class ModalComponent implements OnInit, OnChanges {
   @Input() link: string = '';
@@ -35,14 +36,12 @@ export class ModalComponent implements OnInit, OnChanges {
   selectedNames: any[] = [];
   searchQuery: string = '';
   selectAll: boolean = false;
-  expiryDate: string = '';
-  expiryTime: string = '';
-
-  // Flag to control whether the Send button is disabled or not
+  expiryDateTime: string = '';
+  formattedDate: string = '';
   isSending: boolean = false;
-  // Message to show after data is sent
   sendMessage: string = '';
-  constructor(private firebaseService: FireBaseService<Candidate>) {}
+
+  constructor(private datePipe: DatePipe) {}
 
   ngOnInit(): void {
     this.loadData();
@@ -73,7 +72,7 @@ export class ModalComponent implements OnInit, OnChanges {
     }
     this.filterNames();
   }
-  
+
   trackById(index: number, person: any): string | number {
     const id = person.employeeId || person.candidateId || index;
     console.log(`Index: ${index}, ID: ${id}`);
@@ -138,10 +137,7 @@ export class ModalComponent implements OnInit, OnChanges {
     }
   }
 
-  // updateSelectAllState(): void {
-  //   // Update the state of the 'Select All' checkbox
-  //   this.selectAll = this.selectedNames.length === this.filteredNames.length;
-  // }
+
   updateSelectAllState(): void {
     this.selectAll =
       this.filteredNames.length > 0 &&
@@ -160,12 +156,12 @@ export class ModalComponent implements OnInit, OnChanges {
     this.filterNames();
   }
 
-  onExpiryDateChange(event: any): void {
-    // Handle expiry date change
-  }
-
-  onExpiryTimeChange(event: any): void {
-    // Handle expiry time change
+  dateTime(): void {
+    if(this.expiryDateTime){
+      const date = new Date(this.expiryDateTime);
+      this.formattedDate = this.datePipe.transform(date, 'yyyyMMddHHmm')!;
+      console.log('Formatted Date:', this.formattedDate);
+    }
   }
 
   onSend(): void {
@@ -174,11 +170,11 @@ export class ModalComponent implements OnInit, OnChanges {
       return;
     }
 
+    this.dateTime();
     this.isSending = true; // Disable button while sending
     console.log('Sending data:', {
       selectedNames: this.selectedNames,
-      expiryDate: this.expiryDate,
-      expiryTime: this.expiryTime,
+      expiryDateTime: this.formattedDate,
       link: this.link,
     });
 
@@ -201,7 +197,6 @@ export class ModalComponent implements OnInit, OnChanges {
     this.selectedNames = [];
     this.selectAll = false;
     this.filteredNames.forEach((name) => (name.selected = false));
-    this.expiryDate = '';
-    this.expiryTime = '';
+    this.expiryDateTime = '';
   }
 }
