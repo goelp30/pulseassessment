@@ -54,6 +54,8 @@ export class AssessmentListComponent implements OnInit {
       assessmentType: 'internal',
       dateCreated: Date.now(),
       dateUpdated:Date.now(),
+      isDisabled:false,
+      isautoEvaluated:true
     };
 
     // Save the new assessment to Firebase

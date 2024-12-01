@@ -7,7 +7,6 @@ import { SearchbarComponent } from '../searchbar/searchbar.component';
 interface Row {
   [key: string]: any;  // This allows dynamic row properties
 }
-
 @Component({
   selector: 'app-table',
   standalone: true,
@@ -25,13 +24,15 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() onSearchQueryChange: (newQuery: string) => void = () => {};  // Function to handle search query change
   @Input() tabs: string[] = ['all'];  // Tabs to be displayed, default to ['all']
   @Input() filterKey: string = ''; // The key in the row data to filter by (e.g., 'assessmentType')
+  @Input() tabAliases: { [key: string]: string } = {};  // Dynamically passed aliases for tabs
 
   currentPage: number = 1;
   itemsPerPage: number = 10;
   totalPages: number = 1;
   filteredData: any[] = [];
   activeTab: string = 'all';  // Initially, the 'all' tab is selected
-
+  pageNumbers: number[] = [];  // Array to store pagination numbers
+  
   constructor(private fireBaseService: FireBaseService<any>) {}
 
   ngOnInit(): void {
@@ -40,6 +41,7 @@ export class TableComponent implements OnInit, OnChanges {
       this.fireBaseService.getAllData(this.tableName).subscribe((res) => {
         this.tableData = res;
         this.totalPages = Math.ceil(this.tableData.length / this.itemsPerPage);
+        this.generatePagination();  // Generate pagination numbers
         this.filterData();  // Filter data when it loads
       });
     }
@@ -82,11 +84,17 @@ export class TableComponent implements OnInit, OnChanges {
 
     this.filteredData = filtered;
     this.totalPages = Math.ceil(this.filteredData.length / this.itemsPerPage);
+    this.generatePagination();  // Regenerate pagination numbers after filtering
     this.currentPage = 1;  // Reset to first page after filtering
   }
 
   getColumnAliases(column: string): string[] {
     return this.columnAliases[column] || [column];
+  }
+
+  getTabAlias(tab: string): string {
+    // Use the tabAliases input to get the alias for the current tab
+    return this.tabAliases[tab] || tab;  // Fallback to the tab name if no alias is found
   }
 
   getPaginatedData(): any[] {
@@ -98,12 +106,28 @@ export class TableComponent implements OnInit, OnChanges {
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
+      this.generatePagination();  // Regenerate pagination buttons on page change
     }
   }
 
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
+      this.generatePagination();  // Regenerate pagination buttons on page change
     }
+  }
+
+  goToPage(page: number): void {
+    this.currentPage = page;
+    this.generatePagination();  // Regenerate pagination buttons on page change
+  }
+
+  generatePagination(): void {
+    const totalPages = this.totalPages;
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+    this.pageNumbers = pages;  // Store page numbers for pagination
   }
 }
