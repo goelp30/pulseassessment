@@ -88,33 +88,31 @@
   </div>
 </div>
 
-<div class="flex justify-between items-center space-x-4">
-    <!-- DateTime field -->
-   
-      <input
-        type="datetime-local"
-        id="expiryDate"
-        [(ngModel)]="expiryDateTime"
-        class="bg-transparent text-center border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 py-2 px-2"
-      />
-  
-      <!-- Send button -->
-      <app-button
-        [label]="isSending ? 'Sending...' : 'Send'"
-        [colorClass]="
-          'px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none transition-all duration-200 ease-in-out'
-        "
-        (click)="onSend()"
-      ></app-button>
+<div class="flex justify-between items-center space-x-4 mb-12">
+  <!-- DateTime field -->
+  <input
+    type="datetime-local"
+    id="expiryDate"
+    [(ngModel)]="expiryDateTime"
+    class="bg-transparent text-center border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 py-2 px-2"
+  />
 
-
-    <!-- Display success message with fade-in transition -->
-    @if (sendMessage) {
-    <h3
-      class="text-center text-green-500 font-medium transition-opacity duration-500 ease-in-out opacity-0"
-      [ngClass]="{ 'opacity-100': sendMessage }"
-    >
+  <!-- Send button -->
+  <app-button
+    [label]="isSending ? 'Sending...' : 'Send'"
+    [colorClass]="
+      'px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none transition-all duration-200 ease-in-out'
+    "
+    (click)="onSend()"
+  ></app-button>
+</div>
+<!-- Display success message with fade-in transition -->
+<div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+  @if (sendMessage) {
+  <div class="bg-green-500 text-white p-4 rounded-md shadow-md">
+    <h3 class="text-center font-medium">
       {{ sendMessage }}
     </h3>
-    }
+  </div>
+  }
 </div>

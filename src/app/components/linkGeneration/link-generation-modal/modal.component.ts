@@ -159,7 +159,7 @@ export class ModalComponent implements OnInit, OnChanges {
   dateTime(): void {
     if(this.expiryDateTime){
       const date = new Date(this.expiryDateTime);
-      this.formattedDate = this.datePipe.transform(date, 'yyyyMMddHHmm')!;
+      this.formattedDate = this.datePipe.transform(date, 'yyyyMMddHHmmss')!;
       console.log('Formatted Date:', this.formattedDate);
     }
   }
@@ -184,12 +184,12 @@ export class ModalComponent implements OnInit, OnChanges {
       // Hide the success message after 2 seconds
       setTimeout(() => {
         this.sendMessage = ''; // Clear the message
-      }, 2000);
+      }, 1000);
 
       this.resetSelectionData(); // Reset data
       this.isSending = false; // Re-enable the Send button after 3 seconds
       this.closeModal(); // Close the modal after sending
-    }, 3000);
+    }, 1000);
   }
 
   resetSelectionData(): void {
