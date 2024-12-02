@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { AuthService } from '../../../../sharedServices/auth.service';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Assessment } from '../../../models/assessment';
@@ -16,7 +16,7 @@ import { ToastrService, ToastrModule } from 'ngx-toastr';
   templateUrl: './assess-table.component.html',
   styleUrls: ['./assess-table.component.css']
 })
-export class AssessTableComponent implements OnInit {
+export class AssessTableComponent implements OnInit,AfterViewInit {
   assessments: Assessment[] = [];
   tableColumns: string[] = ['assessmentId', 'assessmentName', 'assessmentType', 'isDisabled'];
   columnAliases: { [key: string]: string[] } = {
@@ -62,6 +62,9 @@ export class AssessTableComponent implements OnInit {
 
   ngOnInit(): void {
     this.getAssessments();  // Fetch assessments on component initialization
+  }
+  ngAfterViewInit(): void {
+    this.getAssessments();
   }
 
   logout() {
