@@ -1,18 +1,11 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  OnInit,
-  OnChanges,
-  SimpleChanges,
-} from '@angular/core';
+import {Component,EventEmitter,Input,Output,OnInit,OnChanges,SimpleChanges,} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import employeesData from '../../../assets/employees.json';
-import candidatesData from '../../../assets/candidates.json';
 import { FormsModule } from '@angular/forms';
 import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
 import { ButtonComponent } from '../../common/button/button.component';
+import { FireBaseService } from '../../../../sharedServices/FireBaseService';
+import { Candidate } from '../../../models/candidate';
+import { Employee } from '../../../models/employee';
 
 @Component({
   selector: 'app-modal',
@@ -27,8 +20,8 @@ export class ModalComponent implements OnInit, OnChanges {
   @Input() assessmentType: 'internal' | 'external' = 'external';
   @Output() closeModalEvent = new EventEmitter<void>();
 
-  employees: any[] = [];
-  candidates: any[] = [];
+  employees: Employee[] = [];
+  candidates: Candidate[] = [];
   filteredNames: any[] = [];
   selectedNames: any[] = [];
   searchQuery: string = '';
@@ -40,14 +33,41 @@ export class ModalComponent implements OnInit, OnChanges {
   isSending: boolean = false;
   // Message to show after data is sent
   sendMessage: string = '';
+  constructor(private firebaseService: FireBaseService<Candidate | Employee>) {}
 
   ngOnInit(): void {
-    this.loadData();
+    // Fetch all candidate data from Firebase Realtime Database
+    this.firebaseService.getAllData('candidates') // 'candidates' is the name of the table in Firebase
+      .subscribe(
+        (data: Candidate[]) => {
+          console.log('Fetched Candidates:', data);
+          this.candidates = data; // Store fetched candidates in the candidates array
+        },
+        (error: any) => {
+          console.error('Error fetching candidate data:', error);
+        }
+      );
+  
+    // Fetch all employee data from Firebase Realtime Database
+    this.firebaseService.getAllData('employees') // 'employee' is the name of the table in Firebase
+      .subscribe(
+        (data: Employee[]) => {
+          console.log('Fetched Employee:', data); // Log the raw data from Firebase
+          if (data && data.length > 0) {
+            this.employees = data; // Store fetched employee data in the employee array
+          } else {
+            console.warn('No employee data found');
+          }
+        },
+        (error: any) => {
+          console.error('Error fetching employee data:', error);
+        }
+      );
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['isVisible'] && !changes['isVisible'].currentValue) {
-      this.resetSelectionData(); // Reset only when modal is closing  
+    if (changes['isVisible'] && changes['isVisible'].currentValue) {
+      this.loadData();  // Load data again if modal becomes visible
     }
     if (changes['assessmentType']) {
       this.loadData();
@@ -59,28 +79,50 @@ export class ModalComponent implements OnInit, OnChanges {
   }
 
   loadData(): void {
-    // Load either employees or candidates based on assessment type
+    // Clear the filtered names before loading new data
+    this.filteredNames = [];
+    
     if (this.assessmentType === 'internal') {
-      this.employees = employeesData;
-      this.filteredNames = this.employees;
-    } else {
-      this.candidates = candidatesData;
-      this.filteredNames = this.candidates;
+      // Load internal (employee) data from Firebase
+      this.firebaseService.getAllData('employees').subscribe(
+        (data: Employee[]) => {
+          this.employees = data; // Store fetched employee data
+          this.filteredNames = [...this.employees]; // Initialize filtered names
+          this.filterNames();  // Filter based on the search query
+        },
+        (error: any) => {
+          console.error('Error fetching employee data:', error);
+        }
+      );
+    } else if (this.assessmentType === 'external') {
+      // Load external (candidate) data from Firebase
+      this.firebaseService.getAllData('candidates').subscribe(
+        (data: Candidate[]) => {
+          this.candidates = data; // Store fetched candidate data
+          this.filteredNames = [...this.candidates]; // Initialize filtered names
+          this.filterNames();  // Filter based on the search query
+        },
+        (error: any) => {
+          console.error('Error fetching candidate data:', error);
+        }
+      );
     }
-    this.filterNames();
   }
+  
+  
 
   filterNames(): void {
     // Filter names based on search query
     if (this.assessmentType === 'external') {
       this.filteredNames = this.candidates.filter((item) =>
-        item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        item.candidateName.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
-    } else {
+    } else if (this.assessmentType === 'internal') {
       this.filteredNames = this.employees.filter((item) =>
-        item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        item.employeeName.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     }
+    console.log('Filtered Names:', this.filteredNames);
     this.updateSelectAllState();
   }
 
@@ -112,7 +154,7 @@ export class ModalComponent implements OnInit, OnChanges {
 
   updateSelectAllState(): void {
     // Update the state of the 'Select All' checkbox
-    this.selectAll = this.selectedNames.length === this.filteredNames.length;
+    this.selectAll = this.filteredNames.length > 0 && this.selectedNames.length === this.filteredNames.length;
   }
 
   closeModal(): void {
@@ -186,5 +228,9 @@ export class ModalComponent implements OnInit, OnChanges {
     this.filteredNames.forEach((name) => (name.selected = false));
     this.expiryDate = '';
     this.expiryTime = '';
+  }
+
+  trackById(index: number, item: any): number {
+    return item.id;
   }
 }

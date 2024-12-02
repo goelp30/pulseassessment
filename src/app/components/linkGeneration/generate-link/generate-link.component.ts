@@ -6,6 +6,7 @@ import { ButtonComponent } from '../../common/button/button.component';
 import { ModalComponent } from '../link-generation-modal/modal.component';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Assessment } from '../../../models/assessment';
+
 @Component({
   selector: 'app-generate-link',
   standalone: true,
@@ -20,19 +21,23 @@ import { Assessment } from '../../../models/assessment';
   styleUrls: ['./generate-link.component.css'],
 })
 export class GenerateLinkComponent implements OnInit {
-  filteredAssessments: any[] = [];
+  assessments: Assessment[] = []; // Original list of assessments
+  filteredAssessments: Assessment[] = []; // Displayed/filtered list
   selectedLink: string = '';
   isModalVisible: boolean = false;
-  assessmentType: 'internal' | 'external' = 'external';
-  constructor(private firebaseService: FireBaseService<Assessment>) {} // Inject Firebase service
+  assessmentType: 'internal' | 'external' = 'external'; // Default shows all
+
+  constructor(private firebaseService: FireBaseService<Assessment>) {}
+
   ngOnInit(): void {
-    this.getAssessments(); // Fetch assessments from Firebase on init
+    this.getAssessments(); // Fetch assessments on page load
   }
-  // Fetch data from Firebase
+
   getAssessments(): void {
     this.firebaseService.getAllData('assessment').subscribe(
       (data) => {
-        this.filteredAssessments = data;
+        this.assessments = data;
+        this.filteredAssessments = [...data]; // Initialize filtered list with all data
       },
       (error) => {
         console.error('Error fetching assessments:', error);
@@ -40,15 +45,24 @@ export class GenerateLinkComponent implements OnInit {
     );
   }
 
+  // Filter only from displayed assessments
   filterAssessments(query: string): void {
-    this.filteredAssessments.filter(
+    this.filteredAssessments = this.assessments.filter(
       (assessment) =>
-        assessment.assessmentName.toLowerCase().includes(query.toLowerCase()) // Use assessmentName field
+        assessment.assessmentName.toLowerCase().includes(query.toLowerCase())
     );
   }
 
+  onSearchQueryChange(query: string): void {
+    if (!query) {
+      // If the query is empty, reset to the full list
+      this.filteredAssessments = [...this.assessments];
+    } else {
+      this.filterAssessments(query);
+    }
+  }
+
   generateLink(id: string): string {
-    // Update to use string ID
     return `https://example.com/assessment/${id}`;
   }
 
@@ -56,18 +70,14 @@ export class GenerateLinkComponent implements OnInit {
     this.selectedLink = link;
     this.assessmentType = type;
     this.isModalVisible = true;
-    // console.log(this.selectedLink);
+    console.log(this.assessmentType)
   }
 
   closeModal(): void {
     this.isModalVisible = false;
   }
 
-  onSearchQueryChange(query: string): void {
-    this.filterAssessments(query);
-  }
-
-  trackAssessment(index: number, assessment: any): string {
-    return assessment.assessmentId; // Use unique assessment ID as track key
+  trackAssessment(index: number, assessment: Assessment): string {
+    return assessment.assessmentId; // Ensure efficient re-rendering
   }
 }

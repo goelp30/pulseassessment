@@ -2,7 +2,7 @@
   [placeholder]="'Search names...'"
   (searchQueryChange)="onSearchQueryChange($event)"
   [class]="
-  'block w-full px-4 py-2 mb-4 border border-gray-300 rounded-full text-lg shadow-md outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 transition-all duration-100 transform '">
+    'block w-full px-4 py-2 mb-4 border border-gray-300 rounded-full text-lg shadow-md outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 transition-all duration-100 transform '">
 </app-searchbar>
 
 <div class="flex justify-between items-center my-2">
@@ -25,55 +25,52 @@
   class="max-h-40 overflow-y-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
 >
   <!-- Check if filteredNames is empty -->
-  @if (filteredNames.length === 0) {
-  <p class="text-center text-gray-500 font-medium">User not found</p>
-  } @else {
-  <ul class="space-y-1">
-    <!-- Display filtered names here -->
-    @for (person of filteredNames; track $index) {
-    <li>
-      <div class="flex items-center">
-        <input
-          type="checkbox"
-          id="person-{{ person.id }}"
-          [(ngModel)]="person.selected"
-          (change)="toggleSelection(person)"
-          class="mr-2 text-blue-600 focus:ring-2 focus:ring-blue-500"
-        />
-        <label for="person-{{ person.id }}" class="text-xs text-gray-800">
-          {{ person.name }}
-        </label>
-      </div>
-    </li>
-    }
-  </ul>
-  }
+  <div *ngIf="filteredNames.length === 0" class="text-center text-gray-500 font-medium">
+    User not found
+  </div>
+  <div *ngIf="filteredNames.length > 0">
+    <ul class="space-y-1">
+      <!-- Loop through filteredNames and display each name -->
+      <li *ngFor="let person of filteredNames; trackBy: trackById">
+        <div class="flex items-center">
+          <input
+            type="checkbox"
+            id="person-{{ person.id }}"
+            [(ngModel)]="person.selected"
+            (change)="toggleSelection(person)"
+            class="mr-2 text-blue-600 focus:ring-2 focus:ring-blue-500"
+          />
+          <label for="person-{{ person.id }}" class="text-xs text-gray-800">
+            {{ person.candidateName || person.employeeName }}
+          </label>
+        </div>
+      </li>
+    </ul>
+  </div>
 </div>
 
 <!-- Display selected names -->
-@if (selectedNames.length > 0) {
-<div
-  class="max-h-40 overflow-y-auto mt-2 mb-3 p-2 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-md shadow-sm border border-gray-300"
->
-  <p class="text-sm font-semibold mb-2 text-gray-800">
-    Selected {{ assessmentType === "internal" ? "Employees" : "Candidates" }}
-  </p>
-  <div class="flex flex-wrap gap-2">
-    @for (name of selectedNames; track $index) {
-    <div class="flex items-center bg-indigo-100 px-2 py-1 rounded-md">
-      <span class="text-xs font-medium text-gray-800">{{ name.name }}</span>
-      <button
-        type="button"
-        (click)="removeSelectedName(name)"
-        class="ml-1 text-red-500 font-bold hover:text-red-700 focus:outline-none transition-all duration-200 ease-in-out"
-      >
-        &times;
-      </button>
+<div *ngIf="selectedNames.length > 0">
+  <div
+    class="max-h-40 overflow-y-auto mt-2 mb-3 p-2 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-md shadow-sm border border-gray-300"
+  >
+    <p class="text-sm font-semibold mb-2 text-gray-800">
+      Selected {{ assessmentType === 'internal' ? 'Employees' : 'Candidates' }}
+    </p>
+    <div class="flex flex-wrap gap-2">
+      <div *ngFor="let name of selectedNames; trackBy: trackById" class="flex items-center bg-indigo-100 px-2 py-1 rounded-md">
+        <span class="text-xs font-medium text-gray-800">{{ name.candidateName || name.employeeName }}</span>
+        <button
+          type="button"
+          (click)="removeSelectedName(name)"
+          class="ml-1 text-red-500 font-bold hover:text-red-700 focus:outline-none transition-all duration-200 ease-in-out"
+        >
+          &times;
+        </button>
+      </div>
     </div>
-    }
   </div>
 </div>
-}
 
 <div class="flex justify-between items-center space-x-4">
   <div class="flex justify-start items-center space-x-2">
