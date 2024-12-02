@@ -8,13 +8,14 @@ import { Assessment } from '../../../models/assessment';
 import { AssessTableComponent } from '../assess-table/assess-table.component';
 import { ToastrModule,ToastrService } from 'ngx-toastr';
 import { timeout } from 'rxjs';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-assessment-list',
   standalone: true,
   templateUrl: './assessment-list.component.html',
   styleUrls: ['./assessment-list.component.css'],
-  imports: [CommonModule , FormsModule,AssessTableComponent,ToastrModule]
+  imports: [CommonModule , FormsModule,AssessTableComponent,ToastrModule,RouterLink]
 })
 export class AssessmentListComponent implements OnInit {
   // assessment
@@ -79,5 +80,8 @@ export class AssessmentListComponent implements OnInit {
    * Listen to assessment changes (real-time updates)
    */
   showSuccess() {this.toastr.info('Hello world!', 'Toastr fun!',{timeOut:1000});}
+
+
+
 
 }

@@ -1,6 +1,6 @@
-
-  <h2>Assessment List</h2>
+<h2>Assessment List</h2>
   <button type="button" class="btn btn-info" (click)="getAssessments()">Get All Assessments</button>
 <button type="button" class="btn btn-info" (click)="addAssessment()">Add Assessment</button>
 <button (click)="showSuccess()" class="btn btn-info">toast</button>
+<button (click)="showSuccess()" class="btn btn-info" [routerLink]="['/drag-and-drop']">Drag and Drop</button>
 <app-assess-table></app-assess-table>
