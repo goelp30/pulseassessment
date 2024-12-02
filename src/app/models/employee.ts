@@ -1,6 +1,5 @@
 export type Employee = {
-    employeeId : string,
+    emplyeeId : string,
     employeeName : string,
-    employeeEmail: string,
-    employeeContact: string
+    employeeEmail: string
 }

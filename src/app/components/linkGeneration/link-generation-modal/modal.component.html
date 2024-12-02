@@ -22,10 +22,10 @@
 </div>
 
 <div
-  class="max-h-40 overflow-y-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
+  class="h-32 overflow-y-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
 >
   <!-- Check if filteredNames is empty -->
-  <div *ngIf="filteredNames.length === 0" class="text-center text-gray-500 font-medium">
+  <div *ngIf="filteredNames.length === 0" class="h-32 text-center text-gray-500 font-medium">
     User not found
   </div>
   <div *ngIf="filteredNames.length > 0">
@@ -50,52 +50,47 @@
 </div>
 
 <!-- Display selected names -->
-<div *ngIf="selectedNames.length > 0">
-  <div
-    class="max-h-40 overflow-y-auto mt-2 mb-3 p-2 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-md shadow-sm border border-gray-300"
-  >
-    <p class="text-sm font-semibold mb-2 text-gray-800">
-      Selected {{ assessmentType === 'internal' ? 'Employees' : 'Candidates' }}
+<div
+  class="h-32 overflow-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
+>
+  <p class="text-sm font-semibold mb-2 text-gray-800">
+    Selected {{ assessmentType === "internal" ? "Employees" : "Candidates" }}
+  </p>
+  <div class="flex flex-wrap gap-2">
+    <!-- Check if selectedNames is empty -->
+    @if (selectedNames.length === 0) {
+    <p class="text-center text-gray-500 font-medium">
+      No {{ assessmentType === "internal" ? "Employee" : "Candidate" }} selected
     </p>
-    <div class="flex flex-wrap gap-2">
-      <div *ngFor="let name of selectedNames; trackBy: trackById" class="flex items-center bg-indigo-100 px-2 py-1 rounded-md">
-        <span class="text-xs font-medium text-gray-800">{{ name.candidateName || name.employeeName }}</span>
-        <button
-          type="button"
-          (click)="removeSelectedName(name)"
-          class="ml-1 text-red-500 font-bold hover:text-red-700 focus:outline-none transition-all duration-200 ease-in-out"
-        >
-          &times;
-        </button>
-      </div>
+    } @else {
+    <!-- Display selected names here -->
+    @for (name of selectedNames; track $index) {
+    <div class="flex items-center bg-indigo-100 px-2 py-1 rounded-md">
+      <span class="text-xs font-medium text-gray-800">{{
+        name.employeeName || name.candidateName
+      }}</span>
+      <button
+        type="button"
+        (click)="removeSelectedName(name)"
+        class="ml-1 text-red-500 font-bold hover:text-red-700 focus:outline-none transition-all duration-200 ease-in-out"
+      >
+        &times;
+      </button>
     </div>
+    } }
   </div>
 </div>
 
-<div class="flex justify-between items-center space-x-4">
-  <div class="flex justify-start items-center space-x-2">
-    <!-- Date field -->
-    <div class="flex flex-col items-center">
-      <input
-        type="date"
-        id="expiryDate"
-        [(ngModel)]="expiryDate"
-        (change)="onExpiryDateChange($event)"
-        class="bg-transparent text-center border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 py-2 px-2"
-      />
-    </div>
 
-    <!-- Time field -->
-    <div class="flex flex-col items-center">
-      <input
-        type="time"
-        id="expiryTime"
-        [(ngModel)]="expiryTime"
-        (change)="onExpiryTimeChange($event)"
-        class="bg-transparent text-center border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 py-2 px-2"
-      />
-    </div>
-  </div>
+<div class="flex justify-between items-center space-x-4 mb-12">
+  <!-- DateTime field -->
+  <input
+    type="datetime-local"
+    id="expiryDate"
+    [(ngModel)]="expiryDateTime"
+    class="bg-transparent text-center border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 py-2 px-2"
+  />
+
   <!-- Send button -->
   <app-button
     [label]="isSending ? 'Sending...' : 'Send'"
@@ -106,14 +101,13 @@
   ></app-button>
 </div>
 
-<div class="flex flex-col justify-center mt-4">
-  <!-- Display success message with fade-in transition -->
-  <h3
-    *ngIf="sendMessage"
-    class="text-center text-green-500 font-medium transition-opacity duration-500 ease-in-out opacity-0"
-    [ngClass]="{ 'opacity-100': sendMessage }"
-  >
-    {{ sendMessage }}
-  </h3>
+<!-- Display success message with fade-in transition -->
+<div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+  @if (sendMessage) {
+  <div class="bg-green-500 text-white p-4 rounded-md shadow-md">
+    <h3 class="text-center font-medium">
+      {{ sendMessage }}
+    </h3>
+  </div>
+  }
 </div>
-
