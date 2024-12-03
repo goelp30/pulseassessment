@@ -2,63 +2,56 @@
   [placeholder]="'Search names...'"
   (searchQueryChange)="onSearchQueryChange($event)"
   [class]="
-    'block w-full px-4 py-2 mb-4 mt-1 border border-gray-300 rounded-full text-lg shadow-md outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 transition-all duration-100 transform '
-  "
->
+    'block w-full px-4 py-2 mb-4 border border-gray-300 rounded-full text-lg shadow-md outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 transition-all duration-100 transform '">
 </app-searchbar>
 
 <div class="flex justify-between items-center my-2">
-  @if (filteredNames.length > 0) {
   <div class="flex items-center">
     <input
       type="checkbox"
       id="selectAll"
       [(ngModel)]="selectAll"
       (change)="toggleSelectAll()"
-      class="mr-2 text-blue-600"
+      class="mr-2 text-blue-600 focus:ring-2 focus:ring-blue-500"
     />
     <label for="selectAll" class="text-xs font-medium text-gray-700">
       Select All
     </label>
   </div>
-  }
   <div class="text-xs text-gray-500">({{ filteredNames.length }} items)</div>
 </div>
 
-<!-- People Data -->
 <div
-  class="h-40 overflow-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
+  class="h-32 overflow-y-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
 >
   <!-- Check if filteredNames is empty -->
-  @if (filteredNames.length === 0) {
-  <p class="text-center text-gray-500 font-medium">User not found</p>
-  } @else {
-  <ul class="space-y-1">
-    <!-- Display filtered names here -->
-    @for (person of filteredNames; track person.employeeId ||
-    person.candidateId) {
-    <li>
-      <div class="flex items-center">
-        <input
-          type="checkbox"
-          id="person-{{ person.id }}"
-          [(ngModel)]="person.selected"
-          (change)="toggleSelection(person)"
-          class="mr-2 text-blue-600 focus:ring-2 focus:ring-blue-500"
-        />
-        <label for="person-{{ person.id }}" class="text-xs text-gray-800">
-          {{ person.employeeName || person.candidateName }}
-        </label>
-      </div>
-    </li>
-    }
-  </ul>
-  }
+  <div *ngIf="filteredNames.length === 0" class="h-32 text-center text-gray-500 font-medium">
+    User not found
+  </div>
+  <div *ngIf="filteredNames.length > 0">
+    <ul class="space-y-1">
+      <!-- Loop through filteredNames and display each name -->
+      <li *ngFor="let person of filteredNames; trackBy: trackById">
+        <div class="flex items-center">
+          <input
+            type="checkbox"
+            id="person-{{ person.id }}"
+            [(ngModel)]="person.selected"
+            (change)="toggleSelection(person)"
+            class="mr-2 text-blue-600 focus:ring-2 focus:ring-blue-500"
+          />
+          <label for="person-{{ person.id }}" class="text-xs text-gray-800">
+            {{ person.candidateName || person.employeeName }}
+          </label>
+        </div>
+      </li>
+    </ul>
+  </div>
 </div>
 
 <!-- Display selected names -->
 <div
-  class="h-40 overflow-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
+  class="h-32 overflow-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
 >
   <p class="text-sm font-semibold mb-2 text-gray-800">
     Selected {{ assessmentType === "internal" ? "Employees" : "Candidates" }}
@@ -88,6 +81,7 @@
   </div>
 </div>
 
+
 <div class="flex justify-between items-center space-x-4 mb-12">
   <!-- DateTime field -->
   <input
@@ -106,6 +100,7 @@
     (click)="onSend()"
   ></app-button>
 </div>
+
 <!-- Display success message with fade-in transition -->
 <div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-10">
   @if (sendMessage) {
@@ -116,4 +111,3 @@
   </div>
   }
 </div>
-

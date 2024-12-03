@@ -8,11 +8,11 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import employeesData from '../../../assets/employees.json';
-import candidatesData from '../../../assets/candidates.json';
 import { FormsModule } from '@angular/forms';
 import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
 import { ButtonComponent } from '../../common/button/button.component';
+import { Candidate } from '../../../models/candidate';
+import { Employee } from '../../../models/employee';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 
 @Component({
@@ -29,8 +29,8 @@ export class ModalComponent implements OnInit, OnChanges {
   @Input() assessmentType: 'internal' | 'external' = 'external';
   @Output() closeModalEvent = new EventEmitter<void>();
 
-  employees: any[] = [];
-  candidates: any[] = [];
+  employees: Employee[] = [];
+  candidates: Candidate[] = [];
   filteredNames: any[] = [];
   selectedNames: any[] = [];
   searchQuery: string = '';
@@ -45,246 +45,15 @@ export class ModalComponent implements OnInit, OnChanges {
     private firebaseService: FireBaseService<any>
   ) {}
 
-
-  createQuestions(): void {
-    const quizData = {
-      angular: {
-        easy: {
-          ques1: {
-            type: 'single',
-            text: 'What is Angular primarily used for?',
-            options: [
-              { text: 'Server-side scripting', correct: false },
-              { text: 'Mobile App Development', correct: false },
-              { text: 'Web Application Development', correct: true },
-              { text: 'Database Management', correct: false },
-            ],
-            user_input: [],
-            max_marks: 1,
-            scored: 0,
-          },
-          ques2: {
-            type: 'single',
-            text: 'Which directive is used for looping in Angular?',
-            options: [
-              { text: '*ngIf', correct: false },
-              { text: '*ngFor', correct: true },
-              { text: '*ngSwitch', correct: false },
-              { text: '*ngClass', correct: false },
-            ],
-            user_input: [],
-            max_marks: 1,
-            scored: 0,
-          },
-          ques3: {
-            type: 'single',
-            text: 'What command initializes a new Angular project?',
-            options: [
-              { text: 'ng start', correct: false },
-              { text: 'ng serve', correct: false },
-              { text: 'ng init', correct: false },
-              { text: 'ng new', correct: true },
-            ],
-            user_input: [],
-            max_marks: 1,
-            scored: 0,
-          },
-          ques4: {
-            type: 'single',
-            text: 'Which is the default language used in Angular?',
-            options: [
-              { text: 'Java', correct: false },
-              { text: 'C#', correct: false },
-              { text: 'JavaScript', correct: true },
-              { text: 'Python', correct: false },
-            ],
-            user_input: [],
-            max_marks: 1,
-            scored: 0,
-          },
-          ques5: {
-            type: 'single',
-            text: 'Which of these is a core concept in Angular?',
-            options: [
-              { text: 'Controllers', correct: false },
-              { text: 'Directives', correct: true },
-              { text: 'Filters', correct: false },
-              { text: 'Scaffolding', correct: false },
-            ],
-            user_input: [],
-            max_marks: 1,
-            scored: 0,
-          },
-        },
-        medium: {
-          ques1: {
-            type: 'multi',
-            text: 'What are some Angular decorators?',
-            options: [
-              { text: '@Component', correct: true },
-              { text: '@Injectable', correct: true },
-              { text: '@NgFor', correct: false },
-              { text: '@Directive', correct: true },
-            ],
-            user_input: [],
-            max_marks: 3,
-            scored: 0,
-          },
-          ques2: {
-            type: 'single',
-            text: 'Which lifecycle hook is invoked after the component’s view is fully initialized?',
-            options: [
-              { text: 'ngOnInit', correct: false },
-              { text: 'ngAfterViewInit', correct: true },
-              { text: 'ngOnDestroy', correct: false },
-              { text: 'ngDoCheck', correct: false },
-            ],
-            user_input: [],
-            max_marks: 3,
-            scored: 0,
-          },
-          ques3: {
-            type: 'multi',
-            text: 'Which are valid Angular modules?',
-            options: [
-              { text: 'FormsModule', correct: true },
-              { text: 'HttpClientModule', correct: true },
-              { text: 'RoutingModule', correct: false },
-              { text: 'BrowserModule', correct: true },
-            ],
-            user_input: [],
-            max_marks: 3,
-            scored: 0,
-          },
-          ques4: {
-            type: 'multi',
-            text: 'What does AOT stand for in Angular?',
-            options: [
-              { text: 'Ahead of Time', correct: true },
-              { text: 'Angular Object Type', correct: false },
-              { text: 'After On Time', correct: false },
-              { text: 'Application Optimization Tool', correct: false },
-            ],
-            user_input: [],
-            max_marks: 3,
-            scored: 0,
-          },
-          ques5: {
-            type: 'single',
-            text: 'Which file defines routes in an Angular project?',
-            options: [
-              { text: 'app.module.ts', correct: false },
-              { text: 'app.component.ts', correct: false },
-              { text: 'app-routing.module.ts', correct: true },
-              { text: 'main.ts', correct: false },
-            ],
-            user_input: [],
-            max_marks: 3,
-            scored: 0,
-          },
-        },
-        hard: {
-          ques1: {
-            type: 'multi',
-            text: 'What are benefits of using Angular CLI?',
-            options: [
-              { text: 'Scaffolding projects', correct: true },
-              { text: 'Creating REST APIs', correct: false },
-              { text: 'Automated testing', correct: true },
-              { text: 'HTTP handling', correct: false },
-            ],
-            user_input: [],
-            max_marks: 5,
-            scored: 0,
-          },
-          ques2: {
-            type: 'single',
-            text: 'Which Angular module is required to handle HTTP requests?',
-            options: [
-              { text: 'FormsModule', correct: false },
-              { text: 'HttpClientModule', correct: true },
-              { text: 'BrowserModule', correct: false },
-              { text: 'RouterModule', correct: false },
-            ],
-            user_input: [],
-            max_marks: 5,
-            scored: 0,
-          },
-          ques3: {
-            type: 'single',
-            text: 'How does Angular implement lazy loading?',
-            options: [
-              { text: 'With Service Workers', correct: false },
-              { text: 'Using @lazy decorator', correct: false },
-              { text: 'Through the loadChildren property', correct: true },
-              { text: 'Using the ngModule keyword', correct: false },
-            ],
-            user_input: [],
-            max_marks: 5,
-            scored: 0,
-          },
-          ques4: {
-            type: 'multi',
-            text: 'What are the differences between NgZone and Zone.js?',
-            options: [
-              { text: 'NgZone controls change detection', correct: true },
-              { text: 'Zone.js patches async operations', correct: true },
-              { text: 'NgZone is for templates only', correct: false },
-              { text: 'Zone.js is part of Angular', correct: false },
-            ],
-            user_input: [],
-            max_marks: 5,
-            scored: 0,
-          },
-          ques5: {
-            type: 'multi',
-            text: 'Which RxJS operators combine observables?',
-            options: [
-              { text: 'mergeMap', correct: false },
-              { text: 'switchMap', correct: false },
-              { text: 'combineLatest', correct: true },
-              { text: 'concatMap', correct: false },
-            ],
-            user_input: [],
-            max_marks: 5,
-            scored: 0,
-          },
-        },
-        descriptive: {
-          ques1: {
-            text: 'Explain Angular Dependency Injection and its benefits.',
-            users_answer: '',
-            max_marks: 10,
-            scored: 0,
-          },
-          ques2: {
-            text: 'Describe the Angular Lifecycle Hooks and their use cases.',
-            users_answer: '',
-            max_marks: 10,
-            scored: 0,
-          },
-        },
-      },
-    };
-  
-    this.firebaseService
-      .create('questions/', quizData)
-      .then(() => {
-        console.log('Quiz data added successfully!');
-      })
-      .catch((error) => {
-        console.error('Error adding quiz data:', error);
-      });
-  }
-
   ngOnInit(): void {
     this.loadData();
-    // this.createQuestions();
+    // this.createCandidate();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['isVisible'] && !changes['isVisible'].currentValue) {
-      this.resetSelectionData(); // Reset only when modal is closing
+    if (changes['isVisible'] && changes['isVisible'].currentValue) {
+      this.loadData(); // Load data again if modal becomes visible
+      this.searchQuery = '';
     }
     if (changes['assessmentType']) {
       this.loadData();
@@ -296,21 +65,34 @@ export class ModalComponent implements OnInit, OnChanges {
   }
 
   loadData(): void {
-    // Load either employees or candidates based on assessment type
-    if (this.assessmentType === 'internal') {
-      this.employees = employeesData;
-      this.filteredNames = this.employees;
-    } else {
-      this.candidates = candidatesData;
-      this.filteredNames = this.candidates;
-    }
-    this.filterNames();
-  }
+    // Clear the filtered names before loading new data
+    this.filteredNames = [];
 
-  trackById(index: number, person: any): string | number {
-    const id = person.employeeId || person.candidateId || index;
-    console.log(`Index: ${index}, ID: ${id}`);
-    return id;
+    if (this.assessmentType === 'internal') {
+      // Load internal (employee) data from Firebase
+      this.firebaseService.getAllData('employees').subscribe(
+        (data: Employee[]) => {
+          this.employees = data; // Store fetched employee data
+          this.filteredNames = [...this.employees]; // Initialize filtered names
+          this.filterNames(); // Filter based on the search query
+        },
+        (error: any) => {
+          console.error('Error fetching employee data:', error);
+        }
+      );
+    } else if (this.assessmentType === 'external') {
+      // Load external (candidate) data from Firebase
+      this.firebaseService.getAllData('candidates').subscribe(
+        (data: Candidate[]) => {
+          this.candidates = data; // Store fetched candidate data
+          this.filteredNames = [...this.candidates]; // Initialize filtered names
+          this.filterNames(); // Filter based on the search query
+        },
+        (error: any) => {
+          console.error('Error fetching candidate data:', error);
+        }
+      );
+    }
   }
 
   filterNames(): void {
@@ -321,65 +103,93 @@ export class ModalComponent implements OnInit, OnChanges {
           .toLowerCase()
           .includes(this.searchQuery.toLowerCase())
       );
-    } else {
+    } else if (this.assessmentType === 'internal') {
       this.filteredNames = this.employees.filter((item) =>
         item.employeeName.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     }
+    console.log('Filtered Names:', this.filteredNames);
     this.updateSelectAllState();
   }
 
+  // Method to toggle selection of an individual user
   toggleSelection(name: any): void {
-    // Toggle selection of a name from the filtered list
     const index = this.selectedNames.indexOf(name);
+
+    // If the name is not already selected, add to the selectedNames array
     if (index === -1) {
       this.selectedNames.push(name);
-      console.log(this.selectedNames);
     } else {
+      // If already selected, remove from selectedNames
       this.selectedNames.splice(index, 1);
     }
-    this.updateSelectAllState();
-  }
 
-  removeSelectedName(name: any): void {
-    // Remove a selected name from the list
-    const index = this.selectedNames.indexOf(name);
-    if (index !== -1) {
-      this.selectedNames.splice(index, 1);
-    }
+    // Update the 'selected' state for the corresponding user in filteredNames
     const personIndex = this.filteredNames.findIndex(
       (person) => person.id === name.id
     );
     if (personIndex !== -1) {
-      this.filteredNames[personIndex].selected = false;
+      this.filteredNames[personIndex].selected =
+        !this.filteredNames[personIndex].selected;
     }
+
+    // Update the state of 'Select All' checkbox
     this.updateSelectAllState();
   }
 
+  // Method to handle "Select All" checkbox
   toggleSelectAll(): void {
-    // Select or deselect all names in the filtered list
+    // If Select All is checked, select all users in filteredNames
     if (this.selectAll) {
-      this.selectedNames = [...this.filteredNames];
+      this.selectedNames = [...this.filteredNames]; // Copy all items from filteredNames
       this.filteredNames.forEach((name) => {
-        name.selected = true;
+        name.selected = true; // Mark each user as selected
       });
     } else {
-      this.selectedNames = [];
+      this.selectedNames = []; // Clear the selectedNames array
       this.filteredNames.forEach((name) => {
-        name.selected = false;
+        name.selected = false; // Mark each user as deselected
       });
     }
+
+    // Update the 'Select All' checkbox state
+    this.updateSelectAllState();
   }
 
   updateSelectAllState(): void {
+    // If all users in filteredNames are selected, set selectAll to true
     this.selectAll =
       this.filteredNames.length > 0 &&
       this.selectedNames.length === this.filteredNames.length;
   }
+
+  // Method to remove a selected user when the cross button is clicked
+  removeSelectedName(name: any): void {
+    // Remove the name from selectedNames array using the unique ID
+    const index = this.selectedNames.findIndex(
+      (selected) => selected.id === name.id
+    );
+    if (index !== -1) {
+      this.selectedNames.splice(index, 1); // Remove user from selectedNames
+    }
+
+    // Update the 'selected' state for the corresponding user in filteredNames using the unique ID
+    const personIndex = this.filteredNames.findIndex(
+      (person) => person.id === name.id
+    );
+    if (personIndex !== -1) {
+      this.filteredNames[personIndex].selected = false; // Uncheck the user in the list
+    }
+
+    // Update the state of 'Select All' checkbox
+    this.updateSelectAllState();
+  }
+
   closeModal(): void {
     // Reset data and close the modal
     this.resetSelectionData();
     this.searchQuery = '';
+    this.filteredNames = [];
     this.closeModalEvent.emit();
   }
 
@@ -387,6 +197,10 @@ export class ModalComponent implements OnInit, OnChanges {
     // Handle search query change and filter names accordingly
     this.searchQuery = query;
     this.filterNames();
+  }
+
+  onExpiryTimeChange(event: any): void {
+    // Handle expiry time change
   }
 
   dateTime(): void {
@@ -417,12 +231,12 @@ export class ModalComponent implements OnInit, OnChanges {
       // Hide the success message after 2 seconds
       setTimeout(() => {
         this.sendMessage = ''; // Clear the message
-      }, 1000);
+      }, 2000);
 
       this.resetSelectionData(); // Reset data
       this.isSending = false; // Re-enable the Send button after 3 seconds
       this.closeModal(); // Close the modal after sending
-    }, 1000);
+    }, 3000);
   }
 
   resetSelectionData(): void {
@@ -431,5 +245,9 @@ export class ModalComponent implements OnInit, OnChanges {
     this.selectAll = false;
     this.filteredNames.forEach((name) => (name.selected = false));
     this.expiryDateTime = '';
+  }
+
+  trackById(index: number, item: any): number {
+    return item.id;
   }
 }
