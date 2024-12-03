@@ -4,7 +4,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { RegisterComponent } from './components/register/register.component';
 import { AssessmentListComponent } from './components/assessment/assessment-list/assessment-list.component';
 import { AuthGuard } from '@angular/fire/auth-guard';
-import { DragDropComponent } from './components/drag-drop/drag-drop.component';
+import { DragDropComponent } from './components/assessment/drag-drop/drag-drop.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },

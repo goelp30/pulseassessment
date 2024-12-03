@@ -1,34 +1,20 @@
-import { CommonModule } from '@angular/common';
 import { Component, AfterViewInit, OnInit } from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  FormArray,
-  Validators,
-  ReactiveFormsModule,
-  FormsModule,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FireBaseService } from '../../../../sharedServices/FireBaseService';
+import { Subject } from '../../../models/subject';
+import { TableNames } from '../../../enums/TableName';
 import Sortable from 'sortablejs';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-drag-drop',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule,FormsModule],
   templateUrl: './drag-drop.component.html',
   styleUrls: ['./drag-drop.component.css'],
+  imports: [CommonModule, FormsModule,ReactiveFormsModule],
 })
 export class DragDropComponent implements AfterViewInit, OnInit {
-  leftList: string[] = [
-    'Angular Js',
-    'React Js',
-    'JavaScript',
-    'C++',
-    'TypeScript',
-    'Source Control',
-    'Data Analyst',
-    'Data Science',
-    'Sanskrit',
-  ];
+  leftList: string[] = []; // Dynamically loaded from Firebase
   rightList: string[] = [];
   createdOn: string = '';
   savedFormData: any = null;
@@ -36,15 +22,19 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   private appVersion = '1.0.0';
   viewMode: 'internal' | 'external' = 'internal';
   validationWarnings: string[] = [];
-  assessmentTitle: string = ''; // Declare the property
+  assessmentTitle: string = '';
+  tableName = 'subject'; // Firebase collection name
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private firebaseService: FireBaseService<Subject>) {}
 
   ngOnInit(): void {
     this.initializeRightListForm();
     if (this.isBrowser()) {
       this.checkVersionAndResetData();
       this.loadFromLocalStorage();
+
+      // Fetch subjects from Firebase
+      this.fetchLeftList();
 
       // Load saved data for recently saved view
       const savedData = localStorage.getItem('savedData');
@@ -95,7 +85,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   initializeRightListForm(): void {
     this.rightListForm = this.fb.group({
       createdOn: [this.getCurrentTimestamp()],
-      inputText: [''], // Add new control for additional input
+      inputText: [''],
       rightListInputs: this.fb.array([]),
     });
   }
@@ -177,17 +167,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     const savedVersion = localStorage.getItem('appVersion');
     if (savedVersion !== this.appVersion) {
       localStorage.clear();
-      this.leftList = [
-        'Angular Js',
-        'React Js',
-        'JavaScript',
-        'C++',
-        'TypeScript',
-        'Source Control',
-        'Data Analyst',
-        'Data Science',
-        'Sanskrit',
-      ];
+      this.leftList = [];
       this.rightList = [];
       this.initializeRightListForm();
     }
@@ -210,28 +190,36 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       localStorage.setItem('savedData', JSON.stringify(this.savedFormData));
 
       alert('Data saved successfully!');
-      this.resetFormAndLists();
+
+      // Reset only the right list and form
+      this.resetRightListAndForm();
     } else {
       alert('Please fill in the form correctly.');
     }
   }
 
-  resetFormAndLists(): void {
-    this.leftList = [
-      'Angular Js',
-      'React Js',
-      'JavaScript',
-      'C++',
-      'TypeScript',
-      'Source Control',
-      'Data Analyst',
-      'Data Science',
-      'Sanskrit',
-    ];
+  resetRightListAndForm(): void {
+    // Clear the right list
     this.rightList = [];
-    this.assessmentTitle='';
-    this.initializeRightListForm();
-    this.saveToLocalStorage();
+    this.rightListForm.reset();
+    this.initializeRightListForm();  // Reinitialize the form to start fresh
+    
+    // Optionally, re-fetch the left list from Firebase (if needed)
+    this.fetchLeftList();
+    
+    this.saveToLocalStorage();  // Save the changes to local storage
+  }
+
+  fetchLeftList(): void {
+    // Fetch subjects from Firebase
+    this.firebaseService.getAllData(this.tableName).subscribe((res: Subject[]) => {
+      this.leftList = res.map(subject => subject.subjectName);
+      this.saveToLocalStorage();  // Save to local storage after fetching
+    });
+  }
+
+  getCurrentTimestamp(): string {
+    return new Date().toLocaleString();
   }
 
   onInputChange(event: Event, index: number, controlName: string): void {
@@ -259,9 +247,5 @@ export class DragDropComponent implements AfterViewInit, OnInit {
 
   removeWarning(index: number): void {
     this.validationWarnings[index] = '';
-  }
-
-  getCurrentTimestamp(): string {
-    return new Date().toLocaleString();
   }
 }

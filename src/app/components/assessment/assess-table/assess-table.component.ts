@@ -103,7 +103,7 @@ export class AssessTableComponent implements OnInit,AfterViewInit {
 
       // Trigger change detection manually if needed
       this.cdr.detectChanges();  
-      console.log(this.assessments);  // Check the filtered assessments in the console
+      // console.log(this.assessments);  // Check the filtered assessments in the console
     });
   }
 

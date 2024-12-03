@@ -43,4 +43,10 @@ export class FireBaseService<T> {
     getAllData(tableName: string) {
         return this.database.list(tableName).snapshotChanges().pipe(map(actions => actions.map(this.documentToDomainObject)));
     }
+    // getFilteredData(tableName:string,filter: { [key: string]: any }){
+    // return this.database.list(tableName).snapshotChanges().pipe(map(actions => actions.map(()=>{
+    //     return filter
+    // })));
+    // }
+
 }
