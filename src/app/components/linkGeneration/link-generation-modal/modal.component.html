@@ -2,7 +2,9 @@
   [placeholder]="'Search names...'"
   (searchQueryChange)="onSearchQueryChange($event)"
   [class]="
-    'block w-full px-4 py-2 mb-4 border border-gray-300 rounded-full text-lg shadow-md outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 transition-all duration-100 transform '">
+    'block w-full px-4 py-2 mb-4 border border-gray-300 rounded-full text-lg shadow-md outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 transition-all duration-100 transform '
+  "
+>
 </app-searchbar>
 
 <div class="flex justify-between items-center my-2">
@@ -25,7 +27,10 @@
   class="h-32 overflow-y-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
 >
   <!-- Check if filteredNames is empty -->
-  <div *ngIf="filteredNames.length === 0" class="h-32 text-center text-gray-500 font-medium">
+  <div
+    *ngIf="filteredNames.length === 0"
+    class="h-32 text-center text-gray-500 font-medium"
+  >
     User not found
   </div>
   <div *ngIf="filteredNames.length > 0">
@@ -36,7 +41,7 @@
           <input
             type="checkbox"
             id="person-{{ person.id }}"
-            [(ngModel)]="person.selectedNames"
+            [checked]="person.selected"
             (change)="toggleSelection(person)"
             class="mr-2 text-blue-600 focus:ring-2 focus:ring-blue-500"
           />
@@ -81,7 +86,6 @@
   </div>
 </div>
 
-
 <div class="flex justify-between items-center space-x-4 mb-12">
   <!-- DateTime field -->
   <input
@@ -99,15 +103,4 @@
     "
     (click)="onSend()"
   ></app-button>
-</div>
-
-<!-- Display success message with fade-in transition -->
-<div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-10">
-  @if (sendMessage) {
-  <div class="bg-green-500 text-white p-4 rounded-md shadow-md">
-    <h3 class="text-center font-medium">
-      {{ sendMessage }}
-    </h3>
-  </div>
-  }
 </div>

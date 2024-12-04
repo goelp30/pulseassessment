@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
 import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';
@@ -24,7 +24,7 @@ export class GenerateLinkComponent implements OnInit {
   selectedLink: string = ''; // Link for the modal
   isModalVisible: boolean = false; // Modal visibility toggle
   assessmentType: 'internal' | 'external' = 'external'; // Default filter type
-
+  @Input() successMessage: string = '';
   constructor(private firebaseService: FireBaseService<Assessment>) {}
 
   ngOnInit(): void {
@@ -35,7 +35,7 @@ export class GenerateLinkComponent implements OnInit {
     this.firebaseService.getAllData('assessment').subscribe(
       (data) => {
         this.assessments = data;
-        console.log(this.assessments); 
+        console.log(this.assessments);
         this.filteredAssessments = [...data]; // Initialize filtered list
       },
       (error) => console.error('Error fetching assessments:', error)
@@ -59,8 +59,8 @@ export class GenerateLinkComponent implements OnInit {
   }
 
   // Generate a link based on the assessment ID
-  generateLink(id: string):any {
-    console.log(this.assessmentType)
+  generateLink(id: string): any {
+    console.log(this.assessmentType);
     return `https://example.com/${id}`;
   }
 
@@ -79,5 +79,11 @@ export class GenerateLinkComponent implements OnInit {
   // Efficiently track assessments in lists for rendering optimization
   trackAssessment(index: number, assessment: Assessment): string {
     return assessment.assessmentId;
+  }
+  onSuccessMessageReceived(message: string): void {
+    this.successMessage = message; 
+    setTimeout(()=>{
+      this.successMessage=''
+    },2000)
   }
 }

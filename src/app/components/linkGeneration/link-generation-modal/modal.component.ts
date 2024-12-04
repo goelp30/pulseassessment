@@ -11,9 +11,9 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
 import { ButtonComponent } from '../../common/button/button.component';
+import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Candidate } from '../../../models/candidate';
 import { Employee } from '../../../models/employee';
-import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 
 @Component({
   selector: 'app-modal',
@@ -25,7 +25,7 @@ import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 })
 export class ModalComponent implements OnInit, OnChanges {
   @Input() link: string = '';
-  @Input() isVisible: boolean = false;
+  @Input() isVisible: boolean = true;
   @Input() assessmentType: 'internal' | 'external' = 'external';
   @Output() closeModalEvent = new EventEmitter<void>();
 
@@ -38,16 +38,44 @@ export class ModalComponent implements OnInit, OnChanges {
   expiryDateTime: string = '';
   formattedDate: string = '';
   isSending: boolean = false;
-  sendMessage: string = '';
+  @Output() successMessageEvent = new EventEmitter<string>();
+  sendMessage: string = 'Data has been sent successfully!';
 
   constructor(
-    private datePipe: DatePipe,
-    private firebaseService: FireBaseService<any>
+    private firebaseService: FireBaseService<Candidate | Employee>,
+    private datePipe: DatePipe
   ) {}
 
   ngOnInit(): void {
-    this.loadData();
-    // this.createCandidate();
+    // Fetch all candidate data from Firebase Realtime Database
+    this.firebaseService
+      .getAllData('candidates') // 'candidates' is the name of the table in Firebase
+      .subscribe(
+        (data: Candidate[]) => {
+          console.log('Fetched Candidates:', data);
+          this.candidates = data; // Store fetched candidates in the candidates array
+        },
+        (error: any) => {
+          console.error('Error fetching candidate data:', error);
+        }
+      );
+
+    // Fetch all employee data from Firebase Realtime Database
+    this.firebaseService
+      .getAllData('employees') // 'employee' is the name of the table in Firebase
+      .subscribe(
+        (data: Employee[]) => {
+          console.log('Fetched Employee:', data); // Log the raw data from Firebase
+          if (data && data.length > 0) {
+            this.employees = data; // Store fetched employee data in the employee array
+          } else {
+            console.warn('No employee data found');
+          }
+        },
+        (error: any) => {
+          console.error('Error fetching employee data:', error);
+        }
+      );
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -113,30 +141,56 @@ export class ModalComponent implements OnInit, OnChanges {
   }
 
   // Method to toggle selection of an individual user
+  // toggleSelection(name: any): void {
+  //   const index = this.selectedNames.indexOf(name);
+
+  //   // If the name is not already selected, add to the selectedNames array
+  //   if (index === -1) {
+  //     this.selectedNames.push(name);
+  //     name.selected = true;
+  //   } else {
+  //     // If already selected, remove from selectedNames
+  //     this.selectedNames.splice(index, 1);
+  //   }
+
+  //   // Update the 'selected' state for the corresponding user in filteredNames
+  //   const personIndex = this.filteredNames.findIndex(
+  //     (person) => person.id === name.id
+  //   );
+  //   if (personIndex !== -1) {
+  //     this.filteredNames[personIndex].selected =
+  //       !this.filteredNames[personIndex].selected;
+  //   }
+
+  //   // Update the state of 'Select All' checkbox
+  //   this.updateSelectAllState();
+  // }
   toggleSelection(name: any): void {
-    const index = this.selectedNames.indexOf(name);
-
-    // If the name is not already selected, add to the selectedNames array
+    const index = this.selectedNames.findIndex(
+      (selected) => selected.id === name.id
+    );
+  
     if (index === -1) {
+      // Add if not already selected
       this.selectedNames.push(name);
+      name.selected = true;
     } else {
-      // If already selected, remove from selectedNames
+      // Remove if already selected
       this.selectedNames.splice(index, 1);
+      name.selected = false;  // Ensure this state change reflects in the UI
     }
-
-    // Update the 'selected' state for the corresponding user in filteredNames
+  
+    // Update 'filteredNames' to reflect the selection state
     const personIndex = this.filteredNames.findIndex(
       (person) => person.id === name.id
     );
     if (personIndex !== -1) {
-      this.filteredNames[personIndex].selected =
-        !this.filteredNames[personIndex].selected;
+      this.filteredNames[personIndex].selected = name.selected;
     }
-
-    // Update the state of 'Select All' checkbox
+  
     this.updateSelectAllState();
   }
-
+  
   // Method to handle "Select All" checkbox
   toggleSelectAll(): void {
     // If Select All is checked, select all users in filteredNames
@@ -156,6 +210,7 @@ export class ModalComponent implements OnInit, OnChanges {
     this.updateSelectAllState();
   }
 
+  // Method to update the state of the 'Select All' checkbox
   updateSelectAllState(): void {
     // If all users in filteredNames are selected, set selectAll to true
     this.selectAll =
@@ -164,32 +219,48 @@ export class ModalComponent implements OnInit, OnChanges {
   }
 
   // Method to remove a selected user when the cross button is clicked
-  removeSelectedName(name: any): void {
-    // Remove the name from selectedNames array using the unique ID
-    const index = this.selectedNames.findIndex(
-      (selected) => selected.id === name.id
-    );
-    if (index !== -1) {
-      this.selectedNames.splice(index, 1); // Remove user from selectedNames
-    }
+  // removeSelectedName(name: any): void {
+  //   // Remove the name from selectedNames array using the unique ID
+  //   const index = this.selectedNames.findIndex(
+  //     (selected) => selected.id === name.id
+  //   );
+  //   if (index !== -1) {
+  //     this.selectedNames.splice(index, 1); // Remove user from selectedNames
+  //     name.select=false
+  //   }
 
-    // Update the 'selected' state for the corresponding user in filteredNames using the unique ID
+  //   // Update the 'selected' state for the corresponding user in filteredNames using the unique ID
+  //   const personIndex = this.filteredNames.findIndex(
+  //     (person) => person.id === name.id
+  //   );
+  //   if (personIndex !== -1) {
+  //     this.filteredNames[personIndex].selected = false; // Uncheck the user in the list
+  //   }
+
+  //   // Update the state of 'Select All' checkbox
+  //   this.updateSelectAllState();
+  // }
+
+  removeSelectedName(name: any): void {
+    // Remove the person by their unique ID
+    this.selectedNames = this.selectedNames.filter(
+      (selected) => selected.id !== name.id
+    );
+  
+    // Find the corresponding person in filteredNames and uncheck it
     const personIndex = this.filteredNames.findIndex(
       (person) => person.id === name.id
     );
     if (personIndex !== -1) {
-      this.filteredNames[personIndex].selected = false; // Uncheck the user in the list
+      this.filteredNames[personIndex].selected = false;
     }
-
-    // Update the state of 'Select All' checkbox
+  
+    // Update the 'Select All' checkbox state
     this.updateSelectAllState();
   }
+  
 
   closeModal(): void {
-    // Reset data and close the modal
-    this.resetSelectionData();
-    this.searchQuery = '';
-    this.filteredNames = [];
     this.closeModalEvent.emit();
   }
 
@@ -216,7 +287,6 @@ export class ModalComponent implements OnInit, OnChanges {
     if (this.isSending) {
       return;
     }
-
     this.dateTime();
     this.isSending = true; // Disable button while sending
     console.log('Sending data:', {
@@ -224,19 +294,12 @@ export class ModalComponent implements OnInit, OnChanges {
       expiryDateTime: this.formattedDate,
       link: this.link,
     });
-
-    // Simulate a network request by setting a timeout (3 seconds)
     setTimeout(() => {
-      this.sendMessage = 'Data has been sent successfully!';
-      // Hide the success message after 2 seconds
-      setTimeout(() => {
-        this.sendMessage = ''; // Clear the message
-      }, 2000);
-
-      this.resetSelectionData(); // Reset data
-      this.isSending = false; // Re-enable the Send button after 3 seconds
-      this.closeModal(); // Close the modal after sending
-    }, 3000);
+      this.resetSelectionData(); 
+      this.closeModalEvent.emit();
+      this.successMessageEvent.emit(this.sendMessage);
+      this.isSending = false; 
+    }, 2000);
   }
 
   resetSelectionData(): void {
@@ -247,7 +310,7 @@ export class ModalComponent implements OnInit, OnChanges {
     this.expiryDateTime = '';
   }
 
-  trackById(index: number, item: any): number {
+  trackById(item: any):number {
     return item.id;
   }
 }

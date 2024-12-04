@@ -54,6 +54,19 @@
       [assessmentType]="assessmentType"
       [link]="selectedLink"
       [isVisible]="isModalVisible"
+      (closeModalEvent)="closeModal()"
+      (successMessageEvent)="onSuccessMessageReceived($event)"
+     
     ></app-modal>
   </div>
 </app-popup-module>
+
+<div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-10">
+  @if (successMessage) {
+  <div class="bg-green-500 text-white p-4 rounded-md shadow-md">
+    <h3 class="text-center font-medium">
+      {{ successMessage }}
+    </h3>
+  </div>
+  }
+</div>
