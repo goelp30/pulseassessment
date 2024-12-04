@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  
+  .btn-primary {
+    @apply bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-500;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-500 text-white hover:bg-gray-600 focus:ring-gray-500;
+  }
+  
+  .btn-success {
+    @apply bg-green-500 text-white hover:bg-green-600 focus:ring-green-500;
+  }
+  
+  .btn-warning {
+    @apply bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-yellow-500;
+  }
+  
+  .input-field {
+    @apply w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-lg;
+  }
+}
+
+/* Toast Notifications */
+.toastify {
+  @apply fixed bottom-4 right-4 p-4 rounded-lg shadow-lg max-w-md text-white;
+}
+
+.toastify-success {
+  @apply bg-gradient-to-r from-green-500 to-green-600;
+}
+
+.toastify-warning {
+  @apply bg-gradient-to-r from-yellow-500 to-yellow-600;
+}
+
+.toastify-error {
+  @apply bg-gradient-to-r from-red-500 to-red-600;
+}
+
+.toastify-info {
+  @apply bg-gradient-to-r from-blue-500 to-blue-600;
+}
