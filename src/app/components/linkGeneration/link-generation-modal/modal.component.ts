@@ -31,6 +31,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() link: string = '';
   @Input() isVisible: boolean = true;
   @Input() assessmentType: 'internal' | 'external' = 'external';
+  @Input() disabled: boolean = false; 
   @Output() closeModalEvent = new EventEmitter<void>();
 
   employees: Employee[] = [];
@@ -261,6 +262,10 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
       this.successMessageEvent.emit(this.sendMessage);
       this.isSending = false;
     }, 2000);
+  }
+  isSendButtonEnabled(): boolean {
+    // Check if at least one user is selected and expiry date is filled
+    return this.selectedNames.length > 0 && this.expiryDateTime !== '';
   }
 
   // Helper function to build URL for a specific user based on type
