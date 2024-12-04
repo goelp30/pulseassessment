@@ -14,24 +14,34 @@ import { ButtonComponent } from '../../common/button/button.component';
 @Component({
   selector: 'app-subjecttable',
   standalone: true,
-  imports: [TableComponent, PopupModuleComponent, CommonModule, FormsModule, ToastrModule,HeaderComponent,ButtonComponent],
+  imports: [
+    TableComponent,
+    PopupModuleComponent,
+    CommonModule,
+    FormsModule,
+    ToastrModule,
+    HeaderComponent,
+    ButtonComponent,
+  ],
   templateUrl: './subjecttable.component.html',
-  styleUrls: ['./subjecttable.component.css']
+  styleUrls: ['./subjecttable.component.css'],
 })
-export class SubjectTableComponent implements OnInit {
-
+export class SubjectTableComponent  {
+  // Data properties
   subjects: Subject[] = [];
-  tableColumns: string[] = ['subjectId', 'subjectName'];
+  tableColumns: (keyof Subject)[] = ['subjectName'];
   columnAliases: { [key: string]: string[] } = {
-    subjectId: ['Subject ID'],
     subjectName: ['Subject Name'],
   };
+
+  // Modal and state management
   tableName: string = TableNames.Subject;
   searchQuery: string = '';
-  isModalVisible: boolean = false;  // Controls modal visibility for editing and adding subjects
-  isAddModal: boolean = false;  // Indicates whether the modal is for adding a new subject or editing
-  selectedSubject: Subject | null = null;  // Holds data for the selected subject
+  isModalVisible: boolean = false;
+  isAddModal: boolean = false;
+  selectedSubject: Subject | null = null;
 
+  // Action buttons for table
   buttons = [
     {
       label: 'Edit',
@@ -49,82 +59,86 @@ export class SubjectTableComponent implements OnInit {
       action: (row: any) => this.deleteSubject(row),
     },
   ];
-modaltitle: string='Add Subject';
 
-  constructor(private auth: AuthService, private fireBaseService: FireBaseService<Subject>, private toastr: ToastrService) {}
+  modaltitle: string = 'Add Subject';
 
-  ngOnInit(): void {
-    this.fireBaseService.getAllData(this.tableName).subscribe((res) => {
-      this.subjects = res as Subject[];
-      console.log(this.subjects);
-    });
-  }
+  // Dependency injection
+  constructor(
+    private auth: AuthService,
+    private fireBaseService: FireBaseService<Subject>,
+    private toastr: ToastrService
+  ) {}
 
+  // Logout method
   logout() {
     this.auth.logout();
   }
 
+  // Handle search input changes
   onSearchQueryChange(newQuery: string): void {
     this.searchQuery = newQuery;
   }
 
+  // Add new subject
   addSubject() {
-    console.log("add new subject", this.selectedSubject);
     this.selectedSubject = {
-      subjectId: crypto.randomUUID(),  // Generate a GUID for the subject ID
+      subjectId: crypto.randomUUID(),
       subjectName: '',
       createdOn: Date.now(),
       UpdatedOn: Date.now(),
       isDisabled: false,
     };
     this.isModalVisible = true;
-    this.isAddModal = true; // Indicate that the modal is for adding a new subject
+    this.isAddModal = true;
   }
-  
 
+  // Save a new subject to the database
   saveNewSubject() {
     if (this.selectedSubject) {
-      console.log('Saving new subject:', this.selectedSubject);
       this.toastr.success('Subject added successfully', 'Added', { timeOut: 2000 });
 
-      this.fireBaseService.create(`${this.tableName}/${this.selectedSubject.subjectId}`, this.selectedSubject)
+      this.fireBaseService
+        .create(`${this.tableName}/${this.selectedSubject.subjectId}`, this.selectedSubject)
         .then(() => {
-          this.isModalVisible = false;  // Close the modal after saving
-          this.selectedSubject = null;  // Reset selected subject
-        }).catch(error => {
+          this.isModalVisible = false;
+          this.selectedSubject = null;
+        })
+        .catch((error) => {
           console.error('Error adding subject:', error);
         });
     }
   }
 
+  // Edit an existing subject
   editSubject(row: any) {
-    console.log('Editing subject:', row);
     this.selectedSubject = { ...row };
     this.isModalVisible = true;
-    this.isAddModal = false;  // Indicate that the modal is for editing
+    this.isAddModal = false;
   }
 
+  // Update an existing subject
   updateSubject() {
     if (this.selectedSubject) {
-      console.log('Updating subject:', this.selectedSubject);
       this.toastr.info('Subject updated successfully', 'Updated', { timeOut: 2000 });
 
-      this.fireBaseService.update(`${this.tableName}/${this.selectedSubject.subjectId}`, this.selectedSubject)
+      this.fireBaseService
+        .update(`${this.tableName}/${this.selectedSubject.subjectId}`, this.selectedSubject)
         .then(() => {
-          this.isModalVisible = false;  // Close the modal after updating
-          this.selectedSubject = null;  // Reset selected subject
-        }).catch(error => {
+          this.isModalVisible = false;
+          this.selectedSubject = null;
+        })
+        .catch((error) => {
           console.error('Error updating subject:', error);
         });
     }
   }
 
-  deleteSubject(row: any) {
-    console.log('Deleting subject:', row);
-    this.toastr.error("Subject Removed Successfully", "Removed", { timeOut: 2000 });
-  }
   
+  deleteSubject(row: Subject){
+    this.toastr.error("subject deleted")
+  }
 
+  // Placeholder for managing a subject
   manageSubject(row: any) {
     console.log('Managing subject:', row);
   }

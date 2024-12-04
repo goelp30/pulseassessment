@@ -3,26 +3,26 @@
   [modalTitle]="isAddModal ? 'Add Subject' : 'Edit Subject'"
   (closeModalEvent)="isModalVisible = false"
 >
-  <div *ngIf="selectedSubject">
+@if(selectedSubject){
+  <div>
     <div>
-      <label for="subjectName">Subject Name:</label>
+      <label for="subjectName" class="font-bold  block mb-2">Subject Name:</label>
       <input
         id="subjectName"
         type="text"
         [(ngModel)]="selectedSubject.subjectName"
-        class="border border-gray-300 rounded-md ml-5 px-3 py-2"
+        class="block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
       />
-    </div>
-
-    <div class="mt-4">
       <app-button
-        [label]="isAddModal ? 'Add' : 'Update'"
-        [colorClass]="'bg-blue-500 text-white rounded-md px-4 py-2'"
-        (action)="isAddModal ? saveNewSubject() : updateSubject()"
-      ></app-button>
+          [label]="isAddModal ? 'Add' : 'Update'"
+          [colorClass]="'bg-blue-500 text-white rounded-md px-6 py-2 hover:bg-blue-600 transition absolute right-4 m-2 '"
+          (action)="isAddModal ? saveNewSubject() : updateSubject()"
+        ></app-button>
     </div>
   </div>
+}
 </app-popup-module>
+
 
 <app-header 
   [title]="'List of Subjects'" 

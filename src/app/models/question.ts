@@ -1,0 +1,18 @@
+export type Question={
+    Subjectid:string,
+    questionId : any,
+    questionText:string,
+    questionType:string,
+    questionLevel:string,
+    questionWeitage:string,
+    answer:string[],
+    option:string[],
+    questionTime:string,
+    createdOn:number,
+    UpdatedOn:number,
+    isquesDisabled?: boolean;
+}
+
+export type QuestionSet={
+    SubjectId:string
+}

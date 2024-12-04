@@ -1,17 +1,38 @@
-<!-- search bar -->
-<div class="flex justify-center w-full">
-  <app-searchbar 
+<!-- Search Bar Section -->
+<div class="flex justify-center w-full mb-6">
+  <app-searchbar
     [searchQuery]="searchQuery"
-    [class]="
-    'block w-[50vw] px-4 py-2 mb-2 border border-gray-300 rounded-full text-lg shadow-md outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 transition-all duration-100 transform'
-  "
-    placeholder="Search Subjects" 
-    (searchQueryChange)="onSearchQueryChange($event)" >
+    [class]="'block w-[50vw] px-4 py-2 mb-2 border border-gray-300 rounded-full text-lg shadow-md outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 transition-all duration-100 transform'"
+    placeholder="Search Assessments"
+    (searchQueryChange)="onSearchQueryChange($event)">
   </app-searchbar>
 </div>
-<!-- table div -->
-<div class="relative flex flex-col w-full text-gray-700 bg-white shadow-md rounded-xl bg-clip-border overflow-y-auto ">
  
+<!-- Dynamic Tabs Section -->
+@if(tabs.length > 0){
+<div class="flex justify-center pt-5">
+  <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
+    <div class="block w-full overflow-hidden md:w-max">
+      <nav>
+        <ul role="tablist" class="relative flex flex-row p-1 rounded-lg bg-blue-gray-50 bg-opacity-60">
+          @for(tab of tabs; track tab){
+          <li
+              class="relative inline-flex items-center justify-center px-4 py-1 font-sans text-base antialiased font-normal leading-relaxed text-center bg-transparent cursor-pointer select-none text-blue-gray-900"
+              [class.bg-white]="activeTab === tab"
+              (click)="selectTab(tab)">
+            <div class="z-20 text-inherit">
+              &nbsp;&nbsp;{{ tabAliases[tab] || tab }}&nbsp;&nbsp;
+            </div>
+            @if(activeTab === tab){
+            <div class="absolute inset-0 z-10 h-full bg-white rounded-md shadow"></div>}
+          </li>}
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>}
+<!-- Table Section -->
+<div class="flex flex-col min-h-[100vh] w-full text-gray-700 bg-white shadow-md rounded-xl bg-clip-border">
   <div class="relative mx-4 overflow-hidden text-gray-700 bg-white rounded-none bg-clip-border">
     <div class="flex items-center justify-between gap-8 mb-2">
       <div class="flex flex-col gap-2 shrink-0 sm:flex-row"></div>
@@ -21,64 +42,86 @@
     </div>
   </div>
 
-  <div class="p-6 px-0">
-    
-    <table class="w-full text-left table-auto min-w-max">
-      <thead>
-        <tr>
-          @for(column of tableColumns; track column){
-            <th class="p-4 border-y border-blue-gray-100 bg-blue-gray-50/50">
+  <!-- Content & Pagination Wrapper -->
+  <div class="flex-grow flex flex-col">
+    <div class="flex-grow">
+      <table class="w-full table-auto table-fixed text-center min-w-max border-collapse border border-gray-300">
+        <thead>
+          <tr>
+            @for(column of tableColumns; track column){
+            <th 
+              class="p-3 border-y border-blue-gray-100 bg-blue-gray-50/50 text-sm font-medium text-gray-700 uppercase tracking-wider">
               @for(alias of getColumnAliases(column); track alias){
-                <ng-container>
-                  <div>{{ alias }}</div>
-                </ng-container>
-              }
+              <ng-container>
+                <div>{{ alias }}</div>
+              </ng-container>}
+            </th>}
+            <th class="p-3 border-y border-blue-gray-100 bg-blue-gray-50/50 text-sm font-medium text-gray-700 uppercase tracking-wider">
+              <div class="flex items-center justify-end pr-[30%]">
+                Action
+              </div>
             </th>
-          }
-          <th class="p-4 border-y border-blue-gray-100 bg-blue-gray-50/50 text-center">
-            Action
-          </th>
-        </tr>
-      </thead>
-      <tbody class="overflow-y-auto max-h-96">
-        @for(row of getPaginatedData(); track row){
-        <tr>
-          @for(column of tableColumns; track column){
+          </tr>
+        </thead>
+        @if(filteredData.length > 0){
+        <tbody>
+          @for(row of getPaginatedData(); track row){
+          <tr class="hover:bg-gray-50">
+            @for(column of tableColumns; track column){
+            <td class="p-4 border-b border-blue-gray-50 text-sm text-gray-800 whitespace-nowrap">
+              {{ row[column] }}
+            </td>}
             <td class="p-4 border-b border-blue-gray-50">
-              <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
-                {{ row[column] }}
-              </p>
+              <div class="flex justify-end gap-4 pr-8">
+                @for(button of buttons; track button){
+                <app-button
+                  [label]="button.label"
+                  [colorClass]="button.colorClass"
+                  (action)="button.action(row)">
+                </app-button>}
+              </div>
             </td>
-          }
-          
-          <td class="p-4 border-b border-blue-gray-50">
-            <div class="flex justify-center gap-4">
-              <!-- button array -->
-               @for(button of buttons ; track button){
-                <app-button 
-                [label]="button.label" 
-                [colorClass]="button.colorClass" 
-                (action)="button.action(row)">
-              </app-button>
-               }@empty{
-                <p>No Actions</p>
-               }
-            </div>
-          </td>
-        </tr>
-      }
-      </tbody>
-    </table>
+          </tr>}
+        </tbody>}
+      </table>
 
-    <div class="flex items-center justify-between p-4 border-t border-blue-gray-50">
-      <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
-        Page {{ currentPage }} of {{ totalPages }}
-      </p>
-      <div class="flex gap-2">
-        <button (click)="previousPage()" class="select-none rounded-lg border border-gray-900 py-2 px-4 text-center align-middle font-sans text-xs font-bold uppercase text-gray-900 transition-all hover:opacity-75 focus:ring focus:ring-gray-300 active:opacity-[0.85]" [disabled]="currentPage <= 1" type="button">Previous</button>
-        <button (click)="nextPage()" class="select-none rounded-lg border border-gray-900 py-2 px-4 text-center align-middle font-sans text-xs font-bold uppercase text-gray-900 transition-all hover:opacity-75 focus:ring focus:ring-gray-300 active:opacity-[0.85]" [disabled]="currentPage >= totalPages" type="button">Next</button>
-      </div>
+      <!-- No Data Found Section -->
+      @if(filteredData.length === 0){
+      <div class="flex justify-center mt-4 text-gray-500">
+        <p class="text-sm">No data found</p>
+      </div>}
     </div>
+
+    <!-- Pagination Section -->
+    @if(filteredData.length > 0){
+    <div class="flex justify-center items-center gap-4 p-4 border-t border-blue-gray-50 mt-auto">
+      <button (click)="previousPage()"
+              class="select-none rounded-lg border py-2 px-4 text-gray-700 hover:bg-gray-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              [disabled]="currentPage <= 1">
+        Previous
+      </button>
+      <div class="flex gap-2">
+        @for(page of pageNumbers; track page){
+        <button  
+                (click)="goToPage(page)"
+                class="select-none rounded-lg border py-2 px-4 text-gray-700 hover:bg-blue-500 hover:text-white"
+                [class.bg-blue-500]="currentPage === page"
+                [class.text-white]="currentPage === page">
+          {{ page }}
+        </button>}
+      </div>
+      <button (click)="nextPage()"
+              class="select-none rounded-lg border py-2 px-4 text-gray-700 hover:bg-gray-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              [disabled]="currentPage >= totalPages">
+        Next
+      </button>
+    </div>}
+
+    <!-- Page Info Section -->
+    @if(filteredData.length > 0){
+    <div class="flex justify-center mt-1">
+      <p class="text-sm text-gray-600">Page {{ currentPage }} of {{ totalPages }}</p>
+    </div>}
   </div>
 </div>
 
