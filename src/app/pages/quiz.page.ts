@@ -37,7 +37,7 @@ import { Question } from '../models/question.model';
                 (answerSelect)="selectAnswer($event)"
                 (descriptiveAnswerChange)="setDescriptiveAnswer($event)"
                 (reviewToggle)="toggleReview()"
-              />
+              ></app-question-display>
 
               <div class="flex justify-between items-center mt-6">
                 <button 
@@ -52,11 +52,13 @@ import { Question } from '../models/question.model';
                   Submit Quiz
                 </button>
                 <button 
-                  (click)="nextQuestion()"
-                  [disabled]="currentQuestion === questions.length - 1"
-                  class="btn btn-primary">
-                  Next
+                (click)="nextQuestion()" 
+                [disabled]="!isCurrentQuestionAttempted() || currentQuestion === questions.length - 1"
+                [ngClass]="{ 'bg-gray-400 cursor-not-allowed opacity-70': !isCurrentQuestionAttempted() || currentQuestion === questions.length - 1 }"
+                class="btn btn-primary px-4 py-2 rounded-lg text-white transition-all duration-300 ease-in-out">
+                Next
                 </button>
+
               </div>
             </div>
           </div>
@@ -67,12 +69,12 @@ import { Question } from '../models/question.model';
             [totalSeconds]="totalSeconds"
             [questionType]="questions[currentQuestion].questionType"
             (timeUp)="handleTimeUp()"
-          />
+          ></app-quiz-timer>
           <app-question-navigator
             [questions]="questions"
             [currentQuestionIndex]="currentQuestion"
             (questionSelect)="goToQuestion($event)"
-          />
+          ></app-question-navigator>
         </div>
       </div>
     </div>
@@ -82,8 +84,8 @@ import { Question } from '../models/question.model';
       [questions]="questions"
       (onConfirm)="confirmSubmit()"
       (onCancel)="closeSubmissionModal()"
-    />
-  `
+    ></app-submission-modal>
+  `,
 })
 export class QuizPage implements OnInit, OnDestroy {
   questions: Question[] = [];
@@ -109,7 +111,7 @@ export class QuizPage implements OnInit, OnDestroy {
   }
 
   private calculateTotalTime() {
-    this.totalSeconds = this.questions.reduce((total, q) => 
+    this.totalSeconds = this.questions.reduce((total, q) =>
       total + this.quizService.calculateQuestionTime(q.questionType), 0);
   }
 
@@ -162,7 +164,7 @@ export class QuizPage implements OnInit, OnDestroy {
   }
 
   toggleReview() {
-    this.questions[this.currentQuestion].isMarkedForReview = 
+    this.questions[this.currentQuestion].isMarkedForReview =
       !this.questions[this.currentQuestion].isMarkedForReview;
   }
 
@@ -183,4 +185,12 @@ export class QuizPage implements OnInit, OnDestroy {
       this.goToQuestion(this.currentQuestion - 1);
     }
   }
+
+  isCurrentQuestionAttempted(): boolean {
+    const current = this.questions[this.currentQuestion];
+    return current.questionType === 'descriptive'
+      ? (current.descriptiveAnswer?.trim().length || 0) > 0
+      : current.selectedAnswer !== undefined;
+  }
+  
 }
