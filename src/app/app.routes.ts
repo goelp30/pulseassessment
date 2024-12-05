@@ -10,7 +10,8 @@ export const routes: Routes = [
     { path: 'login', component: LoginComponent },
     { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
     { path: 'register', component: RegisterComponent },
-    { path: 'generatelink', component: GenerateLinkComponent }, 
-    { path: 'generatelink/:assessmentName', component: GenerateLinkComponent },
+    { path: 'generatelink', component: GenerateLinkComponent, children:[
+        { path: ':assessmentName', component: GenerateLinkComponent },
+    ] },
     { path: '**', component: DashboardComponent, canActivate: [AuthGuard] }
 ];
