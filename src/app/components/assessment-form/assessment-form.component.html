@@ -1,4 +1,6 @@
-<div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+<div
+  class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-200"
+>
   <form [formGroup]="assessmentForm" (ngSubmit)="onSubmit()" class="space-y-10">
     <!-- Question Type Section -->
     <div class="space-y-6">
@@ -25,56 +27,60 @@
       />
     </div>
 
-    <!-- Option Type Section -->
-    <div
-      *ngIf="assessmentForm.get('questionType')?.value !== 'descriptive'"
-      class="space-y-6"
-    >
-      <label class="block text-gray-700 font-semibold">Option Type:</label>
-      <select
-        formControlName="optionType"
-        class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="" disabled selected>Select Option Type</option>
-        <option *ngFor="let optionType of optionTypes" [value]="optionType">
-          {{ optionType }}
-        </option>
-      </select>
-    </div>
+    <div *ngIf="assessmentForm.get('questionType')?.value !== 'descriptive'">
+      <!-- Option Type and Options Section as currently implemented -->
 
-    <!-- Options Section -->
-    <div
-      *ngIf="assessmentForm.get('questionType')?.value !== 'descriptive'"
-      class="space-y-3"
-    >
-      <label class="block text-gray-700 font-semibold">Options:</label>
-      <div formArrayName="options" class="space-y-3">
-        <div
-          *ngFor="let option of options.controls; let i = index"
-          class="flex items-center space-x-3"
-        >
-          <input
-            [formControlName]="i"
-            class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Option {{ i + 1 }}"
-            required
-          />
-          <button
-            type="button"
-            (click)="removeOption(i)"
-            class="text-red-500 hover:text-red-700 focus:outline-none"
-          >
-            &#x2715;
-          </button>
-        </div>
-      </div>
-      <button
-        type="button"
-        (click)="addOption()"
-        class="mt-3 inline-block text-blue-600 hover:text-blue-800 font-semibold"
+      <!-- Option Type Section -->
+      <div
+        *ngIf="assessmentForm.get('questionType')?.value !== 'descriptive'"
+        class="space-y-6"
       >
-        + Add Option
-      </button>
+        <label class="block text-gray-700 font-semibold">Option Type:</label>
+        <select
+          formControlName="optionType"
+          class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="" disabled selected>Select Option Type</option>
+          <option *ngFor="let optionType of optionTypes" [value]="optionType">
+            {{ optionType }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Options Section -->
+      <div
+        *ngIf="assessmentForm.get('questionType')?.value !== 'descriptive'"
+        class="space-y-3"
+      >
+        <label class="block text-gray-700 font-semibold">Options:</label>
+        <div formArrayName="options" class="space-y-3">
+          <div
+            *ngFor="let option of options.controls; let i = index"
+            class="flex items-center space-x-3"
+          >
+            <input
+              [formControlName]="i"
+              class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Option {{ i + 1 }}"
+              required
+            />
+            <button
+              type="button"
+              (click)="removeOption(i)"
+              class="text-red-500 hover:text-red-700 focus:outline-none"
+            >
+              &#x2715;
+            </button>
+          </div>
+        </div>
+        <button
+          type="button"
+          (click)="addOption()"
+          class="mt-3 inline-block text-blue-600 hover:text-blue-800 font-semibold"
+        >
+          + Add Option
+        </button>
+      </div>
     </div>
 
     <!-- Correct Options Field -->

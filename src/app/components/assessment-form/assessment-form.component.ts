@@ -42,11 +42,16 @@ export class AssessmentFormComponent implements OnInit, OnChanges {
     this.assessmentForm.get('questionType')?.valueChanges.subscribe((type) => {
       if (type === 'descriptive') {
         this.assessmentForm.get('optionType')?.setValue('descriptive');
+        this.assessmentForm.get('correctOptions')?.clearValidators();
         this.options.clear();
+
       } else {
-        this.assessmentForm
-          .get('optionType')
-          ?.setValue(type === 'single' ? 'single' : 'multi');
+        // this.assessmentForm
+        //   .get('optionType')
+        //   ?.setValue(type === 'single' ? 'single' : 'multi');
+        // Set validation for multiple-choice questions
+    this.assessmentForm.get('correctOptions')?.setValidators(Validators.required);
+    this.assessmentForm.get('correctOptions')?.updateValueAndValidity();
       }
     });
   }
@@ -90,16 +95,15 @@ export class AssessmentFormComponent implements OnInit, OnChanges {
         questionLevel: formData.questionType,
         text: formData.questionText,
         options: formData.optionType !== 'descriptive' ? formData.options : [],
-        correct: formData.correctOptions
-          .split(',')
-          .map((item: string) => item.trim()),
+        correct: formData.optionType !== 'descriptive' 
+        ? formData.correctOptions.split(',').map((item: string) => item.trim()) 
+        : [],  // No correct options for descriptive
         timer: formData.timer,
         max_marks: formData.maxMarks,
         createdOn: new Date().toISOString(),
         updatedOn: new Date().toISOString(),
         isDisabled: false,
       };
-
       console.log(formattedData);
       // Send data to the path organized by subject ID
       this.firebaseService
