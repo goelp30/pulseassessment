@@ -3,11 +3,10 @@
     <!-- Modal container -->
     <div
       [ngClass]="containerClass"
-      style="width: 35%; height: 40%; max-width: 900px; max-height: 700px;"
-      class="inline-block p-4 bg-white rounded-md shadow-lg"
+      class="inline-block p-6 bg-white rounded-md shadow-lg w-[50vw] h-[50vh] sm:w-[60vw] sm:h-[60vh] md:w-[50vw] md:h-[50vh] lg:w-[40vw] lg:h-[40vh] min-w-[400px] min-h-[250px]"
     >
       <!-- Modal Header -->
-      <div [ngClass]="headerClass" class="flex justify-center items-center w-full border-b pb-3 relative">
+      <div [ngClass]="headerClass" class="flex justify-between items-center w-full border-b pb-4 relative">
         <!-- Title -->
         <ng-content select="[modalTitle]">
           @if(!hasProjectedModalTitle()) {
@@ -28,7 +27,7 @@
       </div>
 
        <!-- Modal Body for generic content-->
-       <div [ngClass]="bodyClass">
+       <div [ngClass]="[bodyClass]">
         <ng-content></ng-content>  
       </div>
     </div>
