@@ -7,6 +7,7 @@ import {
   OnChanges,
   SimpleChanges,
   OnDestroy,
+  ViewChild,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,9 +27,11 @@ import { Observable, Subscription } from 'rxjs';
   providers: [DatePipe],
 })
 export class ModalComponent implements OnInit, OnChanges, OnDestroy {
+  @ViewChild(SearchbarComponent) searchBar!: SearchbarComponent;
   @Input() link: string = '';
   @Input() isVisible: boolean = true;
   @Input() assessmentType: 'internal' | 'external' = 'external';
+  @Input() disabled: boolean = false; 
   @Output() closeModalEvent = new EventEmitter<void>();
 
   employees: Employee[] = [];
@@ -53,9 +56,11 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     this.loadData();
   }
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['isVisible'] && changes['isVisible'].currentValue) {
+    if (changes['isVisible'] && changes['isVisible'].currentValue == false) {
+      this.resetSearchBar(); 
       this.loadData(); // Load data again if modal becomes visible
       this.searchQuery = '';
+      this.filteredNames = [];
     }
     if (changes['assessmentType']) {
       this.loadData();
@@ -63,6 +68,13 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
 
     if (changes['searchQuery']) {
       this.filterNames();
+    }
+  }
+
+  resetSearchBar(): void {
+    if (this.searchBar) {
+      this.searchBar.searchQuery = ''; // Clear the search query in the SearchbarComponent
+      this.searchBar.searchQueryChange.emit(''); // Emit an empty search query to trigger filtering
     }
   }
 
@@ -199,7 +211,11 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   closeModal(): void {
-    this.closeModalEvent.emit();
+    this.searchQuery = '';          // Reset the search query
+    this.filteredNames = [];        // Clear the filtered names
+    this.selectAll = false;         // Deselect 'Select All'
+    this.selectedNames = [];        // Clear the selected names
+    this.closeModalEvent.emit();  
   }
 
   onSearchQueryChange(query: string): void {
@@ -246,6 +262,10 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
       this.successMessageEvent.emit(this.sendMessage);
       this.isSending = false;
     }, 2000);
+  }
+  isSendButtonEnabled(): boolean {
+    // Check if at least one user is selected and expiry date is filled
+    return this.selectedNames.length > 0 && this.expiryDateTime !== '';
   }
 
   // Helper function to build URL for a specific user based on type
