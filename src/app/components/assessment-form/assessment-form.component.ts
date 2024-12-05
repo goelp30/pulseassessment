@@ -1,4 +1,4 @@
-import { Component, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component,OnInit} from '@angular/core';
 import {
   FormArray,
   FormBuilder,
@@ -14,6 +14,7 @@ import { NgFor, NgIf } from '@angular/common';
   standalone: true,
   imports: [ReactiveFormsModule, NgFor, NgIf],
   templateUrl: './assessment-form.component.html',
+  styleUrl: './assessment-form.component.html',
 })
 export class AssessmentFormComponent implements OnInit {
   assessmentForm: FormGroup;

@@ -16,7 +16,7 @@ export const routes: Routes = [
   },
   { path: 'register', component: RegisterComponent },
   { path: 'ques', component: AddQuestionComponent },
-  { path: 'assform', component: AssessmentFormComponent },
+  { path: 'quesform', component: AssessmentFormComponent },
 
   { path: '**', component: DashboardComponent, canActivate: [AuthGuard] },
 ];
