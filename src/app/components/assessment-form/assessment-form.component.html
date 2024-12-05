@@ -1,0 +1,51 @@
+<form [formGroup]="assessmentForm" (ngSubmit)="onSubmit()">
+    <!-- Easy Question Section -->
+    <div formGroupName="easy">
+      <h3>Easy Question</h3>
+      <label>Question Type: {{assessmentForm.get('easy.type').value}}</label>
+      <input formControlName="text" placeholder="Enter question text" />
+      <button type="button" (click)="addOption('easy')">Add Option</button>
+      <div formArrayName="options">
+        <div *ngFor="let option of getOptions('easy').controls; let i = index">
+          <input [formControlName]="i" placeholder="Option {{i + 1}}" />
+        </div>
+      </div>
+    </div>
+  
+    <!-- Medium Question Section -->
+    <div formGroupName="medium">
+      <h3>Medium Question</h3>
+      <label>Question Type: {{assessmentForm.get('medium.type').value}}</label>
+      <input formControlName="text" placeholder="Enter question text" />
+      <button type="button" (click)="addOption('medium')">Add Option</button>
+      <div formArrayName="options">
+        <div *ngFor="let option of getOptions('medium').controls; let i = index">
+          <input [formControlName]="i" placeholder="Option {{i + 1}}" />
+        </div>
+      </div>
+    </div>
+  
+    <!-- Hard Question Section -->
+    <div formGroupName="hard">
+      <h3>Hard Question</h3>
+      <label>Question Type: {{assessmentForm.get('hard.type').value}}</label>
+      <input formControlName="text" placeholder="Enter question text" />
+      <button type="button" (click)="addOption('hard')">Add Option</button>
+      <div formArrayName="options">
+        <div *ngFor="let option of getOptions('hard').controls; let i = index">
+          <input [formControlName]="i" placeholder="Option {{i + 1}}" />
+        </div>
+      </div>
+    </div>
+  
+    <!-- Descriptive Question Section -->
+    <div formGroupName="descriptive">
+      <h3>Descriptive Question</h3>
+      <input formControlName="text" placeholder="Enter question text" />
+      <label>Max Marks: {{assessmentForm.get('descriptive.max_marks').value}}</label>
+    </div>
+  
+    <!-- Submit Button -->
+    <button type="submit">Submit Assessment</button>
+  </form>
+  

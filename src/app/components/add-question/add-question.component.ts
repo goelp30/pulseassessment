@@ -40,65 +40,102 @@ export class AddQuestionComponent implements OnInit {
   // ]
 
   // options: ['Server-side scripting', 'Mobile App Development', 'Web Application Development', 'Database Management'],
-  // correctAnswers: [2] // Index of correct option(s)
+  // correctAnswers: ['Web Application Development'] // Index of correct option(s)
 
   addQuestionsForAssessment(subjectName: string): any {
     return {
       easy: {
         ques1: {
           type: 'single',
-          text: `What is ${subjectName} primarily used for?`,
+          text: `What is Angular primarily used for?`,
           options: [
-            { text: 'Server-side scripting', correct: false },
-            { text: 'Mobile App Development', correct: false },
-            { text: 'Web Application Development', correct: true },
-            { text: 'Database Management', correct: false },
+            'Server-side scripting',
+            'Mobile App Development',
+            'Web Application Development',
+            'Database Management'
           ],
+          correct: ['Web Application Development'],
           max_marks: 1,
-          correct: '',
+          time: '',
+          createdOn: '',
+          updatedOn: '',
+          isDisabled: false,
         },
       },
       medium: {
         ques1: {
           type: 'multi',
-          text: `Which of the following are features of ${subjectName}?`,
+          text: `Which of the following are features of Angular?`,
           options: [
-            { text: 'Two-way data binding', correct: true },
-            { text: 'Static page generation', correct: false },
-            { text: 'Dependency injection', correct: true },
-            { text: 'Machine learning models', correct: false },
+            'Two-way data binding',
+            'Static page generation',
+            'Dependency injection',
+            'Machine learning models'
           ],
+          correct: ['Two-way data binding', 'Dependency injection'],
           max_marks: 3,
-          correct: [],
+          time: '',
+          createdOn:'',
+          updatedOn: '',
+          isDisabled: false,
         },
       },
       hard: {
         ques1: {
           type: 'multi',
-          text: `Explain the lifecycle hooks in ${subjectName}.`,
+          text: `Explain the lifecycle hooks in Angular.`,
           options: [
-            { text: 'ngOnInit()', correct: true },
-            { text: 'ngOnDestroy()', correct: true },
-            { text: 'ngRender()', correct: false },
-            { text: 'ngCompile()', correct: false },
+            'ngOnInit()',
+            'ngOnDestroy()',
+            'ngRender()',
+            'ngCompile()'
           ],
+          correct: ['ngOnInit()', 'ngOnDestroy()'],
           max_marks: 5,
-          correct: [],
+          time: '',
+          createdOn: '',
+          updatedOn: '',
+          isDisabled: false,
         },
       },
       descriptive: {
         ques1: {
-          text: `Describe the advantages of using ${subjectName} in large-scale applications.`,
+          text: `Describe the advantages of using Angular in large-scale applications.`,
           max_marks: 10,
+          time: '',
+          createdOn: '',
+          updatedOn: '',
+          isDisabled: false,
         },
       },
     };
   }
+  
+
+  // addQuestionsForAssessment(subjectName: string): any {
+  //   return {
+  //     easy: {
+  //       ques1: {
+  //         type: 'single',
+  //         text: `What is Angular primarily used for?`,
+  //         options: [
+  //           'Server-side scripting',
+  //           'Mobile App Development',
+  //           'Web Application Development',
+  //           'Database Management',
+  //         ],
+  //         max_marks: 1,
+  //         correct: 'Web Application Development',
+  //         users_answer: [],
+  //       },
+  //     },
+  //   };
+  // }
 
   createQuestions(subjectId: string, subjectName: string): void {
     const quizData = this.addQuestionsForAssessment(subjectName);
     this.firebaseService
-      .create(`questions/${this.subjectId}`, quizData)
+      .create(`assessmentResponse/${this.subjectId}`, quizData)
       .then(() => {
         console.log('Quiz data added successfully!');
       })
@@ -107,7 +144,6 @@ export class AddQuestionComponent implements OnInit {
       });
   }
 }
-
 
 // function evaluateQuestion(userResponse: string[], options: { text: string; correct: boolean }[]): number {
 //   let score = 0;
