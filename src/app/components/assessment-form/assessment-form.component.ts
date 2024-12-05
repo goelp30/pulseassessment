@@ -27,48 +27,45 @@ export class AssessmentFormComponent implements OnInit, OnChanges {
 
   constructor(
     private fb: FormBuilder,
-    private firebaseService: FireBaseService<any>
+    private firebaseService: FireBaseService<any> // Adjust generic type if needed
   ) {
     this.assessmentForm = this.fb.group({
       questionType: ['', Validators.required],
       optionType: [''],
       questionText: ['', Validators.required],
       options: this.fb.array([]),
-      correctOptions: [''], // For storing correct answers
+      correctOptions: [''],
       timer: [0, [Validators.required, Validators.min(1)]],
-      maxMarks: [1, [Validators.required, Validators.min(1)]], // User-defined max marks
+      maxMarks: [1, [Validators.required, Validators.min(1)]],
     });
 
-    // Listen to changes in questionType
     this.assessmentForm.get('questionType')?.valueChanges.subscribe((type) => {
       if (type === 'descriptive') {
         this.assessmentForm.get('optionType')?.setValue('descriptive');
-        this.options.clear(); // Remove options for descriptive questions
-      } else if (type === 'single') {
-        this.assessmentForm.get('optionType')?.setValue('single');
+        this.options.clear();
       } else {
-        this.assessmentForm.get('optionType')?.setValue('multi');
+        this.assessmentForm
+          .get('optionType')
+          ?.setValue(type === 'single' ? 'single' : 'multi');
       }
     });
   }
 
   ngOnInit(): void {
-    this.firebaseService.getAllData('subject').subscribe(
+    this.firebaseService.getAllData('subjects').subscribe(
       (data) => {
         this.subjects = data;
-        console.log(this.subjects);
-        this.subjects.forEach((sub) => {
-          this.subjectId = sub.subjectId;
-          this.subjectName = sub.subjectName;
-          this.createQuestions(this.subjectId, this.subjectName); // Process each subject
+        this.subjects.map((sub) => {
+          (this.subjectId = sub.subjectId),
+            (this.subjectName = sub.subjectName);
         });
       },
-      (error) => console.error('Error fetching assessments:', error)
+      (error) => console.error('Error fetching subjects:', error)
     );
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    this.createQuestions(this.subjectId, this.subjectName);
+  ngOnChanges(): void {
+    this.createQuestions();
   }
 
   get options(): FormArray {
@@ -83,85 +80,49 @@ export class AssessmentFormComponent implements OnInit, OnChanges {
     this.options.removeAt(index);
   }
 
- 
-
-  // onSubmit(): any {
-  //   if (this.assessmentForm.valid) {
-  //     const formData = this.assessmentForm.value;
-  //     const questionId = Date.now().toString(); // Ensure correct ID format
-  //     const formattedData = {
-  //       [this.subjectId]: {
-  //         [formData.questionType]: {
-  //           [questionId]: {
-  //             type: formData.optionType || 'Descriptive',
-  //             text: formData.questionText,
-  //             options: this.options.length ? formData.options : [],
-  //             correct: formData.correctOptions
-  //               .split(',')
-  //               .map((item: string) => item.trim()),
-  //             timer: formData.timer,
-  //             max_marks: formData.maxMarks,
-  //             createdOn: new Date().toISOString(),
-  //             updatedOn: new Date().toISOString(),
-  //             isDisabled: false,
-  //           },
-  //         },
-  //       },
-  //     };
-  //     console.log(formattedData);
-  //     // return formattedData; // Return formatted data
-  //   } else {
-  //     console.log('Form is invalid');
-  //     return null;
-  //   }
-  // }
-
-  onSubmit(): any {
+  createQuestions(): void {
     if (this.assessmentForm.valid) {
       const formData = this.assessmentForm.value;
-      const questionId = Date.now().toString();
+      const questionId = Date.now().toString(); // Unique question ID
+
       const formattedData = {
-        [this.subjectId]: {
-          [formData.questionType]: {
-            [questionId]: {
-              type: formData.optionType, // Use dynamically set value
-              text: formData.questionText,
-              options: formData.optionType !== 'descriptive' ? formData.options : [],
-              correct: formData.correctOptions
-                .split(',')
-                .map((item: string) => item.trim()),
-              timer: formData.timer,
-              max_marks: formData.maxMarks,
-              createdOn: new Date().toISOString(),
-              updatedOn: new Date().toISOString(),
-              isDisabled: false,
-            },
-          },
-        },
+        optionType: formData.optionType,
+        questionLevel: formData.questionType,
+        text: formData.questionText,
+        options: formData.optionType !== 'descriptive' ? formData.options : [],
+        correct: formData.correctOptions
+          .split(',')
+          .map((item: string) => item.trim()),
+        timer: formData.timer,
+        max_marks: formData.maxMarks,
+        createdOn: new Date().toISOString(),
+        updatedOn: new Date().toISOString(),
+        isDisabled: false,
       };
+
       console.log(formattedData);
+      // Send data to the path organized by subject ID
+      this.firebaseService
+        .create(`questions/${this.subjectId}/${questionId}`, formattedData)
+        .then(() => {
+          console.log(
+            'Question added successfully to subject:',
+            this.subjectId
+          );
+        })
+        .catch((error) => {
+          console.error('Error adding question:', error);
+        });
     } else {
       console.log('Form is invalid');
-      return null;
     }
   }
-  
-  createQuestions(subjectId: string, subjectName: string): void {
-    const quizData = this.onSubmit(); // Get formatted data from onSubmit
-    //   if (quizData) {
-    //     // Ensure valid data
-    //     console.log('id: ', subjectId, 'Name: ', subjectName);
-    //     this.firebaseService
-    //       .create(`questions/${subjectId}`, quizData)
-    //       .then(() => {
-    //         console.log('Quiz data added successfully!');
-    //       })
-    //       .catch((error) => {
-    //         console.error('Error adding quiz data:', error);
-    //       });
-    //   } else {
-    //     console.error('Invalid data. Quiz data not sent to Firebase.');
-    //   }
-    // }
+
+  async onSubmit(): Promise<void> {
+    if (this.assessmentForm.valid) {
+      this.createQuestions(); // Call the method directly
+    } else {
+      console.log('Form is invalid');
+    }
   }
 }
