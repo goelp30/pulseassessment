@@ -15,7 +15,7 @@ import { NgFor, NgIf } from '@angular/common';
   imports: [ReactiveFormsModule, NgFor, NgIf],
   templateUrl: './assessment-form.component.html',
 })
-export class AssessmentFormComponent implements OnInit, OnChanges {
+export class AssessmentFormComponent implements OnInit {
   assessmentForm: FormGroup;
   questionTypes = ['easy', 'medium', 'hard', 'descriptive'];
   optionTypes = ['single', 'multi'];
@@ -39,38 +39,69 @@ export class AssessmentFormComponent implements OnInit, OnChanges {
       maxMarks: [1, [Validators.required, Validators.min(1)]],
     });
 
-    this.assessmentForm.get('questionType')?.valueChanges.subscribe((type) => {
-      if (type === 'descriptive') {
-        this.assessmentForm.get('optionType')?.setValue('descriptive');
-        this.assessmentForm.get('correctOptions')?.clearValidators();
-        this.options.clear();
+    // this.assessmentForm.get('questionType')?.valueChanges.subscribe((type) => {
+    //   if (type === 'descriptive') {
+    //     this.assessmentForm.get('optionType')?.setValue('descriptive');
+    //     this.assessmentForm.get('correctOptions')?.clearValidators();
+    //     this.options.clear();
 
-      } else {
-        // this.assessmentForm
-        //   .get('optionType')
-        //   ?.setValue(type === 'single' ? 'single' : 'multi');
-        // Set validation for multiple-choice questions
-    this.assessmentForm.get('correctOptions')?.setValidators(Validators.required);
-    this.assessmentForm.get('correctOptions')?.updateValueAndValidity();
-      }
-    });
+    //   } else {
+    //     // this.assessmentForm
+    //     //   .get('optionType')
+    //     //   ?.setValue(type === 'single' ? 'single' : 'multi');
+    //     // Set validation for multiple-choice questions
+    // this.assessmentForm.get('correctOptions')?.setValidators(Validators.required);
+    // this.assessmentForm.get('correctOptions')?.updateValueAndValidity();
+    //   }
+    // });
   }
 
+  // ngOnInit(): void {
+  //   this.firebaseService.getAllData('subjects').subscribe(
+  //     (data) => {
+  //       this.subjects = data;
+  //       this.subjects.map((sub) => {
+  //         (this.subjectId = sub.subjectId),
+  //           (this.subjectName = sub.subjectName);
+  //       });
+  //     },
+  //     (error) => console.error('Error fetching subjects:', error)
+  //   );
+  // }
+
+  // ngOnChanges(): void {
+  //   this.createQuestions();
+  // }
+
+  // Remove ngOnChanges
+  // Add this check inside ngOnInit or valueChanges
   ngOnInit(): void {
     this.firebaseService.getAllData('subjects').subscribe(
       (data) => {
         this.subjects = data;
-        this.subjects.map((sub) => {
-          (this.subjectId = sub.subjectId),
-            (this.subjectName = sub.subjectName);
-        });
+        // Set default subject if needed
+        if (this.subjects.length > 0) {
+          this.subjectId = this.subjects[0].subjectId;
+          this.subjectName = this.subjects[0].subjectName;
+        }
       },
       (error) => console.error('Error fetching subjects:', error)
     );
-  }
 
-  ngOnChanges(): void {
-    this.createQuestions();
+    // Ensure correctOptions are updated only if not descriptive
+    this.assessmentForm.get('questionType')?.valueChanges.subscribe((type) => {
+      if (type === 'descriptive') {
+        this.assessmentForm.get('optionType')?.setValue('descriptive');
+        this.assessmentForm.get('correctOptions')?.clearValidators();
+        this.assessmentForm.get('correctOptions')?.setValue('');
+        this.options.clear(); // Clear any existing options
+      } else {
+        this.assessmentForm
+          .get('correctOptions')
+          ?.setValidators(Validators.required);
+        this.assessmentForm.get('correctOptions')?.updateValueAndValidity();
+      }
+    });
   }
 
   get options(): FormArray {
@@ -95,9 +126,12 @@ export class AssessmentFormComponent implements OnInit, OnChanges {
         questionLevel: formData.questionType,
         text: formData.questionText,
         options: formData.optionType !== 'descriptive' ? formData.options : [],
-        correct: formData.optionType !== 'descriptive' 
-        ? formData.correctOptions.split(',').map((item: string) => item.trim()) 
-        : [],  // No correct options for descriptive
+        correct:
+          formData.optionType !== 'descriptive'
+            ? formData.correctOptions
+                .split(',')
+                .map((item: string) => item.trim())
+            : [], // No correct options for descriptive
         timer: formData.timer,
         max_marks: formData.maxMarks,
         createdOn: new Date().toISOString(),
@@ -107,7 +141,7 @@ export class AssessmentFormComponent implements OnInit, OnChanges {
       console.log(formattedData);
       // Send data to the path organized by subject ID
       this.firebaseService
-        .create(`questions/${this.subjectId}/${questionId}`, formattedData)
+        .create(`questions/${222220022220000333}/${questionId}`, formattedData)
         .then(() => {
           console.log(
             'Question added successfully to subject:',
