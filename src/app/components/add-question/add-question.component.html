@@ -1,0 +1,18 @@
+<div class="p-6 max-w-4xl mx-auto">
+  <table class="w-full border border-red-500 text-center">
+    <thead class="bg-red-100">
+      <tr>
+        <th class="py-2 border-b border-red-500">Subject ID</th>
+        <th class="py-2 border-b border-red-500">Subject Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for(subject of subjects; track $index){
+      <tr class="hover:bg-red-50">
+        <td class="py-2 border-b">{{ subject.subjectId }}</td>
+        <td class="py-2 border-b">{{ subject.subjectName }}</td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
