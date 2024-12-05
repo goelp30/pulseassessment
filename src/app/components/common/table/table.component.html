@@ -7,7 +7,7 @@
     (searchQueryChange)="onSearchQueryChange($event)">
   </app-searchbar>
 </div>
- 
+
 <!-- Dynamic Tabs Section -->
 @if(tabs.length > 0){
 <div class="flex justify-center pt-5">
@@ -31,9 +31,10 @@
     </div>
   </div>
 </div>}
+
 <!-- Table Section -->
 <div class="flex flex-col min-h-[100vh] w-full text-gray-700 bg-white shadow-md rounded-xl bg-clip-border">
-  <div class="relative mx-4 overflow-hidden text-gray-700 bg-white rounded-none bg-clip-border">
+  <div class="relative overflow-hidden text-gray-700 bg-white rounded-none bg-clip-border">
     <div class="flex items-center justify-between gap-8 mb-2">
       <div class="flex flex-col gap-2 shrink-0 sm:flex-row"></div>
     </div>
@@ -45,19 +46,22 @@
   <!-- Content & Pagination Wrapper -->
   <div class="flex-grow flex flex-col">
     <div class="flex-grow">
-      <table class="w-full table-auto table-fixed text-center min-w-max border-collapse border border-gray-300">
+      <table class="w-full table-auto table-fixed text-center min-w-max border-collapse border border-gray-300"> <!-- Removed mx-4 -->
         <thead>
           <tr>
             @for(column of tableColumns; track column){
             <th 
-              class="p-3 border-y border-blue-gray-100 bg-blue-gray-50/50 text-sm font-medium text-gray-700 uppercase tracking-wider">
+              class="p-3 border-y border-blue-gray-100 bg-blue-gray-50/50 text-sm font-medium text-gray-700 uppercase tracking-wider text-center pr">
+              <div class="flex items-center" style="padding-left:30%; justify-content: start;">
+                <!-- Centered column headers -->
               @for(alias of getColumnAliases(column); track alias){
               <ng-container>
                 <div>{{ alias }}</div>
               </ng-container>}
+              </div>
             </th>}
-            <th class="p-3 border-y border-blue-gray-100 bg-blue-gray-50/50 text-sm font-medium text-gray-700 uppercase tracking-wider">
-              <div class="flex items-center justify-end pr-[30%]">
+            <th class="p-3 border-y border-blue-gray-100 bg-blue-gray-50/50 text-sm font-medium text-gray-700 uppercase tracking-wider text-center"> <!-- Action column centered -->
+              <div class="flex justify-center pr-[10%]"> <!-- Center action text -->
                 Action
               </div>
             </th>
@@ -68,12 +72,15 @@
           @for(row of getPaginatedData(); track row){
           <tr class="hover:bg-gray-50">
             @for(column of tableColumns; track column){
-              <td class="p-4 border-b border-blue-gray-50 text-sm text-gray-800 whitespace-nowrap text-center">
-                {{ row[column] | titlecase }}
+              <td class="p-4 border-b border-blue-gray-50">
+                <div class="flex justify-start" style="padding-left: 30%;">
+                  <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">{{ row[column] | titlecase}}</p>
+                  </div>
               </td>
-              }
-            <td class="p-4 border-b border-blue-gray-50">
-              <div class="flex justify-end gap-4 pr-8">
+ 
+            }
+            <td class="p-4 border-b border-blue-gray-50 text-center"> <!-- Center the action buttons -->
+              <div class="flex justify-center gap-4 pr-8"> <!-- Center action buttons -->
                 @for(button of buttons; track button){
                 <app-button
                   [label]="button.label"
@@ -120,9 +127,8 @@
 
     <!-- Page Info Section -->
     @if(filteredData.length > 0){
-    <div class="flex justify-center mt-1">
+    <div class="flex justify-center mb-4">
       <p class="text-sm text-gray-600">Page {{ currentPage }} of {{ totalPages }}</p>
     </div>}
   </div>
 </div>
-
