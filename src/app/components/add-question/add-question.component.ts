@@ -110,27 +110,6 @@ export class AddQuestionComponent implements OnInit {
       },
     };
   }
-  
-
-  // addQuestionsForAssessment(subjectName: string): any {
-  //   return {
-  //     easy: {
-  //       ques1: {
-  //         type: 'single',
-  //         text: `What is Angular primarily used for?`,
-  //         options: [
-  //           'Server-side scripting',
-  //           'Mobile App Development',
-  //           'Web Application Development',
-  //           'Database Management',
-  //         ],
-  //         max_marks: 1,
-  //         correct: 'Web Application Development',
-  //         users_answer: [],
-  //       },
-  //     },
-  //   };
-  // }
 
   createQuestions(subjectId: string, subjectName: string): void {
     const quizData = this.addQuestionsForAssessment(subjectName);
@@ -156,3 +135,7 @@ export class AddQuestionComponent implements OnInit {
 //   });
 //   return score; // Adjust logic for partial/total scoring as needed
 // }
+
+subjectId:{
+
+}
