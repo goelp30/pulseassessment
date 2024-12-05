@@ -68,9 +68,10 @@
           @for(row of getPaginatedData(); track row){
           <tr class="hover:bg-gray-50">
             @for(column of tableColumns; track column){
-            <td class="p-4 border-b border-blue-gray-50 text-sm text-gray-800 whitespace-nowrap">
-              {{ row[column] }}
-            </td>}
+              <td class="p-4 border-b border-blue-gray-50 text-sm text-gray-800 whitespace-nowrap text-center">
+                {{ row[column] | titlecase }}
+              </td>
+              }
             <td class="p-4 border-b border-blue-gray-50">
               <div class="flex justify-end gap-4 pr-8">
                 @for(button of buttons; track button){

@@ -11,7 +11,7 @@ interface Row {
 @Component({
   selector: 'app-table',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, SearchbarComponent],
+  imports: [CommonModule, ButtonComponent, SearchbarComponent,CommonModule],
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.css']
 })
