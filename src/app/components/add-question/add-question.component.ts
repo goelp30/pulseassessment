@@ -15,9 +15,6 @@ export class AddQuestionComponent implements OnInit {
 
   ngOnInit() {
     // this.getSubjects();
-  }
-
-  getSubjects(): void {
     this.firebaseService.getAllData('subject').subscribe(
       (data) => {
         this.subjects = data;
@@ -25,12 +22,27 @@ export class AddQuestionComponent implements OnInit {
         this.subjects.map((sub) => {
           (this.subjectName = sub.subjectName),
             (this.subjectId = sub.subjectId);
-          this.createQuestions(sub.subjectId, sub.subjectName);
+          // this.createQuestions(sub.subjectId, sub.subjectName);
         });
       },
       (error) => console.error('Error fetching assessments:', error)
     );
   }
+
+  // getSubjects(): void {
+  //   this.firebaseService.getAllData('subject').subscribe(
+  //     (data) => {
+  //       this.subjects = data;
+  //       console.log(this.subjects);
+  //       this.subjects.map((sub) => {
+  //         (this.subjectName = sub.subjectName),
+  //           (this.subjectId = sub.subjectId);
+  //         this.createQuestions(sub.subjectId, sub.subjectName);
+  //       });
+  //     },
+  //     (error) => console.error('Error fetching assessments:', error)
+  //   );
+  // }
 
   // options: [
   //   { text: 'Server-side scripting', correct: false },

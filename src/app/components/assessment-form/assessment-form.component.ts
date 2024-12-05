@@ -38,54 +38,19 @@ export class AssessmentFormComponent implements OnInit {
       timer: [0, [Validators.required, Validators.min(1)]],
       maxMarks: [1, [Validators.required, Validators.min(1)]],
     });
-
-    // this.assessmentForm.get('questionType')?.valueChanges.subscribe((type) => {
-    //   if (type === 'descriptive') {
-    //     this.assessmentForm.get('optionType')?.setValue('descriptive');
-    //     this.assessmentForm.get('correctOptions')?.clearValidators();
-    //     this.options.clear();
-
-    //   } else {
-    //     // this.assessmentForm
-    //     //   .get('optionType')
-    //     //   ?.setValue(type === 'single' ? 'single' : 'multi');
-    //     // Set validation for multiple-choice questions
-    // this.assessmentForm.get('correctOptions')?.setValidators(Validators.required);
-    // this.assessmentForm.get('correctOptions')?.updateValueAndValidity();
-    //   }
-    // });
   }
 
-  // ngOnInit(): void {
-  //   this.firebaseService.getAllData('subjects').subscribe(
-  //     (data) => {
-  //       this.subjects = data;
-  //       this.subjects.map((sub) => {
-  //         (this.subjectId = sub.subjectId),
-  //           (this.subjectName = sub.subjectName);
-  //       });
-  //     },
-  //     (error) => console.error('Error fetching subjects:', error)
-  //   );
-  // }
-
-  // ngOnChanges(): void {
-  //   this.createQuestions();
-  // }
-
-  // Remove ngOnChanges
-  // Add this check inside ngOnInit or valueChanges
   ngOnInit(): void {
-    this.firebaseService.getAllData('subjects').subscribe(
+    this.firebaseService.getAllData('subject').subscribe(
       (data) => {
         this.subjects = data;
-        // Set default subject if needed
-        if (this.subjects.length > 0) {
-          this.subjectId = this.subjects[0].subjectId;
-          this.subjectName = this.subjects[0].subjectName;
-        }
+        console.log(this.subjects);
+        this.subjects.map((sub) => {
+          (this.subjectName = sub.subjectName),
+            (this.subjectId = sub.subjectId);
+        });
       },
-      (error) => console.error('Error fetching subjects:', error)
+      (error) => console.error('Error fetching assessments:', error)
     );
 
     // Ensure correctOptions are updated only if not descriptive
@@ -141,7 +106,7 @@ export class AssessmentFormComponent implements OnInit {
       console.log(formattedData);
       // Send data to the path organized by subject ID
       this.firebaseService
-        .create(`questions/${222220022220000333}/${questionId}`, formattedData)
+        .create(`questions/${this.subjectId}/${questionId}`, formattedData)
         .then(() => {
           console.log(
             'Question added successfully to subject:',
@@ -157,6 +122,11 @@ export class AssessmentFormComponent implements OnInit {
   }
 
   async onSubmit(): Promise<void> {
+    if (!this.subjectId) {
+      console.log('Subject ID is not available. Please try again later.');
+      return;
+    }
+
     if (this.assessmentForm.valid) {
       this.createQuestions(); // Call the method directly
     } else {
