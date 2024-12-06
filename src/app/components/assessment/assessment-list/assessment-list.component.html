@@ -1,6 +1,8 @@
-<h2>Assessment List</h2>
-  <button type="button" class="btn btn-info" (click)="getAssessments()">Get All Assessments</button>
-<button type="button" class="btn btn-info" (click)="addAssessment()">Add Assessment</button>
-<button (click)="showSuccess()" class="btn btn-info">toast</button>
-<button (click)="showSuccess()" class="btn btn-info" [routerLink]="['/drag-and-drop']">Drag and Drop</button>
+<app-header
+  [title]="'Assessment'"
+  [subtitle]="'Add your Assessments Here'"
+  [buttonLabel]="'Add Assessment'"
+  [buttonClasses]="'bg-blue-500 text-white rounded-md px-4 py-2'"
+  (addSubjectEvent)="RouteAssessment()">
+</app-header>
 <app-assess-table></app-assess-table>

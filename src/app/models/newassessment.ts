@@ -5,15 +5,22 @@ export type SubjectCounts = {
     descriptive: number; 
   };
   
- export  type NewAssessment = {
+ export  type AssessmentList = {
     assessmentId: string; 
     subjects: {
       [subjectName: string]: SubjectCounts; 
     };
   };
-// assessment id
+// assessment id:junior react 
 // sub->
-//     subjname
+//     subjname:angular
 //            easy,med,hard,desc
-//    subjname
+//    subjname:react
+//            easy,med,hard,desc
+
+// assessment id:juniorjs assessment
+// sub->
+//     subjname:angular
+//            easy,med,hard,desc
+//    subjname:react
 //            easy,med,hard,desc

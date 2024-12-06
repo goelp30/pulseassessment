@@ -47,7 +47,6 @@ export class TableComponent implements OnInit, OnChanges {
     }
 
     if (this.tabs.length > 0) {
-      // If tabs are provided, set the active tab to the first one by default
       this.activeTab = this.tabs[0];
     }
   }

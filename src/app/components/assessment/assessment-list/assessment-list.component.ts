@@ -8,14 +8,16 @@ import { Assessment } from '../../../models/assessment';
 import { AssessTableComponent } from '../assess-table/assess-table.component';
 import { ToastrModule,ToastrService } from 'ngx-toastr';
 import { timeout } from 'rxjs';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { HeaderComponent } from '../../common/header/header.component';
+import { ButtonComponent } from '../../common/button/button.component';
 
 @Component({
   selector: 'app-assessment-list',
   standalone: true,
   templateUrl: './assessment-list.component.html',
   styleUrls: ['./assessment-list.component.css'],
-  imports: [CommonModule , FormsModule,AssessTableComponent,ToastrModule,RouterLink]
+  imports: [CommonModule , FormsModule,AssessTableComponent,ToastrModule,RouterLink,HeaderComponent,ButtonComponent]
 })
 export class AssessmentListComponent implements OnInit {
   // assessment
@@ -23,7 +25,7 @@ export class AssessmentListComponent implements OnInit {
   // subjects:Subject[]=[];
   isEditing: boolean = false;
 
-  constructor(private fireBaseService: FireBaseService<Assessment>,private toastr: ToastrService) {}
+  constructor(private fireBaseService: FireBaseService<Assessment>,private toastr: ToastrService,private router:Router) {}
   listenToAssessmentChanges() {
     this.fireBaseService.listensToChange(TableNames.Assessment).subscribe((res) => {
       this.assessments = res as Assessment[];
@@ -81,7 +83,9 @@ export class AssessmentListComponent implements OnInit {
    */
   showSuccess() {this.toastr.info('Hello world!', 'Toastr fun!',{timeOut:1000});}
 
-
+  RouteAssessment(){
+    this.router.navigate(['/drag-and-drop']);
+  }
 
 
 }
