@@ -1,5 +1,11 @@
 export type Employee = {
-    emplyeeId : string,
-    employeeName : string,
-    employeeEmail: string
-}
+  employeeUrl: string;
+  employeeId: string;
+  employeeName: string;
+  employeeEmail: string;
+  employeeContact: string;
+  assessmentName: string;
+  expiryDate: string;
+};
+
+

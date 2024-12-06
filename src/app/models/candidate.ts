@@ -1,6 +1,9 @@
 export type Candidate = {
-    candidateId : string,
-    candidateName : string,
-    candidateEmail: string,
-    candidateContact: string
-}
+    candidateUrl: string;
+    candidateId: string;
+    candidateName: string;
+    candidateEmail: string;
+    candidateContact: string;
+    assessmentName: string;
+    expiryDate: string;
+  };
