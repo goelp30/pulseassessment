@@ -26,6 +26,11 @@ export class FireBaseService<T> {
         return this.database.object(tableName).set(params);
     }
 
+    createAssessmentRecords(tableName: string, params: T) {
+        return this.database.list(tableName).push(params);
+    }
+    
+
     /***
      * Update new
      */
