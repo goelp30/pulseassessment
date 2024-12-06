@@ -14,11 +14,10 @@
 
 <div class="space-y-2 px-2 max-w-3xl mx-auto">
   @if (filteredAssessments.length === 0) {
-    <div class="text-center text-red-600 font-semibold">
-      No assessment available.
-    </div>
-  }
-  @for(assessment of filteredAssessments; track assessment.assessmentId) {
+  <div class="text-center text-red-600 font-semibold">
+    No assessment available.
+  </div>
+  } @for(assessment of filteredAssessments; track assessment.assessmentId) {
   <div
     class="bg-white border border-gray-200 rounded-lg p-3 shadow-md hover:shadow-lg transition-all transform mb-2"
   >
@@ -31,7 +30,8 @@
           openModal(
             generateLink(assessment.assessmentId),
             assessment.assessmentType,
-            assessment.assessmentName
+            assessment.assessmentName,
+            assessment.assessmentId
           )
         "
         class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 focus:outline-none"
@@ -49,15 +49,16 @@
       List of {{ assessmentType === "external" ? "Candidates" : "Employees" }}
     </h5>
   </div>
-   <!-- Wrapper to control height -->
-   <div class="h-100">
-    <app-modal 
+  <!-- Wrapper to control height -->
+  <div class="h-100">
+    <app-modal
       [assessmentType]="assessmentType"
       [link]="selectedLink"
       [isVisible]="isModalVisible"
+      [assessmentId]="assessmentId"
+      [assessmentName]="assessmentName"
       (closeModalEvent)="closeModal()"
       (successMessageEvent)="onSuccessMessageReceived($event)"
-     
     ></app-modal>
   </div>
 </app-popup-module>

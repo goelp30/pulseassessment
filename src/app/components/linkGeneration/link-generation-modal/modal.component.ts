@@ -17,7 +17,6 @@ import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Candidate } from '../../../models/candidate';
 import { Employee } from '../../../models/employee';
 import { Observable, Subscription } from 'rxjs';
-
 @Component({
   selector: 'app-modal',
   standalone: true,
@@ -31,8 +30,10 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() link: string = '';
   @Input() isVisible: boolean = true;
   @Input() assessmentType: 'internal' | 'external' = 'external';
-  @Input() disabled: boolean = false; 
+  @Input() disabled: boolean = false;
   @Output() closeModalEvent = new EventEmitter<void>();
+  @Input() assessmentId: string = '';
+  @Input() assessmentName: string = '';
 
   employees: Employee[] = [];
   candidates: Candidate[] = [];
@@ -41,14 +42,15 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   searchQuery: string = '';
   selectAll: boolean = false;
   expiryDateTime: string = '';
-  formattedDate: string = '';
+  expiryDate: string = '';
   isSending: boolean = false;
   @Output() successMessageEvent = new EventEmitter<string>();
   sendMessage: string = 'Data has been sent successfully!';
 
   private subscription: Subscription = new Subscription(); // Initialize the subscription
   constructor(
-    private firebaseService: FireBaseService<Candidate | Employee>,
+    // private firebaseService: FireBaseService<Candidate | Employee>,
+    private firebaseService: FireBaseService<any>,
     private datePipe: DatePipe
   ) {}
 
@@ -57,7 +59,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isVisible'] && changes['isVisible'].currentValue == false) {
-      this.resetSearchBar(); 
+      this.resetSearchBar();
       this.loadData(); // Load data again if modal becomes visible
       this.searchQuery = '';
       this.filteredNames = [];
@@ -132,7 +134,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
         item.employeeName.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     }
-    console.log('Filtered Names:', this.filteredNames);
+    // console.log('Filtered Names:', this.filteredNames);
     this.updateSelectAllState();
   }
 
@@ -211,11 +213,11 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   closeModal(): void {
-    this.searchQuery = '';          // Reset the search query
-    this.filteredNames = [];        // Clear the filtered names
-    this.selectAll = false;         // Deselect 'Select All'
-    this.selectedNames = [];        // Clear the selected names
-    this.closeModalEvent.emit();  
+    this.searchQuery = ''; // Reset the search query
+    this.filteredNames = []; // Clear the filtered names
+    this.selectAll = false; // Deselect 'Select All'
+    this.selectedNames = []; // Clear the selected names
+    this.closeModalEvent.emit();
   }
 
   onSearchQueryChange(query: string): void {
@@ -231,7 +233,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   dateTime(): void {
     if (this.expiryDateTime) {
       const date = new Date(this.expiryDateTime);
-      this.formattedDate = this.datePipe.transform(date, 'yyyyMMddHHmmss')!;
+      this.expiryDate = date.toISOString();
     }
   }
 
@@ -241,21 +243,30 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     this.dateTime();
-    this.isSending = true; // Disable button during processing
+    this.isSending = true;
 
-    // Generate and send each user's link
     this.selectedNames.forEach((user) => {
       const userLink = this.buildUrlWithUserId(this.link, user);
-      const userName = user.candidateName || user.employeeName; // Get name based on user type
 
-      console.log('Sending data:', {
-        'Name: ': userName,
-        'Link: ': userLink,
-        'Expirt Date: ': this.formattedDate,
-      });
+      const record = {
+        assessmentId: this.assessmentId,
+        urlId: encodeURIComponent(userLink),
+        userId: user.candidateId || user.employeeId || null,
+        userName: user.candidateName || user.employeeName,
+        assessmentName: this.assessmentName,
+        expiryDate: this.expiryDate,
+      };
+
+      this.firebaseService
+        .createAssessmentRecords('/assessmentRecords', record)
+        .then(() => {
+          console.log('Record saved successfully');
+        })
+        .catch((error) => {
+          console.error('Error saving record:', error);
+        });
     });
 
-    // Reset and close modal after processing all users
     setTimeout(() => {
       this.resetSelectionData();
       this.closeModalEvent.emit();
@@ -263,6 +274,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
       this.isSending = false;
     }, 2000);
   }
+
   isSendButtonEnabled(): boolean {
     // Check if at least one user is selected and expiry date is filled
     return this.selectedNames.length > 0 && this.expiryDateTime !== '';

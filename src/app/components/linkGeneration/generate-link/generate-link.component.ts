@@ -5,7 +5,6 @@ import { PopupModuleComponent } from '../../common/popup-module/popup-module.com
 import { ModalComponent } from '../link-generation-modal/modal.component';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Assessment } from '../../../models/assessment';
-import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -22,15 +21,17 @@ import { Subscription } from 'rxjs';
 })
 export class GenerateLinkComponent implements OnInit, OnDestroy {
   assessments: Assessment[] = []; // Original list of assessments
+  assessmentId: string = '';
+  assessmentName: string = '';
+  assessmentType: 'internal' | 'external' = 'external'; // Default filter type
+
   filteredAssessments: Assessment[] = []; // Displayed list after filtering
   selectedLink: string = ''; // Link for the modal
   isModalVisible: boolean = false; // Modal visibility toggle
-  assessmentType: 'internal' | 'external' = 'external'; // Default filter type
   @Input() successMessage: string = '';
 
   constructor(
     private firebaseService: FireBaseService<Assessment>,
-    private router: Router
   ) {}
 
   private subscription: Subscription = new Subscription(); // Initialize the subscription
@@ -45,7 +46,7 @@ export class GenerateLinkComponent implements OnInit, OnDestroy {
       .subscribe(
         (data) => {
           this.assessments = data;
-          console.log(this.assessments);
+          // console.log(this.assessments);
           this.filteredAssessments = [...data]; // Initialize filtered list
         },
         (error) => console.error('Error fetching assessments:', error)
@@ -74,33 +75,27 @@ export class GenerateLinkComponent implements OnInit, OnDestroy {
 
   // Generate a link based on the assessment ID
   generateLink(id: string): any {
-    console.log(this.assessmentType);
+    // this.assessmentId = id;
     return `https://example.com/${id}`;
-  }
-
-  navigateToAssessment(assessmentName: string): void {
-    const formattedName = encodeURIComponent(
-      assessmentName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
-    );
-    this.router.navigate([`/generatelink`, formattedName]);
   }
 
   // Open the modal with the selected link and type
   openModal(
     link: string,
     type: 'internal' | 'external',
-    assessmentName: string
+    assessmentName: string,
+    assessmentId: string
   ): void {
     this.selectedLink = link;
     this.assessmentType = type;
+    this.assessmentName = assessmentName;
+    this.assessmentId = assessmentId;
     this.isModalVisible = true;
-    this.navigateToAssessment(assessmentName);
   }
 
   // Close the modal and reset visibility
   closeModal(): void {
     this.isModalVisible = false;
-    this.navigateToAssessment('');
   }
 
   // Efficiently track assessments in lists for rendering optimization
