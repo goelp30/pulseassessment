@@ -21,16 +21,24 @@
             <tr>
               <th class="px-4 py-2 border-b">Assessment Name</th>
               <th class="px-4 py-2 border-b">User Name</th>
-              <th class="px-4 py-2 border-b">Expiry Status</th>
+              <th class="px-4 py-2 border-b">Status</th>
             </tr>
           </thead>
           <tbody>
-            <!-- Loop through filtered assessments and display them -->
             <tr *ngFor="let assessment of filteredAssessments">
               <td class="px-4 py-2 border-b text-gray-700">{{ assessment.assessmentName }}</td>
               <td class="px-4 py-2 border-b text-gray-700">{{ assessment.userName }}</td>
               <td class="px-4 py-2 border-b text-gray-700">
-                {{ isLinkExpired(assessment.expiryDate) }}
+                <a
+                  *ngIf="!isLinkExpired(assessment.expiryDate)"
+                  [href]="assessment.link"
+                  class="text-blue-500 underline"
+                >
+                  Access
+                </a>
+                <span *ngIf="isLinkExpired(assessment.expiryDate)" class="text-red-500">
+                  Expired
+                </span>
               </td>
             </tr>
           </tbody>
