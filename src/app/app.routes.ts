@@ -6,6 +6,7 @@ import { AuthGuard } from '@angular/fire/auth-guard';
 import { GenerateLinkComponent } from './components/linkGeneration/generate-link/generate-link.component';
 import { AssessmentRecordsComponent } from './components/linkGeneration/assessment-records/assessment-records.component';
 import { LinkExpiredComponent } from './components/linkGeneration/link-expired/link-expired.component';
+import { QuizDashboardComponent } from './components/QUIZ/terms-conditions/quiz-dashboard.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -21,6 +22,7 @@ export const routes: Routes = [
     component: GenerateLinkComponent,
   },
   { path: 'assessmentrecords', component: AssessmentRecordsComponent },
-  { path: 'link-expired', component: LinkExpiredComponent },
+  { path: 'linkexpired', component: LinkExpiredComponent },
+  {path:'quiz',component:QuizDashboardComponent},//Replace with QUIZ Module route
   { path: '**', component: DashboardComponent, canActivate: [AuthGuard] },
 ];
