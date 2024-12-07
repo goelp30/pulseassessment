@@ -1,11 +1,11 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
 import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';
 import { ModalComponent } from '../link-generation-modal/modal.component';
-import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Assessment } from '../../../models/assessment';
-import { Subscription } from 'rxjs';
+import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 
 @Component({
   selector: 'app-generate-link',
@@ -16,10 +16,10 @@ import { Subscription } from 'rxjs';
     PopupModuleComponent,
     ModalComponent,
   ],
-  templateUrl: './generate-link.component.html',
-  styleUrls: ['./generate-link.component.css'],
+   templateUrl: './link-generation.component.html',
+  styleUrl: './link-generation.component.css'
 })
-export class GenerateLinkComponent implements OnInit, OnDestroy {
+export class LinkGenerationComponent implements OnInit, OnDestroy {
   assessments: Assessment[] = []; // Original list of assessments
   assessmentId: string = '';
   assessmentName: string = '';

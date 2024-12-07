@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FireBaseService } from '../../../../sharedServices/FireBaseService';
+import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
 import { FormsModule } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
 import { Router } from '@angular/router';

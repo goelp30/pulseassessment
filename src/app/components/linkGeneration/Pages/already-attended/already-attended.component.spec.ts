@@ -1,17 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { GenerateLinkComponent } from './generate-link.component';
 
-describe('GenerateLinkComponent', () => {
-  let component: GenerateLinkComponent;
-  let fixture: ComponentFixture<GenerateLinkComponent>;
+import { AlreadyAttendedComponent } from './already-attended.component';
+
+describe('AlreadyAttendedComponent', () => {
+  let component: AlreadyAttendedComponent;
+  let fixture: ComponentFixture<AlreadyAttendedComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [GenerateLinkComponent]
+      imports: [AlreadyAttendedComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(GenerateLinkComponent);
+    fixture = TestBed.createComponent(AlreadyAttendedComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
