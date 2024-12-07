@@ -29,19 +29,27 @@
               <td class="px-4 py-2 border-b text-gray-700">{{ assessment.assessmentName }}</td>
               <td class="px-4 py-2 border-b text-gray-700">{{ assessment.userName }}</td>
               <td class="px-4 py-2 border-b text-gray-700">
-                <a
+                <!-- <a
                   *ngIf="!isLinkExpired(assessment.expiryDate)"
-                  [href]="assessment.link"
+                  (click)="onLinkClick(assessment)"
+                  [class.text-gray-500]="assessment.isLinkDisabled"
+                  [class.pointer-events-none]="assessment.isLinkDisabled"
+                  [href]="!assessment.isLinkDisabled ? (assessment.urlId) : null"
                   class="text-blue-500 underline"
                 >
-                  Access
-                </a>
-                <span *ngIf="isLinkExpired(assessment.expiryDate)" class="text-red-500">
+                  Active
+                </a> -->
+
+                <span *ngIf="!isLinkExpired(assessment.expiryDate)" class="text-green-600">
+                  Active
+                </span>
+                <span *ngIf="isLinkExpired(assessment.expiryDate)" class="text-red-600">
                   Expired
                 </span>
               </td>
             </tr>
           </tbody>
+          
         </table>
       </div>
     </div>

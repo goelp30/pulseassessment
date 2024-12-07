@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { FormsModule } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-assessment-records',
@@ -11,11 +12,13 @@ import { NgFor, NgIf } from '@angular/common';
   styleUrl: './assessment-records.component.css'
 })
 export class AssessmentRecordsComponent implements OnInit {
+[x: string]: any;
   assessments: any[] = [];  // This will hold the fetched data
   filteredAssessments: any[] = []; // This will hold the filtered results
   searchQuery: string = ''; // Bind to the search input
+  isLinkDisabled: boolean = false; // Add the flag to manage the link state
 
-  constructor(private firebaseService: FireBaseService<any>) {}
+  constructor(private firebaseService: FireBaseService<any>,private router: Router) {}
 
   ngOnInit(): void {
     // Fetch data from Firebase when component initializes
@@ -30,11 +33,27 @@ export class AssessmentRecordsComponent implements OnInit {
     });
   }
 
-  // Method to check if the link is expired
+
   isLinkExpired(expiryDate: string): boolean {
     const currentDate = new Date().toISOString();
     return expiryDate < currentDate;
   }
+  
+  // Method to handle the link click
+  onLinkClick(assessment: any): void {
+    if (this.isLinkExpired(assessment.expiryDate)) {
+      // Mark the link as disabled
+      assessment.isLinkDisabled = true;
+  
+      // Use the Router to navigate to the expired link page
+    this.router.navigate(['/generatelink']);
+    } else {
+       //? If link is not expired, navigate to the  TERMS and CONDITIONS PAGE (Tanya and Team's Page)
+    const decodedUrl = decodeURIComponent(assessment.urlId);
+    this.router.navigateByUrl(decodedUrl);
+    }
+  }
+  
 
   // Filter assessments based on search query
   onSearch() {
