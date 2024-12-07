@@ -40,14 +40,14 @@ export class EvaluateAssessmentComponent {
         const correctAnswers = question.correct_answers;
         const selectedAnswers = question.user_answer;
         let correctCount = 0;
-  
+
         // Loop over selected answers and count correct ones
         selectedAnswers?.forEach((answer: any) => {
           if (correctAnswers.includes(answer)) {
             correctCount++;
           }
         });
-  
+
         // Calculate marks based on correct answers
         if (correctCount > 0) {
           const marksPerCorrectAnswer = question.totalMarks / correctAnswers.length;
@@ -55,24 +55,10 @@ export class EvaluateAssessmentComponent {
         } else {
           question.marksScored = 0;
         }
-  
-        // Check if user selected more answers than correct answers
-        const extraAnswersSelected = selectedAnswers.length - correctAnswers.length;
-  
-        if (extraAnswersSelected > 0) {
-          // Apply a penalty for extra selections
-          const penaltyPerExtraAnswer = question.totalMarks * 0.1; // 10% penalty per extra answer
-          question.marksScored -= extraAnswersSelected * penaltyPerExtraAnswer;
-  
-          // Ensure marks don't go negative
-          if (question.marksScored < 0) {
-            question.marksScored = 0;
-          }
-        }
       }
     });
   }
-  
+
   onSubmit(): void {
     if (this.clickedData.marksScored) {
       // Only navigate to the previous page if marks have already been scored (when "Close" is shown)
@@ -110,3 +96,5 @@ export class EvaluateAssessmentComponent {
     this.clickedData.marksScored = quizMarks;  // Store the total marks in clickedData
   }
 }
+
+

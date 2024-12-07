@@ -15,7 +15,6 @@
         <!-- Check if filteredEvaluationList has items -->
         @if(filteredEvaluationList.length > 0) {
             @for(evalList of filteredEvaluationList; track evalList.assessmentId) {
-                @if(!evalList.isDisabled){
                 <div
                     class="flex items-center justify-between p-3 border-2 border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 hover:bg-gray-50 w-full max-w-xl mx-auto">
 
@@ -45,7 +44,7 @@
                       </app-button>
                     </div>
                 </div>
-            }}
+            }
         }
         
         <!-- No evaluations found message -->

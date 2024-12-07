@@ -5,8 +5,6 @@ import evaluationList from '../assets/Evaluation_list_mock.json'
 import { ButtonComponent } from '../../common/button/button.component';
 import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
 import { EvaluationService } from '../service/evaluation.service';
-import { FireBaseService } from '../../../../sharedServices/FireBaseService';
-
 
 @Component({
   selector: 'app-evaluation-dashboard',
@@ -16,38 +14,33 @@ import { FireBaseService } from '../../../../sharedServices/FireBaseService';
   styleUrl: './evaluation-dashboard.component.css'
 })
 export class EvaluationDashboardComponent {
-  evaluationList: any[] = [];
+  EvaluationList: any[] = [];
   filteredEvaluationList: any[] = []; 
-  searchQuery: string = ''; 
-  constructor(private router: Router,private evaluationService: EvaluationService,private firebaseService:FireBaseService<any>) { }
-  navigateToEvaluate(evaluationList:any):void {
-  this.evaluationService.setData(evaluationList);
-  this.router.navigate(['/evaluate']);
-} 
+  searchQuery: string = '';  
  
   ngOnInit(): void {
-    this.evaluationList=evaluationList;
-   this.filteredEvaluationList = this.evaluationList;
+   this.EvaluationList=evaluationList;
+   this.filteredEvaluationList = this.EvaluationList;
   }
   onSearchQueryChanged(query: string): void {
     this.searchQuery = query;
   
     // If the query is empty, show all evaluations
     if (query.trim() === '') {
-      this.filteredEvaluationList = [...this.evaluationList];
+      this.filteredEvaluationList = [...this.EvaluationList];
     } else {
       
-      this.filteredEvaluationList = this.evaluationList.filter((evaluation) =>
+      this.filteredEvaluationList = this.EvaluationList.filter((evaluation) =>
         evaluation.assessmentId.toLowerCase().includes(query.trim().toLowerCase())
       );
     }
   }
   
- 
-  
- 
-  
-
+  constructor(private router: Router,private evaluationService: EvaluationService) { }
+    navigateToEvaluate(evaluationList:any):void {
+    this.evaluationService.setData(evaluationList);
+    this.router.navigate(['/evaluate']);
+  }
   
 
 }
