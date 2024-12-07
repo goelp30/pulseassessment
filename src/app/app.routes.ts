@@ -4,8 +4,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { RegisterComponent } from './components/register/register.component';
 import { AuthGuard } from '@angular/fire/auth-guard';
 import { GenerateLinkComponent } from './components/linkGeneration/generate-link/generate-link.component';
-import { AssessmentFormComponent } from './components/assessment-form/assessment-form.component';
-import { AssessmentManagerComponent } from './components/linkGeneration/assessment-manager/assessment-manager.component';
+import { AssessmentRecordsComponent } from './components/linkGeneration/assessment-records/assessment-records.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -20,7 +19,6 @@ export const routes: Routes = [
     path: 'generatelink',
     component: GenerateLinkComponent
   },
-  { path: 'assessmentForm', component: AssessmentFormComponent },
-  { path: 'assessmentManager', component: AssessmentManagerComponent },
+  { path: 'assessmentrecords', component: AssessmentRecordsComponent },
   { path: '**', component: DashboardComponent, canActivate: [AuthGuard] },
 ];
