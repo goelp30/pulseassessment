@@ -24,6 +24,7 @@
     "ngx-toastr": "^19.0.0",
     "rxjs": "~7.8.0",
     "sortablejs": "^1.15.4",
+    "toastify-js": "^1.12.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.10"
   },
@@ -34,6 +35,7 @@
     "@types/bootstrap": "^5.2.10",
     "@types/jasmine": "~5.1.0",
     "@types/sortablejs": "^1.15.8",
+    "@types/toastify-js": "^1.12.3",
     "autoprefixer": "^10.4.20",
     "jasmine-core": "~5.2.0",
     "karma": "~6.4.0",

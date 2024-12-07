@@ -1,0 +1,40 @@
+<div class="min-h-screen bg-gray-100">
+  <header class="bg-white shadow-sm mb-6 ml-4 mr-4 p-4 rounded-lg">
+    <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Angular Quiz Application</h1>
+  </header>
+
+  <!-- Main Content Area -->
+  <div class="flex flex-col-reverse lg:flex-row gap-6">
+    <!-- Question Display Section -->
+    <div class="flex-1">
+      <app-question-display [question]="currentQuestionData" [questionNumber]="currentQuestion + 1"
+        [totalQuestions]="questions.length" (answerSelect)="selectAnswer($event)"
+        (descriptiveAnswerChange)="setDescriptiveAnswer($event)" (reviewToggle)="toggleReview()"></app-question-display>
+
+      <div class="flex justify-between items-center mt-6 ml-4 mr-4 space-x-4">
+        <button (click)="previousQuestion()" [disabled]="currentQuestion === 0" class="btn btn-secondary">
+          Previous
+        </button>
+        <button (click)="submitQuiz()" class="btn btn-success">
+          Submit Quiz
+        </button>
+        <button (click)="nextQuestion()"
+          [disabled]="!isCurrentQuestionAttempted() || currentQuestion === questions.length - 1"
+          class="btn btn-primary">
+          Next
+        </button>
+      </div>
+    </div>
+
+    <!-- Question Navigator Section -->
+    <div class="w-full lg:w-64 space-y-4">
+      <app-quiz-timer [totalSeconds]="totalSeconds" [questionType]="currentQuestionData.questionType"
+        (timeUp)="handleTimeUp()"></app-quiz-timer>
+      <app-question-navigator [questions]="questions" [currentQuestionIndex]="currentQuestion"
+        (questionSelect)="goToQuestion($event)"></app-question-navigator>
+    </div>
+  </div>
+</div>
+
+<app-submission-modal [show]="showSubmissionModal" [questions]="questions" (onConfirm)="confirmSubmit()"
+  (onCancel)="closeSubmissionModal()"></app-submission-modal>
