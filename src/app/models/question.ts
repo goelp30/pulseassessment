@@ -1,7 +1,7 @@
 export type Question={
     Subjectid:string,
     questionId : any,
-    questionText:string,
+    questionText:any,
     questionType:string,
     questionLevel:string,
     questionWeitage:string,

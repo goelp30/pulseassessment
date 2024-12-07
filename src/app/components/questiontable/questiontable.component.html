@@ -1,0 +1,15 @@
+<app-header 
+  [title]="'List of Questions'" 
+  [subtitle]="'Manage your questions here'"
+  [buttonLabel]="'Add Question'"
+  [buttonClasses]="'bg-blue-500 text-white rounded-md px-4 py-2'">
+</app-header>
+
+<app-table 
+  [tableName]="tableName" 
+  [tableData]="questions" 
+  [tableColumns]="tableColumns" 
+  [columnAliases]="columnAliases" 
+  [searchQuery]="searchQuery"
+  [onSearchQueryChange]="onSearchQueryChange.bind(this)">
+</app-table>

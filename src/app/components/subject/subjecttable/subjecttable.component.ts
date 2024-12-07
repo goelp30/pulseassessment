@@ -10,6 +10,8 @@ import { FormsModule } from '@angular/forms';
 import { ToastrModule, ToastrService } from 'ngx-toastr';
 import { HeaderComponent } from '../../common/header/header.component';
 import { ButtonComponent } from '../../common/button/button.component';
+import { Router, RouterModule } from '@angular/router';
+import { SubjectService } from '../../../../sharedServices/Subject.service';
 
 @Component({
   selector: 'app-subjecttable',
@@ -22,6 +24,7 @@ import { ButtonComponent } from '../../common/button/button.component';
     ToastrModule,
     HeaderComponent,
     ButtonComponent,
+    RouterModule
   ],
   templateUrl: './subjecttable.component.html',
   styleUrls: ['./subjecttable.component.css'],
@@ -40,6 +43,7 @@ export class SubjectTableComponent  {
   isModalVisible: boolean = false;
   isAddModal: boolean = false;
   selectedSubject: Subject | null = null;
+  selectedTab: string = 'all';
 
   // Action buttons for table
   buttons = [
@@ -51,7 +55,13 @@ export class SubjectTableComponent  {
     {
       label: 'Manage',
       colorClass: 'bg-green-500 py-2 px-4 text-white rounded-md',
-      action: (row: any) => this.manageSubject(row),
+      action: (row: Subject) => {
+        if (row.subjectId) {
+          this.manageSubject(row);
+        } else {
+          console.error('Invalid row data');
+        }
+      }
     },
     {
       label: 'Delete',
@@ -66,8 +76,15 @@ export class SubjectTableComponent  {
   constructor(
     private auth: AuthService,
     private fireBaseService: FireBaseService<Subject>,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private router:Router,
+    private subjectService: SubjectService
+
   ) {}
+
+  ngOnInit(): void {
+    this.getSubjects();
+  }
 
   // Logout method
   logout() {
@@ -77,6 +94,14 @@ export class SubjectTableComponent  {
   // Handle search input changes
   onSearchQueryChange(newQuery: string): void {
     this.searchQuery = newQuery;
+  }
+
+  getSubjects() {
+    this.fireBaseService.getAllData(this.tableName).subscribe((res: Subject[]) => {
+      const activeSubjects = res.filter(subject => !subject.isDisabled);
+      this.subjects = activeSubjects;
+      this.filterSubjectsByTab();
+    });
   }
 
   // Add new subject
@@ -138,8 +163,25 @@ export class SubjectTableComponent  {
     this.toastr.error("subject deleted")
   }
 
-  // Placeholder for managing a subject
-  manageSubject(row: any) {
-    console.log('Managing subject:', row);
+  // manageSubject(row: Subject) {
+  //   this.router.navigate(['/questions', row.subjectId]); 
+  //   console.log('Navigating to:', row.subjectId);
+  // }
+  manageSubject(row: Subject) {
+    if (row.subjectId) {
+      this.subjectService.setSubjectId(row.subjectId); // Store the ID in the service
+      this.router.navigate(['/questions']); // Navigate without exposing the ID in the URL
+      console.log('Subject ID stored:', row.subjectId);
+    } else {
+      console.error('Invalid subject ID');
+    }
   }
+
+  filterSubjectsByTab() {
+    if (this.selectedTab === 'disabled') {
+      this.subjects = this.subjects.filter(subject => subject.isDisabled);
+    } else {
+      this.getSubjects();
+    } 
+}
 }
