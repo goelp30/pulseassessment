@@ -13,6 +13,3 @@ export type Question={
     isquesDisabled?: boolean;
 }
 
-export type QuestionSet={
-    SubjectId:string
-}

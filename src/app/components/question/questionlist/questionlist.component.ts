@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { QuestionTableComponent } from '../questiontable/questiontable.component';
+import { MockquestionComponent } from '../mockquestion/mockquestion.component';
 
 @Component({
   selector: 'app-questionlist',
   standalone: true,
-  imports: [QuestionTableComponent],
+  imports: [QuestionTableComponent,MockquestionComponent],
   templateUrl: './questionlist.component.html',
   styleUrl: './questionlist.component.css'
 })

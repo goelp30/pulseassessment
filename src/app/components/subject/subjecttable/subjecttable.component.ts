@@ -61,7 +61,7 @@ export class SubjectTableComponent  {
         } else {
           console.error('Invalid row data');
         }
-      }
+      },
     },
     {
       label: 'Delete',
@@ -169,8 +169,8 @@ export class SubjectTableComponent  {
   // }
   manageSubject(row: Subject) {
     if (row.subjectId) {
-      this.subjectService.setSubjectId(row.subjectId); // Store the ID in the service
-      this.router.navigate(['/questions']); // Navigate without exposing the ID in the URL
+      this.subjectService.setSubjectId(row.subjectId);
+      this.router.navigate(['/questions']);
       console.log('Subject ID stored:', row.subjectId);
     } else {
       console.error('Invalid subject ID');

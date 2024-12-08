@@ -4,9 +4,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { RegisterComponent } from './components/register/register.component';
 import { AuthGuard } from '@angular/fire/auth-guard';
 import { SubjectlistComponent } from './components/subject/subjectlist/subjectlist.component';
-import { QuestionTableComponent } from './components/question/questiontable/questiontable.component';
-import { QuestionlistComponent } from './components/questionlist/questionlist.component';
-// import { QuestionlistComponent } from './components/questions/questionlist/questionlist.component';
+import { QuestionlistComponent } from './components/question/questionlist/questionlist.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -14,7 +12,7 @@ export const routes: Routes = [
     { path: 'dashboard', component: DashboardComponent },
     { path: 'register', component: RegisterComponent },
     { path: 'subjects', component: SubjectlistComponent },
-    { path: 'questions', component: QuestionTableComponent }, // Removed the trailing comma
+    { path: 'questions', component: QuestionlistComponent }, 
     { path: '**', component: DashboardComponent, canActivate: [AuthGuard] },
 ];
 

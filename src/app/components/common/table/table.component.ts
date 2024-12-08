@@ -37,22 +37,31 @@ export class TableComponent implements OnInit, OnChanges {
   constructor(private fireBaseService: FireBaseService<any>) {}
 
   ngOnInit(): void {
-    if (this.tableName) {
+    if (this.tableData && this.tableData.length > 0) {
+      // Mock data exists, prioritize mock data and use it directly
+      this.initializeTable();
+    } else if (this.tableName) {
+      // No mock data, fetch from Firebase
       this.fireBaseService.getAllData(this.tableName).subscribe((res) => {
         this.tableData = res;
-        this.totalPages = Math.ceil(this.tableData.length / this.itemsPerPage);
-        this.generatePagination();
-        this.filterData();
+        this.initializeTable();
       });
     }
-
+  }
+  
+  initializeTable(): void {
+    this.totalPages = Math.ceil(this.tableData.length / this.itemsPerPage);
+    this.generatePagination();
+    this.filterData();
+  
     if (this.tabs.length > 0) {
       this.activeTab = this.tabs[0];
     }
   }
+  
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['searchQuery']) {
+    if (changes['searchQuery'] || changes['tableData']) {
       this.filterData();
     }
     if (changes['tabs'] || changes['filterKey']) {
@@ -92,10 +101,6 @@ export class TableComponent implements OnInit, OnChanges {
     return this.columnAliases[column] || [column];
   }
 
-  getTabAlias(tab: string): string {
-    return this.tabAliases[tab] || tab;
-  }
-
   getPaginatedData(): any[] {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
@@ -124,7 +129,7 @@ export class TableComponent implements OnInit, OnChanges {
   generatePagination(): void {
     const totalPages = this.totalPages;
     const pages = [];
-    for (let i = 1; i <= totalPages; i++) {
+    for ( let i = 1; i <= totalPages; i++) {
       pages.push(i);
     }
     this.pageNumbers = pages;
