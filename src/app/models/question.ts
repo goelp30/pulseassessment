@@ -9,7 +9,7 @@ export type Question={
     option:string[],
     questionTime:string,
     createdOn:number,
-    UpdatedOn:number,
+    updatedOn:number,
     isquesDisabled?: boolean;
 }
 
