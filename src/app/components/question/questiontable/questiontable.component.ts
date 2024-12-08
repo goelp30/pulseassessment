@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { FireBaseService } from '../../../sharedServices/FireBaseService';
-import { Question } from '../../models/question';
-import { TableNames } from '../../enums/TableName';
-import { HeaderComponent } from '../common/header/header.component';
-import { TableComponent } from '../common/table/table.component';
-import { SubjectService } from '../../../sharedServices/Subject.service';
+import { FireBaseService } from '../../../../sharedServices/FireBaseService';
+import { Question } from '../../../models/question';
+import { TableNames } from '../../../enums/TableName';
+import { HeaderComponent } from '../../common/header/header.component';
+import { TableComponent } from '../../common/table/table.component';
+import { SubjectService } from '../../../../sharedServices/Subject.service';
 
 @Component({
   selector: 'app-questiontable',

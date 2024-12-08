@@ -4,7 +4,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { RegisterComponent } from './components/register/register.component';
 import { AuthGuard } from '@angular/fire/auth-guard';
 import { SubjectlistComponent } from './components/subject/subjectlist/subjectlist.component';
-import { QuestionTableComponent } from './components/questiontable/questiontable.component';
+import { QuestionTableComponent } from './components/question/questiontable/questiontable.component';
 import { QuestionlistComponent } from './components/questionlist/questionlist.component';
 // import { QuestionlistComponent } from './components/questions/questionlist/questionlist.component';
 
