@@ -131,5 +131,15 @@ export class QuizComponent implements OnInit, OnDestroy {
       ? (current.descriptiveAnswer?.trim().length || 0) > 0
       : current.selectedAnswer !== undefined;
   }
-}
 
+  // Modified isCurrentQuestionAttempted to include the marked-for-review logic
+  isCurrentQuestionAttemptedOrMarked(): boolean {
+    const current = this.questions[this.currentQuestion];
+    return this.isCurrentQuestionAttempted() || current.isMarkedForReview;
+  }
+
+  // Check if the "Next" button should be enabled
+  isNextButtonEnabled(): boolean {
+    return this.isCurrentQuestionAttemptedOrMarked() && this.currentQuestion < this.questions.length - 1;
+  }
+}

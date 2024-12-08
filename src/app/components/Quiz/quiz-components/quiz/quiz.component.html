@@ -1,6 +1,9 @@
 <div class="min-h-screen bg-gray-100">
   <header class="bg-white shadow-sm mb-6 ml-4 mr-4 p-4 rounded-lg">
-    <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Angular Quiz Application</h1>
+    <h1 class="text-2xl md:text-3xl font-bold text-gray-900 text-center">
+      Angular Quiz Application
+    </h1>
+    
   </header>
 
   <!-- Main Content Area -->
@@ -18,11 +21,13 @@
         <button (click)="submitQuiz()" class="btn btn-success">
           Submit Quiz
         </button>
-        <button (click)="nextQuestion()"
-          [disabled]="!isCurrentQuestionAttempted() || currentQuestion === questions.length - 1"
-          class="btn btn-primary">
-          Next
-        </button>
+        <button 
+         (click)="nextQuestion()"
+          [disabled]="!isNextButtonEnabled()"
+         class="btn btn-primary">
+           Next
+             </button>
+
       </div>
     </div>
 

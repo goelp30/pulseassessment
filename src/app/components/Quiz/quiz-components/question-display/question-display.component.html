@@ -1,46 +1,52 @@
-<div class="bg-white rounded-xl shadow-lg p-4 m-4">
-    <!-- Question Header -->
-    <div class="mb-4 flex justify-between items-center">
-      <h2 class="text-xl font-semibold flex-grow">
-        <span class="text-gray-600 mr-2">Question {{ questionNumber }} of {{ totalQuestions }}:</span>
-        {{ question.text }}
-      </h2>
-      <button 
-        (click)="reviewToggle.emit()"
-        class="px-4 py-2 text-white shadow text-sm focus:outline-none focus:ring focus:ring-purple-100 rounded-full transition-colors"
-        [class.bg-yellow-400]="question.isMarkedForReview"
-        [class.bg-blue-300]="!question.isMarkedForReview">
-        {{ question.isMarkedForReview ? 'Marked for Review' : 'Mark for Review' }}
-      </button>
-    </div>
+<div class="bg-white rounded-xl shadow-lg p-6 m-4 space-y-6 max-w-6xl ml-4 mt-8 h-auto">
+  <!-- Question Header -->
+  <div class="flex justify-between items-start">
+    <h2 class="text-lg font-semibold flex-grow">
+      <span class="text-gray-600">Question {{ questionNumber }} of {{ totalQuestions }}:</span>
+      <span class="block mt-2 text-gray-900">{{ question.text }}</span>
+    </h2>
+    <button 
+      (click)="reviewToggle.emit()"
+      class="px-4 py-2 text-white text-sm rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1"
+      [class.bg-yellow-400]="question.isMarkedForReview"
+      [class.bg-blue-500]="!question.isMarkedForReview"
+      [class.hover:bg-yellow-500]="question.isMarkedForReview"
+      [class.hover:bg-blue-600]="!question.isMarkedForReview">
+      {{ question.isMarkedForReview ? 'Marked for Review' : 'Mark for Review' }}
+    </button>
+  </div>
 
-    <!-- Descriptive Question -->
-    <div *ngIf="question.questionType === 'descriptive'">
-      <textarea
-        [value]="question.descriptiveAnswer || ''"
-        (input)="onDescriptiveAnswerChange($event)"
-        rows="6"
-        class="w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        placeholder="Type your answer here...">
-      </textarea>
-    </div>
+  <!-- Descriptive Question -->
+  <div *ngIf="question.questionType === 'descriptive'">
+    <textarea
+      [value]="question.descriptiveAnswer || ''"
+      (input)="onDescriptiveAnswerChange($event)"
+      rows="6"
+      class="w-full p-4 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400 text-gray-700 resize-none"
+      placeholder="Type your answer here...">
+    </textarea>
+  </div>
 
-    <!-- Multiple Choice Question -->
-    <div *ngIf="question.questionType !== 'descriptive'" class="space-y-2">
-      <div 
-        *ngFor="let option of question.options; let i = index; trackBy: trackByOption"
-        (click)="onAnswerSelect(i)"
-        class="flex items-center p-4 bg-white rounded-lg border cursor-pointer hover:bg-blue-50 transition-colors"
-        [class.border-blue-500]="question.selectedAnswer === i"
-        [class.bg-blue-50]="question.selectedAnswer === i">
-        <input 
-          type="radio" 
-          [id]="'option' + i" 
-          [name]="'question' + question.id" 
-          [value]="i" 
-          [checked]="question.selectedAnswer === i"
-          class="h-4 w-4 text-blue-600 focus:ring-blue-500">
-        <label [for]="'option' + i" class="ml-3 cursor-pointer">{{ option }}</label>
-      </div>
+  <!-- Multiple Choice Question -->
+  <div *ngIf="question.questionType !== 'descriptive'" class="space-y-3">
+    <div 
+      *ngFor="let option of question.options; let i = index; trackBy: trackByOption"
+      (click)="onAnswerSelect(i)"
+      class="flex items-center p-4 border rounded-lg cursor-pointer transition-colors duration-200 group"
+      [class.border-blue-500]="question.selectedAnswer === i"
+      [class.bg-blue-50]="question.selectedAnswer === i"
+      [class.bg-lightblue-100]="question.selectedAnswer === i"
+      [class.hover:bg-blue-100]="question.selectedAnswer !== i">
+      <input 
+        type="radio" 
+        [id]="'option' + i" 
+        [name]="'question' + question.id" 
+        [value]="i" 
+        [checked]="question.selectedAnswer === i"
+        class="h-4 w-4 text-blue-600 focus:ring-blue-500 cursor-pointer">
+      <label [for]="'option' + i" class="ml-3 text-gray-800 group-hover:text-blue-600 cursor-pointer">
+        {{ option }}
+      </label>
     </div>
   </div>
+</div>

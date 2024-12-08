@@ -90,10 +90,10 @@ export class QuizService {
 
   calculateQuestionTime(questionType?: string): number {
     switch (questionType?.toLowerCase()) {
-      case 'medium': return 60;
-      case 'hard': return 120;
-      case 'descriptive': return 300;
-      default: return 60;
+      case 'medium': return 1;
+      case 'hard': return 1;
+      case 'descriptive': return 3;
+      default: return 2;
     }
   }
 }
