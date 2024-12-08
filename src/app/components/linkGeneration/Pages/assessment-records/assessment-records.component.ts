@@ -2,12 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
 import { FormsModule } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-assessment-records',
   standalone: true,
-  imports: [FormsModule,NgIf,NgFor],
+  imports: [FormsModule,NgIf,NgFor,RouterLink],
   templateUrl: './assessment-records.component.html',
   styleUrl: './assessment-records.component.css'
 })
