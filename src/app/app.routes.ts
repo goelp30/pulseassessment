@@ -6,6 +6,7 @@ import { AssessmentListComponent } from './components/assessment/assessment-list
 import { AuthGuard } from '@angular/fire/auth-guard';
 import { DragDropComponent } from './components/assessment/drag-drop/drag-drop.component';
 import { QuizHomeComponent } from './components/Quiz/quiz-home/quiz-home.component';
+import { TestTableComponent } from './components/Quiz/test-table/test-table.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -28,6 +29,11 @@ export const routes: Routes = [
   {
     path: 'quiz-home',
     component: QuizHomeComponent,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'quiz-table',
+    component: TestTableComponent,
     canActivate: [AuthGuard],
   },
 
