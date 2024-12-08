@@ -21,7 +21,7 @@ import { Question } from '../../models/question.model';
     SubmissionModalComponent,
   ],
   templateUrl: "quiz.component.html",
-  styleUrl:"quiz.component.css"
+  styleUrls: ["quiz.component.css"] // Corrected to 'styleUrls'
 })
 export class QuizComponent implements OnInit, OnDestroy {
   questions: Question[] = [];
@@ -95,7 +95,18 @@ export class QuizComponent implements OnInit, OnDestroy {
   }
 
   selectAnswer(answer: number) {
-    this.questions[this.currentQuestion].selectedAnswer = answer;
+    // Handle multi-check answer selection
+    if (Array.isArray(this.questions[this.currentQuestion].selectedAnswer)) {
+      const selectedAnswers = this.questions[this.currentQuestion].selectedAnswer as number[];
+      if (selectedAnswers.includes(answer)) {
+        this.questions[this.currentQuestion].selectedAnswer = selectedAnswers.filter(a => a !== answer); // Unselect
+      } else {
+        selectedAnswers.push(answer); // Select
+        this.questions[this.currentQuestion].selectedAnswer = selectedAnswers;
+      }
+    } else {
+      this.questions[this.currentQuestion].selectedAnswer = answer;
+    }
   }
 
   setDescriptiveAnswer(answer: string) {
@@ -108,9 +119,11 @@ export class QuizComponent implements OnInit, OnDestroy {
   }
 
   goToQuestion(index: number) {
-    this.questions[this.currentQuestion].isVisited = true;
-    this.currentQuestion = index;
-    this.questions[index].isVisited = true;
+    if (index >= 0 && index < this.questions.length) {
+      this.questions[this.currentQuestion].isVisited = true;
+      this.currentQuestion = index;
+      this.questions[index].isVisited = true;
+    }
   }
 
   nextQuestion() {
