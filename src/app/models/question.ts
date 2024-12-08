@@ -1,0 +1,15 @@
+export type Question={
+    Subjectid:string,
+    questionId : any,
+    questionText:any,
+    questionType:string,
+    questionLevel:string,
+    questionWeitage:string,
+    answer:string[],
+    option:string[],
+    questionTime:string,
+    createdOn:number,
+    updatedOn:number,
+    isquesDisabled?: boolean;
+}
+
