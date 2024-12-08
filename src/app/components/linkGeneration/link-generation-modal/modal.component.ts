@@ -16,7 +16,8 @@ import { ButtonComponent } from '../../common/button/button.component';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Candidate } from '../../../models/candidate';
 import { Employee } from '../../../models/employee';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
+
 @Component({
   selector: 'app-modal',
   standalone: true,
@@ -245,6 +246,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     this.dateTime();
     this.isSending = true;
 
+
     this.selectedNames.forEach((user) => {
       const userLink = this.buildUrlWithUserId(this.link, user);
 
@@ -255,6 +257,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
         userName: user.candidateName || user.employeeName,
         assessmentName: this.assessmentName,
         expiryDate: this.expiryDate,
+        hasAttended:false,
       };
 
       this.firebaseService
@@ -285,6 +288,8 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     const userId = user.candidateId || user.employeeId;
     return `${baseUrl}/${encodeURIComponent(userId)}`;
   }
+
+
 
   resetSelectionData(): void {
     // Reset all selection data

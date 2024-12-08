@@ -46,11 +46,12 @@ export class AssessmentRecordsComponent implements OnInit {
       assessment.isLinkDisabled = true;
   
       // Use the Router to navigate to the expired link page
-    this.router.navigate(['/generatelink']);
+    this.router.navigate(['/linkexpired']);
     } else {
        //? If link is not expired, navigate to the  TERMS and CONDITIONS PAGE (Tanya and Team's Page)
     const decodedUrl = decodeURIComponent(assessment.urlId);
-    this.router.navigateByUrl(decodedUrl);
+    // this.router.navigateByUrl(decodedUrl);
+    this.router.navigate(['/generatelink']);
     }
   }
   
