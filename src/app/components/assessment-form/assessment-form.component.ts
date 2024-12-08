@@ -25,7 +25,7 @@ export class AssessmentFormComponent implements OnInit {
       optionType: [''],
       questionText: ['', Validators.required],
       options: this.fb.array([]),
-      timer: [0, [Validators.required, Validators.min(1)]],
+      timer: [1, [Validators.required, Validators.min(1)]],
       maxMarks: [1, [Validators.required, Validators.min(1)]],
     });
   }
@@ -85,22 +85,28 @@ export class AssessmentFormComponent implements OnInit {
   async onSubmit(): Promise<void> {
     if (this.assessmentForm.valid) {
       const formData = this.assessmentForm.value;
-      const questionId = Date.now().toString();
+      const questionId = Date.now().toString(); // Generate unique question ID
+  
+      // Format data with subjectId and questionId
       const formattedData = {
-        ...formData,
-        correctOptions: this.correctOptions.map((i) => formData.options[i]),
+        [questionId]: {
+          ...formData,
+          correctOptions: this.correctOptions.map((i) => formData.options[i]),
+        },
       };
-
+  
       console.log('Submitted Data:', formattedData);
-
+  
       try {
-       
-        await this.firebaseService.create(`questions/${questionId}`, formattedData);
+        // Store data under 'questions/{subjectId}/{questionId}'
+        await this.firebaseService.create(`questions/${this.subjectId}/${questionId}`, formattedData[questionId]);
+        console.log('Data successfully saved.');
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error saving data:', error);
       }
     } else {
       console.error('Form is invalid');
     }
   }
+  
 }
