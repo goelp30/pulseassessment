@@ -2,7 +2,6 @@
   <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-3xl w-full">
     <h1 class="text-gray-800 font-bold text-3xl text-center mb-6">{{ subjectName }}</h1>
     <form [formGroup]="assessmentForm" (ngSubmit)="onSubmit()" class="space-y-6">
-      
       <!-- Two-Column Layout for Question Type and Option Type -->
       <div class="grid grid-cols-2 gap-3">
         <div class="space-y-2">
@@ -12,11 +11,11 @@
             id="questionType"
             class="w-full border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="" disabled selected>Select Difficulty</option>
+            <option value="" disabled>Select Difficulty</option>
             <option *ngFor="let type of questionTypes" [value]="type">{{ type }}</option>
           </select>
         </div>
-        
+
         <div class="space-y-2" *ngIf="assessmentForm.get('questionType')?.value !== 'descriptive'">
           <label for="optionType" class="block text-gray-700 font-medium text-sm">Option Type:</label>
           <select
@@ -24,7 +23,7 @@
             id="optionType"
             class="w-full border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="" disabled selected>Select Option Type</option>
+            <option value="" disabled>Select Option Type</option>
             <option *ngFor="let optionType of optionTypes" [value]="optionType">{{ optionType }}</option>
           </select>
         </div>
@@ -42,8 +41,8 @@
         />
       </div>
 
-      <!-- Options Section -->
-      <div *ngIf="assessmentForm.get('questionType')?.value !== 'descriptive'" class="space-y-2">
+      <!-- Options -->
+      <div class="space-y-2">
         <label class="block text-gray-700 font-medium text-sm">Add Options:</label>
         <div formArrayName="options" class="space-y-2">
           <div *ngFor="let option of options.controls; let i = index" class="flex items-center space-x-2">
@@ -52,6 +51,12 @@
               class="w-full border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Option {{ i + 1 }}"
               required
+            />
+            <input
+              type="checkbox"
+              [checked]="isCorrectOption(i)"
+              (change)="toggleCorrectOption(i)"
+              class="ml-2 h-5 w-5"
             />
             <button
               type="button"
@@ -71,19 +76,8 @@
         </button>
       </div>
 
-      <!-- Correct Options and Timer in Two-Column Layout -->
+      <!-- Timer -->
       <div class="grid grid-cols-2 gap-4">
-        <div class="space-y-2" *ngIf="assessmentForm.get('questionType')?.value !== 'descriptive'">
-          <label for="correctOptions" class="block text-gray-700 font-medium text-sm">Correct Options:</label>
-          <input
-            formControlName="correctOptions"
-            id="correctOptions"
-            class="w-full border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="e.g., 1,3"
-            required
-          />
-        </div>
-
         <div class="space-y-2">
           <label for="maxMarks" class="block text-gray-700 font-medium text-sm">Max Marks:</label>
           <input
@@ -95,19 +89,17 @@
             required
           />
         </div>
-      </div>
-
-      <!-- Timer Field -->
-      <div class="space-y-2">
-        <label for="timer" class="block text-gray-700 font-medium text-sm">Timer (in seconds):</label>
-        <input
-          type="number"
-          formControlName="timer"
-          id="timer"
-          class="w-full border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          placeholder="Enter time in seconds"
-          required
-        />
+        <div class="space-y-2">
+          <label for="timer" class="block text-gray-700 font-medium text-sm">Timer (in seconds):</label>
+          <input
+            type="number"
+            formControlName="timer"
+            id="timer"
+            class="w-full border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Enter time in seconds"
+            required
+          />
+        </div>
       </div>
 
       <!-- Submit Button -->
