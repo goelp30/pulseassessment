@@ -26,11 +26,14 @@ export class FireBaseService<T> {
         return this.database.object(tableName).set(params);
     }
 
+       /***
+     * Store the created assessments records in table
+     */
+
     createAssessmentRecords(tableName: string, params: T) {
         return this.database.list(tableName).push(params);
     }
     
-
     /***
      * Update new
      */
