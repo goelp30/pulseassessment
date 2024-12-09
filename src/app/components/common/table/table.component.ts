@@ -7,7 +7,6 @@ import { SearchbarComponent } from '../searchbar/searchbar.component';
 interface Row {
   [key: string]: any;
 }
-
 @Component({
   selector: 'app-table',
   standalone: true,

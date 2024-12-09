@@ -190,7 +190,6 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   addAssessment(): Promise<string> {
     return new Promise((resolve, reject) => {
       const uniqueId = crypto.randomUUID();
-      
       const assessment: Assessment = {
         assessmentId: uniqueId,
         assessmentName: this.assessmentTitle,
@@ -198,7 +197,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         dateCreated: Date.now(),
         dateUpdated: Date.now(),
         isDisabled: false,
-        isautoEvaluated: true
+        isautoEvaluated: this.isAutoEvaluated
       };
 
       // Save the new assessment to Firebase
@@ -212,6 +211,12 @@ export class DragDropComponent implements AfterViewInit, OnInit {
           reject('Failed to save assessment: ' + error);
         });
     });
+  }
+
+  isAutoEvaluated = this.calculateAutoEvaluated(this.leftList);
+  calculateAutoEvaluated(subjects: any[]): boolean {
+    // Check if any subject has a 'descriptive' value greater than 0
+    return !subjects.some(subject => subject.descriptive > 0);
   }
   checkAssessmentTitleUniqueness(title: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
@@ -228,61 +233,59 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     });
   }
   assessmentTitleWarning: string = ''; // Variable to hold the warning message
+  assessmentList: AssessmentList[] = [];
   saveFormData(): void {
     if (this.assessmentTitle.trim().length === 0) {
-        this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
-        return; // Don't proceed if the title is invalid
+      this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
+      return; // Don't proceed if the title is invalid
     } else {
-        this.assessmentTitleWarning = ''; // Clear any previous warning
+      this.assessmentTitleWarning = ''; // Clear any previous warning
     }
 
     this.checkAssessmentTitleUniqueness(this.assessmentTitle).then((isUnique) => {
-        if (!isUnique) {
-            // Set the warning in assessmentTitleWarning instead of using alert
-            this.assessmentTitleWarning = 'This assessment title already exists. Please choose a unique title.';
-            return; // Stop further execution if title is not unique
+      if (!isUnique) {
+        this.assessmentTitleWarning = 'This assessment title already exists. Please choose a unique title.';
+        return; // Stop further execution if title is not unique
+      }
+
+      // Proceed with saving the assessment data if the title is unique
+      this.assessmentTitleWarning = ''; // Clear any previous warning if title is unique
+
+      this.addAssessment().then((assessmentId: string) => {
+        if (this.rightListForm.valid) {
+          const assessmentList: AssessmentList = {
+            assessmentId,
+            dateCreated: Date.now(),
+            dateUpdated: Date.now(),
+            subjects: this.mapRightListInputs(),
+          };
+
+          // Save to Firebase and show success toast
+          this.firebaseService.create('assessmentList/' + assessmentId, assessmentList)
+            .then(() => {
+              // Insert the new assessment at the top of the list
+              this.assessmentList.unshift(assessmentList);  // This adds the new record at the top
+
+              // Re-render the UI (for example, by assigning the new assessment list to the table)
+              this.fetchLeftList();  // Assuming this reloads or updates the table data
+              this.toastr.success('Assessment Created successfully', 'Created');
+
+              // Reset and clear state after save
+              this.resetRightListAndForm();
+              this.assessmentTitle = ''; // Clear the title
+            })
+            .catch((error) => {
+              console.error('Error saving data:', error);
+              this.toastr.error('Failed to save data. Please try again.');
+            });
+        } else {
+          this.toastr.warning('Please fill in the form correctly.');
         }
-
-        // Proceed with saving the assessment data if the title is unique
-        this.assessmentTitleWarning = ''; // Clear any previous warning if title is unique
-
-        this.addAssessment().then((assessmentId: string) => {
-            if (this.rightListForm.valid) {
-                const assessmentList: AssessmentList = {
-                    assessmentId,
-                    dateCreated: Date.now(),
-                    dateUpdated: Date.now(),
-                    subjects: this.mapRightListInputs(),
-                };
-
-                // Save to Firebase and show success toast
-                this.firebaseService.create('assessmentList/' + assessmentId, assessmentList)
-                    .then(() => {
-                        // Route immediately after successful creation
-                        this.router.navigate(['/assessment-list']).then(() => {
-                            // Refresh data after navigation
-                            this.fetchLeftList();  // Reload subjects or any data required
-                        });
-
-                        // Show toast after navigation
-                        this.toastr.success('Assessment Created successfully', 'Created');
-
-                        // Reset and clear state after save
-                        this.resetRightListAndForm();
-                        this.assessmentTitle = ''; // Clear the title
-                    })
-                    .catch((error) => {
-                        console.error('Error saving data:', error);
-                        this.toastr.error('Failed to save data. Please try again.');
-                    });
-            } else {
-                this.toastr.warning('Please fill in the form correctly.');
-            }
-        }).catch((error) => {
-            this.toastr.error('Failed to create assessment. ' + error);
-        });
+      }).catch((error) => {
+        this.toastr.error('Failed to create assessment. ' + error);
+      });
     });
-}
+  }
 
 
   
