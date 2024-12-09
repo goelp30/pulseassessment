@@ -4,6 +4,7 @@ import { Assessment } from '../../../models/assessment';
 import { ButtonComponent } from "../../common/button/button.component";
 import { TableNames } from '../../../enums/TableName'; // Adjust the path as needed
 import { CommonModule } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-test-table',
@@ -18,7 +19,8 @@ export class TestTableComponent implements OnInit {
 
   constructor(
     private fireBaseService: FireBaseService<Assessment>,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router // Inject Router
   ) {}
 
   ngOnInit() {
@@ -44,6 +46,10 @@ export class TestTableComponent implements OnInit {
   // Action for starting a quiz
   startQuiz(row: Assessment) {
     console.log('Starting quiz for:', row.assessmentName, 'ID:', row.assessmentId);
-    // Add quiz starting logic here
+  
+    // Navigate to the quiz-home route with query parameters
+    this.router.navigate(['/quiz-home'], {
+      queryParams: { id: row.assessmentId, name: row.assessmentName },
+    });
   }
-}
+}  
