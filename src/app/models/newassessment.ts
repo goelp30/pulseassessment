@@ -7,6 +7,8 @@ export type SubjectCounts = {
   
  export  type AssessmentList = {
     assessmentId: string; 
+    dateCreated: number,
+    dateUpdated: number,
     subjects: {
       [subjectName: string]: SubjectCounts; 
     };

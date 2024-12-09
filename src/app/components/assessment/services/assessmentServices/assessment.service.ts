@@ -11,7 +11,6 @@ export class AssessmentService {
   addDataToAssessmentTable(assessmentData: any): Promise<string> {
     return new Promise((resolve, reject) => {
       const assessmentId = assessmentData.assessmentId;
-
       // Save data to Firebase
       this.firebaseService.addData('assessmentList', assessmentId, assessmentData)
         .then(() => {

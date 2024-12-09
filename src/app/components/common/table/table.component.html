@@ -3,7 +3,7 @@
   <app-searchbar 
     [searchQuery]="searchQuery"
     [class]="'block w-[50vw] px-4 py-2 mb-2 border-2 p-2 rounded-3xl border-gray-300 shadow-md focus:outline-none focus:ring'"
-    placeholder="Search Assessments" 
+    [placeholder]="searchPlaceholder" 
     (searchQueryChange)="onSearchQueryChange($event)">
   </app-searchbar>
 </div>
@@ -64,7 +64,7 @@
         <tr class="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] text-center gap-4">
           @for(column of tableColumns; track column){
           <td class="p-4 border-b border-blue-gray-50">
-            <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">{{ row[column] }}</p>
+            <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">{{ row[column] |titlecase }}</p>
           </td> }
           <td class="p-4 border-b border-blue-gray-50">
             <div class="flex justify-center gap-4">
