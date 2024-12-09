@@ -61,6 +61,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isVisible'] && changes['isVisible'].currentValue == false) {
       this.resetSearchBar();
+      this.resetSelectionData()
       this.loadData(); // Load data again if modal becomes visible
       this.searchQuery = '';
       this.filteredNames = [];
@@ -135,34 +136,34 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
         item.employeeName.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     }
-    // console.log('Filtered Names:', this.filteredNames);
     this.updateSelectAllState();
   }
 
   // Method to toggle selection of an individual user
   toggleSelection(name: any): void {
-    const index = this.selectedNames.indexOf(name);
-
-    // If the name is not already selected, add to the selectedNames array
-    if (index === -1) {
-      this.selectedNames.push(name);
-    } else {
-      // If already selected, remove from selectedNames
-      this.selectedNames.splice(index, 1);
-    }
-
-    // Update the 'selected' state for the corresponding user in filteredNames
-    const personIndex = this.filteredNames.findIndex(
-      (person) => person.id === name.id
+    const id = name.candidateId || name.employeeId; // Use candidateId or employeeId
+    const index = this.selectedNames.findIndex(
+      (selected) => (selected.candidateId || selected.employeeId) === id
     );
+  
+    if (index === -1) {
+      this.selectedNames.push(name); // Add to selected names
+    } else {
+      this.selectedNames.splice(index, 1); // Remove from selected names
+    }
+  
+    const personIndex = this.filteredNames.findIndex(
+      (person) => (person.candidateId || person.employeeId) === id
+    );
+  
     if (personIndex !== -1) {
       this.filteredNames[personIndex].selected =
         !this.filteredNames[personIndex].selected;
     }
-
-    // Update the state of 'Select All' checkbox
-    this.updateSelectAllState();
+  
+    this.updateSelectAllState(); // Update the "Select All" checkbox state
   }
+  
 
   // Method to handle "Select All" checkbox
   toggleSelectAll(): void {
@@ -193,27 +194,29 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
 
   // Method to remove a selected user when the cross button is clicked
   removeSelectedName(name: any): void {
-    // Remove the name from selectedNames array using the unique ID
+    const id = name.candidateId || name.employeeId; // Use candidateId or employeeId
     const index = this.selectedNames.findIndex(
-      (selected) => selected.id === name.id
+      (selected) => (selected.candidateId || selected.employeeId) === id
     );
+  
     if (index !== -1) {
-      this.selectedNames.splice(index, 1); // Remove user from selectedNames
+      this.selectedNames.splice(index, 1); // Remove from selectedNames
     }
-
-    // Update the 'selected' state for the corresponding user in filteredNames using the unique ID
+  
     const personIndex = this.filteredNames.findIndex(
-      (person) => person.id === name.id
+      (person) => (person.candidateId || person.employeeId) === id
     );
+  
     if (personIndex !== -1) {
-      this.filteredNames[personIndex].selected = false; // Uncheck the user in the list
+      this.filteredNames[personIndex].selected = false; // Deselect the user
     }
-
-    // Update the state of 'Select All' checkbox
-    this.updateSelectAllState();
+  
+    this.updateSelectAllState(); // Update the "Select All" checkbox state
   }
+  
 
   closeModal(): void {
+    this.resetSelectionData(); 
     this.searchQuery = ''; // Reset the search query
     this.filteredNames = []; // Clear the filtered names
     this.selectAll = false; // Deselect 'Select All'
@@ -246,22 +249,21 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     this.dateTime();
     this.isSending = true;
 
-
     this.selectedNames.forEach((user) => {
       const userLink = this.buildUrlWithUserId(this.link, user);
-
+      const recordKey = `${this.assessmentId}_${user.candidateId || user.employeeId}`;
       const record = {
         assessmentId: this.assessmentId,
-        urlId: encodeURIComponent(userLink),
+        urlId: userLink,
         userId: user.candidateId || user.employeeId || null,
         userName: user.candidateName || user.employeeName,
         assessmentName: this.assessmentName,
         expiryDate: this.expiryDate,
-        hasAttended:false,
+        isLinkAccessed: false,
       };
 
       this.firebaseService
-        .createAssessmentRecords('/assessmentRecords', record)
+      .create(`/assessmentRecords/${recordKey}`, record)
         .then(() => {
           console.log('Record saved successfully');
         })
@@ -288,8 +290,6 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     const userId = user.candidateId || user.employeeId;
     return `${baseUrl}/${encodeURIComponent(userId)}`;
   }
-
-
 
   resetSelectionData(): void {
     // Reset all selection data

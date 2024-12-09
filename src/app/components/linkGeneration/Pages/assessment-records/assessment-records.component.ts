@@ -7,7 +7,7 @@ import { Router, RouterLink } from '@angular/router';
 @Component({
   selector: 'app-assessment-records',
   standalone: true,
-  imports: [FormsModule,NgIf,NgFor,RouterLink],
+  imports: [FormsModule,RouterLink],
   templateUrl: './assessment-records.component.html',
   styleUrl: './assessment-records.component.css'
 })
