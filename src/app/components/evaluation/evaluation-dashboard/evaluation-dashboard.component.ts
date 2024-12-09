@@ -4,6 +4,9 @@ import { Router, RouterOutlet } from '@angular/router';
 import evaluationList from '../assets/Evaluation_list_mock.json'
 import { ButtonComponent } from '../../common/button/button.component';
 import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
+import { EvaluationService } from '../service/evaluation.service';
+import { FireBaseService } from '../../../../sharedServices/FireBaseService';
+
 
 @Component({
   selector: 'app-evaluation-dashboard',
@@ -13,32 +16,47 @@ import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
   styleUrl: './evaluation-dashboard.component.css'
 })
 export class EvaluationDashboardComponent {
-  EvaluationList: any[] = [];
+  evaluationList: any[] = [];
   filteredEvaluationList: any[] = []; 
-  searchQuery: string = '';  
+  searchQuery: string = ''; 
+  constructor(private router: Router,private evaluationService: EvaluationService,private firebaseService:FireBaseService<any>) { }
+  navigateToEvaluate(evalList: any): void {
+    // Set data for the evaluation
+    this.evaluationService.setData(evalList);
+
+    // Check if marksScored is null and navigate accordingly
+    if (evalList.marksScored === null) {
+      // Navigate to evaluate page if marksScored is null
+      this.router.navigate(['/evaluate']);
+    } else {
+      // Navigate to view page if marksScored is not null
+      this.router.navigate(['/view']);
+    }
+  }
  
   ngOnInit(): void {
-   this.EvaluationList=evaluationList;
-   this.filteredEvaluationList = this.EvaluationList;
+    this.evaluationList=evaluationList;
+   this.filteredEvaluationList = this.evaluationList;
   }
   onSearchQueryChanged(query: string): void {
     this.searchQuery = query;
   
     // If the query is empty, show all evaluations
     if (query.trim() === '') {
-      this.filteredEvaluationList = [...this.EvaluationList];
+      this.filteredEvaluationList = [...this.evaluationList];
     } else {
       
-      this.filteredEvaluationList = this.EvaluationList.filter((evaluation) =>
+      this.filteredEvaluationList = this.evaluationList.filter((evaluation) =>
         evaluation.assessmentId.toLowerCase().includes(query.trim().toLowerCase())
       );
     }
   }
   
-  constructor(private router: Router) { }
-    navigateToEvaluate() {
-    this.router.navigate(['/evaluate']);
-  }
+ 
+  
+ 
+  
+
   
 
 }
