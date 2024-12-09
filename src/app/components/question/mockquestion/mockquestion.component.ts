@@ -121,7 +121,7 @@ export class MockquestionComponent implements OnInit {
       {
         Subjectid: 'angular_004',
         questionId: 4,
-        questionText: 'How do you bind a component property to a template in Angular?',
+        questionText: 'How do you bind a component property in Angular?',
         questionType: 'MCQ',
         questionLevel: 'Medium',
         questionWeitage: '5',
@@ -157,7 +157,7 @@ export class MockquestionComponent implements OnInit {
       {
         Subjectid: 'angular_006',
         questionId: 6,
-        questionText: 'Which lifecycle hook is called after Angular has initialized a component?',
+        questionText: 'Which lifecycle hook is called ?',
         questionType: 'MCQ',
         questionLevel: 'Medium',
         questionWeitage: '6',
@@ -188,7 +188,7 @@ export class MockquestionComponent implements OnInit {
       {
         Subjectid: 'angular_008',
         questionId: 8,
-        questionText: 'Which operator is commonly used for HTTP requests with RxJS?',
+        questionText: 'Which operator is commonly used for HTTP ',
         questionType: 'MCQ',
         questionLevel: 'Medium',
         questionWeitage: '6',

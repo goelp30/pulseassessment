@@ -10,8 +10,8 @@ import { FormsModule } from '@angular/forms';
 import { ToastrModule, ToastrService } from 'ngx-toastr';
 import { HeaderComponent } from '../../common/header/header.component';
 import { ButtonComponent } from '../../common/button/button.component';
-import { Router, RouterModule } from '@angular/router';
 import { SubjectService } from '../../../../sharedServices/Subject.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-subjecttable',
@@ -24,12 +24,11 @@ import { SubjectService } from '../../../../sharedServices/Subject.service';
     ToastrModule,
     HeaderComponent,
     ButtonComponent,
-    RouterModule
   ],
   templateUrl: './subjecttable.component.html',
   styleUrls: ['./subjecttable.component.css'],
 })
-export class SubjectTableComponent  {
+export class SubjectTableComponent {
   // Data properties
   subjects: Subject[] = [];
   tableColumns: (keyof Subject)[] = ['subjectName'];
@@ -43,7 +42,6 @@ export class SubjectTableComponent  {
   isModalVisible: boolean = false;
   isAddModal: boolean = false;
   selectedSubject: Subject | null = null;
-  selectedTab: string = 'all';
 
   // Action buttons for table
   buttons = [
@@ -55,13 +53,7 @@ export class SubjectTableComponent  {
     {
       label: 'Manage',
       colorClass: 'bg-green-500 py-2 px-4 text-white rounded-md',
-      action: (row: Subject) => {
-        if (row.subjectId) {
-          this.manageSubject(row);
-        } else {
-          console.error('Invalid row data');
-        }
-      },
+      action: (row: any) => this.manageSubject(row),
     },
     {
       label: 'Delete',
@@ -77,14 +69,9 @@ export class SubjectTableComponent  {
     private auth: AuthService,
     private fireBaseService: FireBaseService<Subject>,
     private toastr: ToastrService,
-    private router:Router,
-    private subjectService: SubjectService
-
+    private subjectService: SubjectService, // Inject SubjectService
+    private router: Router // Inject Router
   ) {}
-
-  ngOnInit(): void {
-    this.getSubjects();
-  }
 
   // Logout method
   logout() {
@@ -94,14 +81,6 @@ export class SubjectTableComponent  {
   // Handle search input changes
   onSearchQueryChange(newQuery: string): void {
     this.searchQuery = newQuery;
-  }
-
-  getSubjects() {
-    this.fireBaseService.getAllData(this.tableName).subscribe((res: Subject[]) => {
-      const activeSubjects = res.filter(subject => !subject.isDisabled);
-      this.subjects = activeSubjects;
-      this.filterSubjectsByTab();
-    });
   }
 
   // Add new subject
@@ -158,30 +137,18 @@ export class SubjectTableComponent  {
     }
   }
 
-  
-  deleteSubject(row: Subject){
-    this.toastr.error("subject deleted")
+  // Delete subject
+  deleteSubject(row: Subject) {
+    this.toastr.error('Subject deleted');
   }
 
-  // manageSubject(row: Subject) {
-  //   this.router.navigate(['/questions', row.subjectId]); 
-  //   console.log('Navigating to:', row.subjectId);
-  // }
+  // Manage subject: Store subjectId and navigate to /questions
   manageSubject(row: Subject) {
     if (row.subjectId) {
-      this.subjectService.setSubjectId(row.subjectId);
-      this.router.navigate(['/questions']);
-      console.log('Subject ID stored:', row.subjectId);
+      this.subjectService.setSubjectId(row.subjectId); // Store subjectId in service
+      this.router.navigate(['/questions']); // Navigate to /questions route
     } else {
-      console.error('Invalid subject ID');
+      console.error('Subject ID is missing.');
     }
   }
-
-  filterSubjectsByTab() {
-    if (this.selectedTab === 'disabled') {
-      this.subjects = this.subjects.filter(subject => subject.isDisabled);
-    } else {
-      this.getSubjects();
-    } 
-}
 }
