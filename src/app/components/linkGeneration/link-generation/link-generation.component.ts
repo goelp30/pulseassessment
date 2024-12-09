@@ -79,16 +79,6 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
     return `https://example.com/${id}`;
   }
 
-  // generateLink(id: string): string {
-  //   const link = `https://example.com/${id}`;
-  //   const assessmentIndex = this.assessments.findIndex((a) => a.assessmentId === id);
-  //   if (assessmentIndex > -1) {
-  //     this.assessments[assessmentIndex].isAccessed = false; // Ensure link starts as unused
-  //   }
-  //   return link;
-  // }
-  
-
   // Open the modal with the selected link and type
   openModal(
     link: string,
