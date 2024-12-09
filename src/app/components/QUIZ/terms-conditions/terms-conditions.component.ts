@@ -8,7 +8,7 @@ import { NgFor } from '@angular/common';
   standalone: true,
   imports: [NgFor],
   templateUrl: './terms-conditions.component.html',
-  styleUrl: './terms-conditions.component.css'
+  styleUrls: ['./terms-conditions.component.css'],
 })
 export class TermsConditionsComponent implements OnInit {
   assessmentDetails: any[] = [];
@@ -33,22 +33,32 @@ export class TermsConditionsComponent implements OnInit {
   }
 
   // Method to check if the link is expired
-  isLinkExpired(expiryDate: string): boolean {
-    const currentDate = new Date();
+  isLinkExpired(expiryDate: string | Date): boolean {
     const expiryDateObj = new Date(expiryDate);
-    return expiryDateObj < currentDate;
+    return expiryDateObj < new Date();
   }
 
-  // Handle the redirection based on expiry
+  markAsAccessed(assessmentId: string, userId: string): void {
+    const recordKey = `${assessmentId}_${userId}`;
+    const tableName = `assessmentRecords/${recordKey}`;
+    this.firebaseService.update(tableName, { isLinkAccessed: true }).then(
+      () => {
+        this.router.navigate(['/quiz'], { queryParams: { id: assessmentId } });
+      },
+      (error) => {
+        console.error('Error updating access status:', error);
+      }
+    );
+  }
+  
   onAccessQuiz(assessment: any): void {
     if (this.isLinkExpired(assessment.expiryDate)) {
-      // Redirect to the link expiry route
       this.router.navigate(['/linkexpired']);
+    } else if (assessment.isLinkAccessed) {
+      this.router.navigate(['/alreadyattended']);
     } else {
-      // Redirect to the quiz route
-      this.router.navigate(['/quiz'], {
-        queryParams: { id: assessment.assessmentId },
-      });
+      this.markAsAccessed(assessment.assessmentId, assessment.userId);
     }
   }
+  
 }
