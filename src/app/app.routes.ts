@@ -3,11 +3,17 @@ import { LoginComponent } from './components/login/login.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { RegisterComponent } from './components/register/register.component';
 import { AuthGuard } from '@angular/fire/auth-guard';
+import { EvaluationDashboardComponent } from './components/evaluation/evaluation-dashboard/evaluation-dashboard.component';
+import { EvaluateAssessmentComponent } from './components/evaluation/evaluate-assessment/evaluate-assessment.component';
+import { ViewAssessmentComponent } from './components/evaluation/view-assessment/view-assessment.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full' },
     { path: 'login', component: LoginComponent },
     { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
     { path: 'register', component: RegisterComponent },
+    { path: 'evaluation', component: EvaluationDashboardComponent},
+    { path: 'evaluate', component: EvaluateAssessmentComponent},
+    { path: 'view', component: ViewAssessmentComponent},
     { path: '**', component: DashboardComponent, canActivate: [AuthGuard] }
 ];
