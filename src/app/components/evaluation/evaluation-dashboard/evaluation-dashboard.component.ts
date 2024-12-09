@@ -20,10 +20,26 @@ export class EvaluationDashboardComponent {
   filteredEvaluationList: any[] = []; 
   searchQuery: string = ''; 
   constructor(private router: Router,private evaluationService: EvaluationService,private firebaseService:FireBaseService<any>) { }
+<<<<<<< Updated upstream
   navigateToEvaluate(evaluationList:any):void {
   this.evaluationService.setData(evaluationList);
   this.router.navigate(['/evaluate']);
 } 
+=======
+  navigateToEvaluate(evalList: any): void {
+    // Set data for the evaluation
+    this.evaluationService.setData(evalList);
+
+    // Check if marksScored is null and navigate accordingly
+    if (!evalList.isEvaluation) {
+      // Navigate to evaluate page if marksScored is null
+      this.router.navigate(['/evaluate']);
+    } else {
+      // Navigate to view page if marksScored is not null
+      this.router.navigate(['/view']);
+    }
+  }
+>>>>>>> Stashed changes
  
   ngOnInit(): void {
     this.evaluationList=evaluationList;

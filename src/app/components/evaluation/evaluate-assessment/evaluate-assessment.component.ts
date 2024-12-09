@@ -14,16 +14,30 @@ import { EvaluationService } from '../service/evaluation.service';
 })
 export class EvaluateAssessmentComponent {
   clickedData: any;
+<<<<<<< Updated upstream
 
   constructor(private location: Location, private evaluationService: EvaluationService) {}
+=======
+  successMessage: boolean = false;
+
+  constructor(private evaluationService: EvaluationService, private router: Router) {}
+>>>>>>> Stashed changes
 
   ngOnInit(): void {
     // Fetch the data when the component initializes
     this.clickedData = this.evaluationService.getData();
     console.log(this.clickedData);  // Logs the data for debugging
 
-    // Automatically evaluate the single_answer and multi_answer questions
+    // Automatically evaluate the objective questions (single_answer, multi_answer)
     this.evaluateAutoScoredQuestions();
+  }
+  getTotalMarks(): number {
+    // Calculate the total max marks for all questions
+    let totalMarks = 0;
+    this.clickedData.questions.forEach((question: any) => {
+      totalMarks += question.totalMarks; // Add up totalMarks from all questions
+    });
+    return totalMarks;
   }
 
   evaluateAutoScoredQuestions(): void {
@@ -40,14 +54,13 @@ export class EvaluateAssessmentComponent {
         const correctAnswers = question.correct_answers;
         const selectedAnswers = question.user_answer;
         let correctCount = 0;
-  
-        // Loop over selected answers and count correct ones
+
         selectedAnswers?.forEach((answer: any) => {
           if (correctAnswers.includes(answer)) {
             correctCount++;
           }
         });
-  
+
         // Calculate marks based on correct answers
         if (correctCount > 0) {
           const marksPerCorrectAnswer = question.totalMarks / correctAnswers.length;
@@ -55,15 +68,13 @@ export class EvaluateAssessmentComponent {
         } else {
           question.marksScored = 0;
         }
-  
-        // Check if user selected more answers than correct answers
+
+        // Apply penalties for extra answers selected
         const extraAnswersSelected = selectedAnswers.length - correctAnswers.length;
-  
         if (extraAnswersSelected > 0) {
-          // Apply a penalty for extra selections
-          const penaltyPerExtraAnswer = question.totalMarks * 0.1; // 10% penalty per extra answer
+          const penaltyPerExtraAnswer = question.totalMarks / correctAnswers.length;
           question.marksScored -= extraAnswersSelected * penaltyPerExtraAnswer;
-  
+
           // Ensure marks don't go negative
           if (question.marksScored < 0) {
             question.marksScored = 0;
@@ -72,8 +83,9 @@ export class EvaluateAssessmentComponent {
       }
     });
   }
-  
+
   onSubmit(): void {
+<<<<<<< Updated upstream
     if (this.clickedData.marksScored) {
       // Only navigate to the previous page if marks have already been scored (when "Close" is shown)
       this.location.back();
@@ -93,12 +105,40 @@ export class EvaluateAssessmentComponent {
 
       // Now that the evaluation is done, we will not navigate yet (we are still on "Complete Evaluation")
       // Marks will be scored but no navigation
+=======
+    // Ensure all questions are evaluated first
+    if (this.clickedData?.isEvaluation) {
+      // If evaluation is already done, navigate to the 'view' page
+      this.router.navigate(['/view']);
+      return;
+>>>>>>> Stashed changes
     }
+
+    // Handle manual grading for descriptive questions
+    this.clickedData.questions.forEach((question: any) => {
+      if (question.question_type === 'descriptive') {
+        // Manually assign the marks for descriptive questions
+        question.marksScored = question.assigned_marks;
+      }
+    });
+
+    // After assigning marks for descriptive questions, recalculate total marks
+    this.calculateTotalMarks();
+
+    // Set the isEvaluation flag to true to indicate that the evaluation is complete
+    this.clickedData.isEvaluation = true;
+
+    // Show success message after the evaluation is complete
+    this.successMessage = true;
+
+    // Navigate to the 'view' page after the evaluation is done
+    this.router.navigate(['/view']);
   }
+
 
   isCorrect(userAnswer: string, question: any): boolean {
     // Check if the user's answer matches the correct answer for single-answer questions
-    return userAnswer === question.correct_answer;  // Assuming correct_answer is stored as a string for single-answer questions
+    return userAnswer === question.correct_answer;
   }
 
   calculateTotalMarks(): void {

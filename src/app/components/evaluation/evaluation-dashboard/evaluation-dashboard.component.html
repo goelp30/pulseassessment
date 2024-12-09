@@ -28,10 +28,10 @@
                     <div class="flex-grow flex justify-center items-center">
                         <span class="px-6 py-2 text-lg font-medium rounded-full transition-all" 
                               [ngClass]="{
-                                'bg-green-100 text-green-700': evalList.marksScored !== null,  
-                                'bg-red-100 text-red-700': evalList.marksScored === null        
+                                'bg-green-100 text-green-700': evalList.isEvaluation===true,  
+                                'bg-red-100 text-red-700': evalList.isEvaluation === false        
                               }">
-                          {{ evalList.marksScored !== null ? 'Complete' : 'Pending' }}  <!-- Conditional display of status -->
+                          {{ evalList.isEvaluation? 'Complete' : 'Pending' }}  <!-- Conditional display of status -->
                         </span>
                       </div>
                       
@@ -39,10 +39,11 @@
                     <!-- Right: View Evaluation Button -->
                     <div class="flex-shrink-0 w-1/6 ml-6">
                         <app-button
-                        [label]="evalList.marksScored === null ? 'Evaluate' : 'View'"
-                        [colorClass]="'btn btn-primary w-full'"
-                        (click)="navigateToEvaluate(evalList)">
-                      </app-button>
+                      [label]="evalList.isEvaluation? 'View' : 'Evaluate'"
+                       [colorClass]="'btn btn-primary w-full'"
+                       (click)="navigateToEvaluate(evalList)">
+                       </app-button>
+
                     </div>
                 </div>
             }}
