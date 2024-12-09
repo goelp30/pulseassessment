@@ -42,6 +42,7 @@ export class SubjectTableComponent {
   isModalVisible: boolean = false;
   isAddModal: boolean = false;
   selectedSubject: Subject | null = null;
+  searchPlaceholder:string='Search Subjects...'
 
   // Action buttons for table
   buttons = [

@@ -1,17 +1,24 @@
 export type Question={
-    Subjectid:string,
+    subjectId:string,
     questionId : any,
     questionText:any,
     questionType:string,
     questionLevel:string,
-    questionWeitage:string,
-    answer:string[],
-    option:string[],
-    questionTime:string,
+    questionWeightage:number,
+    questionTime:number,
     createdOn:number,
     updatedOn:number,
-    isquesDisabled?: boolean;
+    isQuesDisabled?: boolean;
 }
+ 
+export type Option={
+    subjectid:string,
+    questionId: string,
+    optionId : string,
+    optionText:any,
+    isCorrectOption:boolean
+}
+ 
 
 // export type Question = {
 //     correct: string[]; // Array of correct answers

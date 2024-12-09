@@ -26,6 +26,7 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() tabs: string[] = []; // Empty array means no tabs
   @Input() filterKey: string = '';
   @Input() tabAliases: { [key: string]: string } = {};
+  @Input() searchPlaceholder:string=''
 
   currentPage: number = 1;
   itemsPerPage: number = 10;

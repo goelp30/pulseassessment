@@ -30,11 +30,6 @@
   [buttonLabel]="'Add Subject'"
   [buttonClasses]="'bg-blue-500 text-white rounded-md px-4 py-2'"
   (addSubjectEvent)="addSubject()">
-  <app-button
-  [label]="'Add Subject'"
-  [colorClass]="'bg-blue-500 text-white rounded-md px-4 py-2'"
-  (action)="addSubject()"
-></app-button>
 </app-header>
 
 <app-table 
@@ -43,6 +38,7 @@
   [tableColumns]="tableColumns" 
   [columnAliases]="columnAliases" 
   [searchQuery]="searchQuery"
+  [searchPlaceholder]="searchPlaceholder"
   [onSearchQueryChange]="onSearchQueryChange.bind(this)"
   [buttons]="buttons">
 </app-table>

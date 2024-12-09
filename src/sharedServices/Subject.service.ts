@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root', // This ensures the service is a singleton
+  providedIn: 'root', 
 })
 export class SubjectService {
   private subjectIdSource = new BehaviorSubject<string | null>(null);

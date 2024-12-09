@@ -49,6 +49,7 @@ export class MockquestionComponent implements OnInit {
   isAddModal: boolean = false;
   selectedQuestion: Question | null = null;
   subjectId: string = '';
+  searchPlaceholder:string='Search Questions'
 
   constructor(
     private toastr: ToastrService,
@@ -60,147 +61,106 @@ export class MockquestionComponent implements OnInit {
   ngOnInit(): void {
     // Simulate subjectId selection logic
     this.subjectId = this.subjectService.getSubjectId() || 'default';
-    console.log('Loaded Mock Subject ID:', this.subjectId);
+    console.log('Loaded Subject ID:', this.subjectId);
 
     // Load mock data directly instead of fetching from Firebase
     this.loadMockQuestions();
   }
 
   loadMockQuestions(): void {
-    // Mock data corresponding to the Question type
     this.questions = [
       {
-        Subjectid: 'angular_001',
+        subjectId: 'angular_001',
         questionId: 1,
         questionText: 'What is Angular CLI used for?',
         questionType: 'MCQ',
         questionLevel: 'Easy',
-        questionWeitage: '5',
-        answer: ['To initialize, develop, and maintain Angular applications'],
-        option: [
-          'To style CSS files',
-          'To initialize, develop, and maintain Angular applications',
-          'To set up database connections',
-          'To compile JavaScript',
-        ],
-        questionTime: '30s',
+        questionWeightage: 5,
+        questionTime: 30,
         createdOn: Date.now(),
         updatedOn: Date.now(),
       },
       {
-        Subjectid: 'angular_002',
+        subjectId: 'angular_002',
         questionId: 2,
         questionText: 'Which decorator is used to define an Angular module?',
         questionType: 'MCQ',
         questionLevel: 'Easy',
-        questionWeitage: '4',
-        answer: ['@NgModule'],
-        option: ['@Component', '@Injectable', '@NgModule', '@Directive'],
-        questionTime: '20s',
+        questionWeightage: 4,
+        questionTime: 20,
         createdOn: Date.now(),
         updatedOn: Date.now(),
       },
       {
-        Subjectid: 'angular_003',
+        subjectId: 'angular_003',
         questionId: 3,
         questionText: 'What is RxJS in Angular?',
         questionType: 'MCQ',
         questionLevel: 'Medium',
-        questionWeitage: '6',
-        answer: ['A library for reactive programming using Observables'],
-        option: [
-          'A styling library for Angular components',
-          'A library for reactive programming using Observables',
-          'A testing framework for Angular applications',
-          'A component routing mechanism',
-        ],
-        questionTime: '40s',
+        questionWeightage: 6,
+        questionTime: 40,
         createdOn: Date.now(),
         updatedOn: Date.now(),
       },
       {
-        Subjectid: 'angular_004',
+        subjectId: 'angular_004',
         questionId: 4,
         questionText: 'How do you bind a component property in Angular?',
         questionType: 'MCQ',
         questionLevel: 'Medium',
-        questionWeitage: '5',
-        answer: ['Using property binding with [property]="value" syntax'],
-        option: [
-          'Using event binding with (click)="value"',
-          'Using property binding with [property]="value" syntax',
-          'Using string interpolation with {{value}}',
-          'Using both CSS and property binding',
-        ],
-        questionTime: '30s',
+        questionWeightage: 5,
+        questionTime: 30,
         createdOn: Date.now(),
         updatedOn: Date.now(),
       },
       {
-        Subjectid: 'angular_005',
+        subjectId: 'angular_005',
         questionId: 5,
         questionText: 'What is the purpose of the `@Injectable()` decorator?',
         questionType: 'MCQ',
         questionLevel: 'Hard',
-        questionWeitage: '7',
-        answer: ['To define a service that can be injected into components'],
-        option: [
-          'To define a service that can be injected into components',
-          'To set up the routing paths',
-          'To make a component a singleton instance',
-          'To style a specific Angular component',
-        ],
-        questionTime: '45s',
+        questionWeightage: 7,
+        questionTime: 45,
         createdOn: Date.now(),
         updatedOn: Date.now(),
       },
       {
-        Subjectid: 'angular_006',
+        subjectId: 'angular_006',
         questionId: 6,
-        questionText: 'Which lifecycle hook is called ?',
+        questionText: 'Which lifecycle hook is called after a component’s view has been initialized?',
         questionType: 'MCQ',
         questionLevel: 'Medium',
-        questionWeitage: '6',
-        answer: ['ngAfterViewInit'],
-        option: ['ngOnInit', 'ngAfterViewInit', 'ngAfterContentInit', 'ngOnChanges'],
-        questionTime: '30s',
+        questionWeightage: 6,
+        questionTime: 30,
         createdOn: Date.now(),
         updatedOn: Date.now(),
       },
       {
-        Subjectid: 'angular_007',
+        subjectId: 'angular_007',
         questionId: 7,
         questionText: 'What is a Subject in RxJS?',
         questionType: 'MCQ',
         questionLevel: 'Hard',
-        questionWeitage: '8',
-        answer: ['An observable that can multicast values to multiple subscribers'],
-        option: [
-          'An observable that can multicast values to multiple subscribers',
-          'A function to map observables',
-          'A lifecycle hook in RxJS',
-          'A decorator in Angular',
-        ],
-        questionTime: '45s',
+        questionWeightage: 8,
+        questionTime: 45,
         createdOn: Date.now(),
         updatedOn: Date.now(),
       },
       {
-        Subjectid: 'angular_008',
+        subjectId: 'angular_008',
         questionId: 8,
-        questionText: 'Which operator is commonly used for HTTP ',
+        questionText: 'Which operator is commonly used for HTTP calls in Angular?',
         questionType: 'MCQ',
         questionLevel: 'Medium',
-        questionWeitage: '6',
-        answer: ['HttpClient'],
-        option: ['HttpClient', 'Observable', 'Subject', 'BehaviorSubject'],
-        questionTime: '40s',
+        questionWeightage: 6,
+        questionTime: 40,
         createdOn: Date.now(),
         updatedOn: Date.now(),
       },
     ];
     console.log('Mock Questions Loaded:', this.questions);
   }
+  
 
   onSearchQueryChange(newQuery: string): void {
     this.searchQuery = newQuery;
