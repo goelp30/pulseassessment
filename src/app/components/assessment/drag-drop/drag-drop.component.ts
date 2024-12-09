@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
 import { AssessmentList,SubjectCounts } from '../../../models/newassessment'; // Import the AssessmentList type
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AfterViewInit, Component, OnInit } from '@angular/core';
@@ -9,7 +9,6 @@ import { Assessment } from '../../../models/assessment';
 import { TableNames } from '../../../enums/TableName';
 import {  Router } from '@angular/router';
 import { ToastrService, ToastrModule } from 'ngx-toastr';
-
 @Component({
   selector: 'app-drag-drop',
   standalone: true,
@@ -239,11 +238,14 @@ export class DragDropComponent implements AfterViewInit, OnInit {
 
     this.checkAssessmentTitleUniqueness(this.assessmentTitle).then((isUnique) => {
         if (!isUnique) {
-            alert('This assessment title already exists. Please choose a unique title.');
-            return;
+            // Set the warning in assessmentTitleWarning instead of using alert
+            this.assessmentTitleWarning = 'This assessment title already exists. Please choose a unique title.';
+            return; // Stop further execution if title is not unique
         }
 
         // Proceed with saving the assessment data if the title is unique
+        this.assessmentTitleWarning = ''; // Clear any previous warning if title is unique
+
         this.addAssessment().then((assessmentId: string) => {
             if (this.rightListForm.valid) {
                 const assessmentList: AssessmentList = {
@@ -271,16 +273,17 @@ export class DragDropComponent implements AfterViewInit, OnInit {
                     })
                     .catch((error) => {
                         console.error('Error saving data:', error);
-                        alert('Failed to save data. Please try again.');
+                        this.toastr.error('Failed to save data. Please try again.');
                     });
             } else {
-                alert('Please fill in the form correctly.');
+                this.toastr.warning('Please fill in the form correctly.');
             }
         }).catch((error) => {
-            alert('Failed to create assessment. ' + error);
+            this.toastr.error('Failed to create assessment. ' + error);
         });
     });
 }
+
 
   
 
@@ -355,9 +358,17 @@ validateAssessmentTitle(): void {
     this.validationWarnings[index] = '';
   }
   canSave(): boolean {
-    // Check if the form is valid and that the assessment title is not empty or just spaces
+    // Check if the form is valid (including all nested fields like difficulty levels, etc.)
     const isFormValid = this.rightListForm.valid;
-    const isAssessmentTitleValid = this.assessmentTitle.trim().length > 0;  // Checks if the title is not just spaces
-    return isFormValid && isAssessmentTitleValid;
+  
+    // Check if the assessment title is valid (not empty or just spaces)
+    const isAssessmentTitleValid = this.assessmentTitle.trim().length > 0;
+  
+    // Additional condition to check if the title is unique (based on warning)
+    const isTitleUnique = !this.assessmentTitleWarning;
+  
+    // If any validation is not fulfilled, the save button should be disabled
+    return isFormValid && isAssessmentTitleValid && isTitleUnique;
   }
+  
 }

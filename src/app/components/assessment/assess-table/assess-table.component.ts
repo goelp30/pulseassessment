@@ -18,7 +18,7 @@ import { ToastrService, ToastrModule } from 'ngx-toastr';
 })
 export class AssessTableComponent implements OnInit,AfterViewInit {
   assessments: Assessment[] = [];
-  tableColumns: string[] = [ 'assessmentName', 'assessmentType','isDisabled'];
+  tableColumns: string[] = [ 'assessmentName', 'assessmentType'];
   columnAliases: { [key: string]: string[] } = {
     assessmentName: ['Assessment Name'],
     assessmentType: ['Assessment Type']

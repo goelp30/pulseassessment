@@ -23,42 +23,41 @@
 
         <!-- Toggle Section -->
        
-        <div class="flex justify-around">
-            <div class="mb-3">
-                <div class="flex">
-                <button (click)="toggleViewMode('internal')"
-                    class="px-4 py-2 rounded-l-full border border-gray-300 transition-all duration-300" [ngClass]="{
-              'bg-purple-500 text-white': viewMode === 'internal',
-              'bg-white text-gray-700': viewMode !== 'internal'
-            }">
-                    Internal View
-                </button>
-                <button (click)="toggleViewMode('external')"
-                    class="px-4 py-2 rounded-r-full border border-gray-300 transition-all duration-300" [ngClass]="{
-              'bg-green-500 text-white': viewMode === 'external',
-              'bg-white text-gray-700': viewMode !== 'external'
-            }">
-                    External View
-                </button>
-            </div>
-            <div class="flex space-x-2 justify-center mt-2">
-                <input type="radio">External
-                <input type="radio">Internal
-            </div>
-            <br>
-                @if(viewMode === 'internal'){<div class="mb-3">
+        <div class="flex justify-around mt-6">
+            <div class="mb-3 w-full max-w-sm">
+                <div class="flex items-center">
+                    <!-- Internal View Radio -->
+                    <label class="inline-flex items-center mr-6">
+                        <input type="radio" name="viewMode" value="internal" [(ngModel)]="viewMode" (change)="toggleViewMode('internal')"
+                            class="form-radio h-5 w-5 text-blue-500 border-gray-300 focus:ring-2 focus:ring-blue-500" />
+                        <span class="ml-2 text-gray-700">Internal View</span>
+                    </label>
+                    <!-- External View Radio -->
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="viewMode" value="external" [(ngModel)]="viewMode" (change)="toggleViewMode('external')"
+                            class="form-radio h-5 w-5 text-blue-500 border-gray-300 focus:ring-2 focus:ring-blue-500" />
+                        <span class="ml-2 text-gray-700">External View</span>
+                    </label>
+                </div>
+                
+                <!-- Internal View Content -->
+                <div *ngIf="viewMode === 'internal'" class="mt-4">
                     <p class="text-gray-700">
                         You are currently managing Internal Assessment.
                     </p>
-                </div>}
-                @if(viewMode === 'external'){<div class="mb-6">
-                    <p class="text-center text-gray-700">
+                </div>
+                
+                <!-- External View Content -->
+                <div *ngIf="viewMode === 'external'" class="mt-4">
+                    <p class=" text-gray-700">
                         You are currently managing External Assessment.
                     </p>
-                </div>}
+                </div>
             </div>
-            <div class="mt-0">
-                <div class="my-2 flex items-center ">
+        
+            <!-- Additional Section: Date Created and Last Updated -->
+            <!-- <div class="mt-0 w-full max-w-sm">
+                <div class="my-2 flex items-center">
                     <button 
                         class="px-4 py-2 bg-purple-500 text-white rounded-l-full border border-gray-300 transition-all duration-300 w-1/2">
                         Created On:
@@ -84,9 +83,9 @@
                         class="border border-gray-300 p-2 w-1/2"
                     />
                 </div>
-            </div>
-            
+            </div> -->
         </div>
+        
        
         <!-- Conditional Content Based on View Mode -->
        
@@ -137,7 +136,7 @@
                 <ul formArrayName="rightListInputs">
                     @for(group of rightListInputs.controls;track group;let i = $index){<li class="py-2 border-b">
                         <div class="flex flex-col gap-2 ">
-                            <span class="font-bold text-xl">{{ group.value.item }}</span>
+                            <span class="font-bold text-xl">{{ group.value.item |titlecase }}</span>
                             <div [formGroupName]="i" class="grid grid-cols-2 gap-3">
                                 <!-- Easy Input -->
                                 <div class="flex items-center">
