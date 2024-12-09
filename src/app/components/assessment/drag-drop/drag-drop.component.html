@@ -6,44 +6,92 @@
         </h2>
 
         <div class="mb-6">
-            <label for="assessmentTitle" class="block text-gray-700 font-medium mb-2 text-center">
+            <label for="assessmentTitle" class="block text-gray-700 font-medium mb-2">
                 Enter Assessment Title:
             </label>
-            <input type="text" id="assessmentTitle" [(ngModel)]="assessmentTitle"
+            <input type="text" required id="assessmentTitle" [(ngModel)]="assessmentTitle"
                 class="border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="Enter title here..." />
+                placeholder="Enter title here..."  (ngModelChange)="onAssessmentTitleChange()" />
+            
+            <!-- Display Warning -->
+            <div *ngIf="assessmentTitleWarning" class="warning-message text-red-900">
+                {{ assessmentTitleWarning }}
+            </div>
+            
         </div>
+        
 
         <!-- Toggle Section -->
-        <div class="flex justify-center mb-6">
-            <button (click)="toggleViewMode('internal')"
-                class="px-4 py-2 rounded-l-full border border-gray-300 transition-all duration-300" [ngClass]="{
-          'bg-purple-500 text-white': viewMode === 'internal',
-          'bg-white text-gray-700': viewMode !== 'internal'
-        }">
-                Internal View
-            </button>
-            <button (click)="toggleViewMode('external')"
-                class="px-4 py-2 rounded-r-full border border-gray-300 transition-all duration-300" [ngClass]="{
-          'bg-green-500 text-white': viewMode === 'external',
-          'bg-white text-gray-700': viewMode !== 'external'
-        }">
-                External View
-            </button>
+       
+        <div class="flex justify-around">
+            <div class="mb-3">
+                <div class="flex">
+                <button (click)="toggleViewMode('internal')"
+                    class="px-4 py-2 rounded-l-full border border-gray-300 transition-all duration-300" [ngClass]="{
+              'bg-purple-500 text-white': viewMode === 'internal',
+              'bg-white text-gray-700': viewMode !== 'internal'
+            }">
+                    Internal View
+                </button>
+                <button (click)="toggleViewMode('external')"
+                    class="px-4 py-2 rounded-r-full border border-gray-300 transition-all duration-300" [ngClass]="{
+              'bg-green-500 text-white': viewMode === 'external',
+              'bg-white text-gray-700': viewMode !== 'external'
+            }">
+                    External View
+                </button>
+            </div>
+            <div class="flex space-x-2 justify-center mt-2">
+                <input type="radio">External
+                <input type="radio">Internal
+            </div>
+            <br>
+                @if(viewMode === 'internal'){<div class="mb-3">
+                    <p class="text-gray-700">
+                        You are currently managing Internal Assessment.
+                    </p>
+                </div>}
+                @if(viewMode === 'external'){<div class="mb-6">
+                    <p class="text-center text-gray-700">
+                        You are currently managing External Assessment.
+                    </p>
+                </div>}
+            </div>
+            <div class="mt-0">
+                <div class="my-2 flex items-center ">
+                    <button 
+                        class="px-4 py-2 bg-purple-500 text-white rounded-l-full border border-gray-300 transition-all duration-300 w-1/2">
+                        Created On:
+                    </button>
+                    <input
+                        id="dateCreated"
+                        type="text"
+                        value="{{rightListForm.value.createdOn | date:'yyyy-MM-dd HH:mm:ss'}}"
+                        disabled
+                        class="border border-gray-300 p-2 w-1/2"
+                    />
+                </div>
+                <div class="my-2 flex items-center">
+                    <button 
+                        class="px-4 py-2 bg-purple-500 text-white rounded-l-full border border-gray-300 transition-all duration-300 w-1/2">
+                        Last Updated On:
+                    </button>
+                    <input
+                        id="dateUpdated"
+                        type="text"
+                        value="{{rightListForm.value.createdOn | date:'yyyy-MM-dd HH:mm:ss'}}"
+                        disabled
+                        class="border border-gray-300 p-2 w-1/2"
+                    />
+                </div>
+            </div>
+            
         </div>
-
+       
         <!-- Conditional Content Based on View Mode -->
-        @if(viewMode === 'internal'){<div class="mb-6">
-            <p class="text-center text-gray-700">
-                You are currently managing Internal Assessment.
-            </p>
-        </div>}
+       
 
-        @if(viewMode === 'external'){<div class="mb-6">
-            <p class="text-center text-gray-700">
-                You are currently managing External Assessment.
-            </p>
-        </div>}
+       
 
         <!-- Drag-and-Drop Lists Section -->
         <div class="flex flex-col lg:flex-row gap-5 mb-6">
@@ -88,8 +136,8 @@
             <form [formGroup]="rightListForm">
                 <ul formArrayName="rightListInputs">
                     @for(group of rightListInputs.controls;track group;let i = $index){<li class="py-2 border-b">
-                        <div class="flex flex-col gap-2">
-                            <span class="text-center font-bold text-xl">{{ group.value.item }}</span>
+                        <div class="flex flex-col gap-2 ">
+                            <span class="font-bold text-xl">{{ group.value.item }}</span>
                             <div [formGroupName]="i" class="grid grid-cols-2 gap-3">
                                 <!-- Easy Input -->
                                 <div class="flex items-center">
@@ -147,11 +195,18 @@
 
         <!-- Save Form Data Button -->
         <div class="flex justify-center mt-6">
-            <button (click)="saveFormData()"
-                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all">
-                Save
+            <button 
+              (click)="saveFormData()"
+              [disabled]="!canSave()" 
+              [ngClass]="{
+                'bg-blue-500 hover:bg-blue-600': canSave(),
+                'bg-gray-400 cursor-not-allowed': !canSave()
+              }"
+              class="text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all">
+              Save
             </button>
-        </div>
+          </div>
+          
     </div>
 </div>
 <!-- removing -->

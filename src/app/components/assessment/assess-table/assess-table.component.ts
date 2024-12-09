@@ -18,7 +18,7 @@ import { ToastrService, ToastrModule } from 'ngx-toastr';
 })
 export class AssessTableComponent implements OnInit,AfterViewInit {
   assessments: Assessment[] = [];
-  tableColumns: string[] = [ 'assessmentName', 'assessmentType'];
+  tableColumns: string[] = [ 'assessmentName', 'assessmentType','isDisabled'];
   columnAliases: { [key: string]: string[] } = {
     assessmentName: ['Assessment Name'],
     assessmentType: ['Assessment Type']
@@ -30,6 +30,7 @@ export class AssessTableComponent implements OnInit,AfterViewInit {
   isEditMode: boolean = false;
   eConfirmationVisible: boolean = false;
   selectedAssessmentToDelete: Assessment | null = null;
+  searchPlaceholder:string='Search Asessments...'
 
   // For handling tabs
   selectedTab: string = 'all';
