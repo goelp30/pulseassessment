@@ -255,6 +255,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
       const record = {
         assessmentId: this.assessmentId,
         url: userLink,
+        email:user.employeeEmail || user.candidateEmail,
         userId: user.candidateId || user.employeeId || null,
         userName: user.candidateName || user.employeeName,
         assessmentName: this.assessmentName,

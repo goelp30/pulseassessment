@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Question } from '../../models/question.model';
+import { Question } from '../../../../models/question.model';
 
 @Component({
   selector: 'app-question-display',

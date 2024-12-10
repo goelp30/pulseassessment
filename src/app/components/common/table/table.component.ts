@@ -38,7 +38,7 @@ export class TableComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     if (this.tableName) {
-      this.fireBaseService.getAllDataByFilter(this.tableName, 'isDisabled', false).subscribe((res) => {
+      this.fireBaseService.getAllData(this.tableName).subscribe((res) => {
         this.tableData = res;
         this.totalPages = Math.ceil(this.tableData.length / this.itemsPerPage);
         this.generatePagination();

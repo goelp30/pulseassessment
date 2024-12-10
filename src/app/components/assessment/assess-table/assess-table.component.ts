@@ -1,4 +1,5 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { AuthService } from '../../../../sharedServices/auth.service';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Assessment } from '../../../models/assessment';
 import { TableNames } from '../../../enums/TableName';
@@ -15,7 +16,7 @@ import { ToastrService, ToastrModule } from 'ngx-toastr';
   templateUrl: './assess-table.component.html',
   styleUrls: ['./assess-table.component.css']
 })
-export class AssessTableComponent {
+export class AssessTableComponent implements OnInit,AfterViewInit {
   assessments: Assessment[] = [];
   tableColumns: string[] = [ 'assessmentName', 'assessmentType'];
   columnAliases: { [key: string]: string[] } = {
@@ -53,10 +54,22 @@ export class AssessTableComponent {
   ];
 
   constructor(
+    private auth: AuthService,
     private fireBaseService: FireBaseService<Assessment>,
     private toastr: ToastrService,
     private cdr: ChangeDetectorRef  // Inject ChangeDetectorRef
   ) { }
+
+  ngOnInit(): void {
+    this.getAssessments();  // Fetch assessments on component initialization
+  }
+  ngAfterViewInit(): void {
+    this.getAssessments();
+  }
+
+  logout() {
+    this.auth.logout();
+  }
 
   onSearchQueryChange(newQuery: string): void {
     this.searchQuery = newQuery;
@@ -78,13 +91,19 @@ export class AssessTableComponent {
 
   // Get assessments with isDisabled: false (only active assessments)
   getAssessments() {
-    this.fireBaseService.getAllDataByFilter(this.tableName, 'isDisabled', false).subscribe((res: Assessment[]) => {
+    this.fireBaseService.getAllData(this.tableName).subscribe((res: Assessment[]) => {
       // Initially filter out assessments with isDisabled = true
-      console.log('1', res)
+      const activeAssessments = res.filter(assessment => !assessment.isDisabled);
+
       // Set the filtered active assessments
-      this.assessments = res;
+      this.assessments = activeAssessments;
+
+      // Now apply the tab-specific filtering (internal, external, or all)
+      this.filterAssessmentsByTab();  
+
       // Trigger change detection manually if needed
-      this.cdr.detectChanges();
+      this.cdr.detectChanges();  
+      // console.log(this.assessments);  // Check the filtered assessments in the console
     });
   }
 
@@ -99,7 +118,7 @@ export class AssessTableComponent {
     if (this.selectedAssessmentToDelete) {
       const assessmentToDelete = this.selectedAssessmentToDelete;
       assessmentToDelete.isDisabled = true; // Mark as deleted (disabled)
-
+      
       this.fireBaseService.update(`${this.tableName}/${assessmentToDelete.assessmentId}`, assessmentToDelete)
         .then(() => {
           this.toastr.success('Assessment deleted successfully', 'Deleted');
@@ -141,6 +160,28 @@ export class AssessTableComponent {
       }).catch(error => {
         console.error('Error updating assessment:', error);
       });
+    }
+  }
+
+  // Handle tab change
+  onTabChange(selectedTab: string) {
+    this.selectedTab = selectedTab;
+    this.filterAssessmentsByTab();  // Apply filter based on the selected tab
+  }
+
+  // Filter assessments by the selected tab (internal, external, or all)
+  filterAssessmentsByTab() {
+    // If the selected tab is 'internal', filter assessments to show only internal assessments
+    if (this.selectedTab === 'internal') {
+      this.assessments = this.assessments.filter(a => a.assessmentType === 'internal');
+    }
+    // If the selected tab is 'external', filter assessments to show only external assessments
+    else if (this.selectedTab === 'external') {
+      this.assessments = this.assessments.filter(a => a.assessmentType === 'external');
+    }
+    // For 'all', keep all active assessments (already filtered to exclude 'isDisabled: true')
+    else {
+      this.getAssessments();  // Re-fetch and filter to reset
     }
   }
 }

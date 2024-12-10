@@ -22,7 +22,8 @@
         <thead>
           <tr>
             <th class="px-4 py-2 border-b">Assessment Name</th>
-            <th class="px-4 py-2 border-b">User Name</th>
+            <th class="px-4 py-2 border-b">Candidate Name</th>
+            <th class="px-4 py-2 border-b">Candidate Email</th>
             <th class="px-4 py-2 border-b">Status</th>
           </tr>
         </thead>
@@ -36,21 +37,20 @@
               {{ assessment.userName }}
             </td>
             <td class="px-4 py-2 border-b text-gray-700">
-              @if (!isLinkExpired(assessment.expiryDate)) {
-                <a
-                (click)="onLinkClick(assessment)"
-                [class.text-gray-500]="assessment.isLinkDisabled"
-                [class.pointer-events-none]="assessment.isLinkDisabled"
-                [routerLink]="!assessment.isLinkDisabled ? ['/generatelink', assessment.urlId] : null"
-                class="text-blue-500 underline"
+              {{ assessment.email }}
+            </td>
+            <td class="px-4 py-2 border-b">
+              <span
+                [ngClass]="{
+                  'text-green-600': assessment.status === 'Active',
+                  'text-red-600': assessment.status === 'Expired',
+                  'text-yellow-600': assessment.status === 'In Progress',
+                  'text-blue-600': assessment.status === 'Completed',
+                  'text-gray-600': assessment.status === 'Invalidated'
+                }"
               >
-                Active
-              </a>
-              
-              } 
-               @if (isLinkExpired(assessment.expiryDate)) {
-              <span class="text-red-600"> Expired </span>
-              }
+                {{ assessment.status }}
+              </span>
             </td>
           </tr>
           }

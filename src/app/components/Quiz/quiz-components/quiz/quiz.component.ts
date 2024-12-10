@@ -7,7 +7,7 @@ import { QuizTimerComponent } from '../quiz-timer/quiz-timer.component';
 import { SubmissionModalComponent } from '../submission-modal/submission-modal.component';
 import { QuizService } from '../../services/quiz.service';
 import { ToastService } from '../../services/toast.service';
-import { Question } from '../../models/question.model';
+import { Question } from '../../../../models/question.model';
 
 @Component({
   selector: 'app-quiz',
