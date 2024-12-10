@@ -1,0 +1,66 @@
+.cursor-grab {
+    cursor: grab;
+  }
+  .cursor-grabbing {
+    cursor: grabbing;
+  }
+  .bg-purple-500 {
+    background-color: #6b46c1;
+  }
+  .text-white {
+    color: white;
+  }
+  
+  /* Equal size for both lists with scrollbars */
+#sortable-left,
+#sortable-right {
+  max-height: 300px; /* Fixed height for both lists */
+  min-height: 300px; /* Ensure lists have equal height */
+  overflow-y: auto; /* Enable vertical scrolling if content exceeds */
+  overflow-x: hidden; /* Disable horizontal scrolling */
+  padding: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #e2e8f0; /* Optional: Add a border for better clarity */
+  border-radius: 5px;
+}
+
+/* Scrollbar styling (optional) */
+#sortable-left::-webkit-scrollbar,
+#sortable-right::-webkit-scrollbar {
+  width: 8px;
+}
+
+#sortable-left::-webkit-scrollbar-thumb,
+#sortable-right::-webkit-scrollbar-thumb {
+  background-color: #cbd5e0;
+  border-radius: 4px;
+}
+
+#sortable-left::-webkit-scrollbar-thumb:hover,
+#sortable-right::-webkit-scrollbar-thumb:hover {
+  background-color: #a0aec0;
+}
+
+/* Default light theme styles */
+body {
+  background-color: white;
+  color: black;
+}
+
+.dark {
+  background-color: #121212;
+  color: white;
+}
+
+.dark .sortable-list {
+  background-color: #333;
+}
+
+.dark .sortable-item {
+  background-color: #444;
+  border: 1px solid #555;
+}
+
+.dark .sortable-item:hover {
+  background-color: #555;
+}
