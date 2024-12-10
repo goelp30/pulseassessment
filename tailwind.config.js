@@ -7,7 +7,5 @@ module.exports = withMT({
     extend: {},
   },
   plugins: [],
-}
-
-);
-
+});
+//  "./src/**/*.{html,ts}",
