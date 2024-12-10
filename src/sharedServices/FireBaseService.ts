@@ -7,6 +7,9 @@ import { map, Observable } from 'rxjs';
 })
 
 export class FireBaseService<T> {
+    getData(arg0: string) {
+      throw new Error('Method not implemented.');
+    }
 
     documentToDomainObject = (_: any) => {
         const object = _.payload.val();
@@ -22,7 +25,7 @@ export class FireBaseService<T> {
     create(tableName: string, params: T) {
         return this.database.object(tableName).set(params);
     }
-
+   
     /***
      * Update new
      */
