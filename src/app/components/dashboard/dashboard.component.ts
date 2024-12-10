@@ -4,11 +4,12 @@ import { AuthService } from '../../../sharedServices/auth.service';
 import { FireBaseService } from '../../../sharedServices/FireBaseService'; 
 import { Subject } from '../../models/subject';
 import { TableNames } from '../../enums/TableName';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [],
+  imports:  [RouterModule],
   templateUrl: './dashboard.component.html'
 })
 
@@ -16,7 +17,7 @@ export class DashboardComponent implements OnInit {
   
   subjects: Subject[] = [];
 
-  constructor(private auth : AuthService, private fireBaseService: FireBaseService<Subject>) { }
+  constructor(private auth : AuthService, private fireBaseService: FireBaseService<Subject>,private router: Router) { }
 
   ngOnInit(): void {
     this.fireBaseService.listensToChange(TableNames.Subject).subscribe((res) => {
@@ -55,4 +56,9 @@ export class DashboardComponent implements OnInit {
       console.log(this.subjects);
     })
   }
+
+  getAssessmentList() {
+    this.router.navigate(['/assessment-list']);
+  }
+
 }

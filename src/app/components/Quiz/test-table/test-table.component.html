@@ -1,0 +1,40 @@
+<div class="flex flex-col w-full text-gray-700 bg-white shadow-md rounded-xl overflow-hidden">
+    <div class="p-6">
+      <table class="w-full border-collapse table-auto">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-4 py-2 text-left font-medium text-gray-600">Assessment Name</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-600">Assessment ID</th>
+            <th class="px-4 py-2 text-center font-medium text-gray-600">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngIf="assessments.length > 0; else noData">
+            <tr
+              *ngFor="let row of assessments"
+              class="border-b hover:bg-gray-50"
+            >
+              <td class="px-4 py-2 text-gray-800">{{ row.assessmentName }}</td>
+              <td class="px-4 py-2 text-gray-800">{{ row.assessmentId }}</td>
+              <td class="px-4 py-2 text-center">
+                <button
+                  class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                  (click)="startQuiz(row)"
+                >
+                  Start Quiz
+                </button>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+  
+      <!-- No Data Found Section -->
+      <ng-template #noData>
+        <div class="text-center mt-4 text-gray-500">
+          No assessments available.
+        </div>
+      </ng-template>
+    </div>
+  </div>
+  
