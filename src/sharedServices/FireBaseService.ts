@@ -43,6 +43,10 @@ export class FireBaseService<T> {
     getAllData(tableName: string) {
         return this.database.list(tableName).snapshotChanges().pipe(map(actions => actions.map(this.documentToDomainObject)));
     }
+
+    /**
+     * To Add Data
+     */
     addData(tableName: string, id: string, params: T): Promise<void> {
         return this.database.object(`${tableName}/${id}`).set(params);
       }
