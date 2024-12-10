@@ -105,7 +105,7 @@ export class AssessTableComponent implements OnInit, AfterViewInit {
   getAssessments() {
     this.fireBaseService.getAllData(this.tableName).subscribe((res: Assessment[]) => {
       const activeAssessments = res.filter(assessment => !assessment.isDisabled);
-      this.assessments = activeAssessments;
+      this.assessments = activeAssessments.sort((a, b) => b.dateCreated - a.dateCreated);
       this.filterAssessmentsByTab();
       this.cdr.detectChanges();
     });
@@ -125,7 +125,7 @@ export class AssessTableComponent implements OnInit, AfterViewInit {
 
       this.fireBaseService.update(`${this.tableName}/${assessmentToDelete.assessmentId}`, assessmentToDelete)
         .then(() => {
-          this.toastr.success('Assessment deleted successfully', 'Deleted');
+          this.toastr.error('Assessment deleted successfully', 'Deleted');
           this.eConfirmationVisible = false;
           this.getAssessments();
         })
@@ -152,9 +152,10 @@ viewAssessment(row: any) {
   })
 }
 
-  closeModal(): void {
-    this.isModalVisible = false;
-  }
+closeModal(): void {
+  this.isModalVisible = false; // For the Assessment Details modal
+  this.eConfirmationVisible = false; // For the Delete Confirmation modal
+}
 
 
   // Edit the selected assessment

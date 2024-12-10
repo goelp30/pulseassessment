@@ -212,12 +212,21 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         });
     });
   }
+calculateAutoEvaluated(subjects: any[]): boolean {
+  // Check if any subject has a 'descriptive' value greater than 0
+  let isAutoEvaluated = true; // Default to true
+  subjects.forEach(subject => {
+    console.log(`Subject: ${subject.item}, Descriptive Value: ${subject.descriptive}`); // Log subject and its descriptive value
+    if (subject.descriptive > 0) {
+      isAutoEvaluated = false; // If descriptive value is greater than 0, set to false
+    }
+  });
+  
+  return isAutoEvaluated;
+}
 
-  isAutoEvaluated = this.calculateAutoEvaluated(this.leftList);
-  calculateAutoEvaluated(subjects: any[]): boolean {
-    // Check if any subject has a 'descriptive' value greater than 0
-    return !subjects.some(subject => subject.descriptive > 0);
-  }
+  isAutoEvaluated = this.calculateAutoEvaluated(this.rightList);
+
   checkAssessmentTitleUniqueness(title: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
       this.firebaseService.getAllData(this.assess_table).subscribe((assessments: any[]) => {
@@ -273,6 +282,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
               // Reset and clear state after save
               this.resetRightListAndForm();
               this.assessmentTitle = ''; // Clear the title
+              this.router.navigate(['/assessment-list']);
             })
             .catch((error) => {
               console.error('Error saving data:', error);
@@ -300,9 +310,12 @@ export class DragDropComponent implements AfterViewInit, OnInit {
 
   fetchLeftList(): void {
     this.firebaseService.getAllData(this.tableName).subscribe((data: any[]) => {
-      this.leftList = data.map(item => item.subjectName); // Assuming subjectName field exists
+      this.leftList = data
+        .map(item => item.subjectName) // Assuming subjectName field exists
+        .sort((a, b) => a.localeCompare(b)); // Sort subjects alphabetically
     });
   }
+  
 
   getCurrentTimestamp(): string {
     return new Date().toISOString();
