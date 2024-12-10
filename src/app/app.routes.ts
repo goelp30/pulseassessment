@@ -12,6 +12,7 @@ import { LinkGenerationComponent } from './components/linkGeneration/link-genera
 import { DragDropComponent } from './components/assessment/drag-drop/drag-drop.component';
 import { QuizHomeComponent } from './components/Quiz/quiz-home/quiz-home.component';
 import { TestTableComponent } from './components/Quiz/test-table/test-table.component';
+import { TermsConditionsComponent } from './components/Quiz/terms-conditions/terms-conditions.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -28,7 +29,7 @@ export const routes: Routes = [
   { path: 'linkexpired', component: LinkExpiredComponent },
   { path: 'alreadyattended', component: AlreadyAttendedComponent },
   // Quiz Module Routes 
-  
+  {path:'termsandconditions',component:TermsConditionsComponent},
   {
     path: 'assessment-list',
     component: AssessmentListComponent,
