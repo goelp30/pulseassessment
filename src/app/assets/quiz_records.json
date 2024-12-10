@@ -1,0 +1,155 @@
+{
+    "candidateId_123": {
+      "assessmentId_456": {
+        "subjectId_101": {
+          "questionId_1": {
+            "questionText": "What is the capital of France?",
+            "options": ["Paris", "London", "Berlin", "Rome"],
+            "selected_option": ["Paris"],
+            "max_marks": 1,
+            "questionType": "single"
+          },
+          "questionId_2": {
+            "questionText": "What is 2 + 2?",
+            "options": ["3", "4", "5", "6"],
+            "selected_option": ["4"],
+            "max_marks": 1,
+            "questionType": "single"
+          },
+          "questionId_3": {
+            "questionText": "Which language is primarily spoken in Japan?",
+            "options": ["Japanese", "Korean", "Mandarin", "Thai"],
+            "selected_option": ["Japanese"],
+            "max_marks": 1,
+            "questionType": "single"
+          },
+          "questionId_4": {
+            "questionText": "Which is the largest planet in the Solar System?",
+            "options": ["Earth", "Jupiter", "Mars", "Saturn"],
+            "selected_option": ["Jupiter"],
+            "max_marks": 1,
+            "questionType": "single"
+          },
+          "questionId_5": {
+            "questionText": "Who wrote 'To Kill a Mockingbird'?",
+            "options": ["Harper Lee", "Mark Twain", "Jane Austen", "J.K. Rowling"],
+            "selected_option": ["Harper Lee"],
+            "max_marks": 1,
+            "questionType": "single"
+          },
+          "questionId_6": {
+            "questionText": "Select all even numbers.",
+            "options": ["1", "2", "3", "4", "5", "6"],
+            "selected_option": ["2", "4", "6"],
+            "max_marks": 1,
+            "questionType": "multiple"
+          },
+          "questionId_7": {
+            "questionText": "Select the programming languages.",
+            "options": ["Python", "JavaScript", "HTML", "CSS"],
+            "selected_option": ["Python", "JavaScript"],
+            "max_marks": 1,
+            "questionType": "multiple"
+          },
+          "questionId_8": {
+            "questionText": "Select the primary colors.",
+            "options": ["Red", "Green", "Blue", "Yellow"],
+            "selected_option": ["Red", "Blue", "Yellow"],
+            "max_marks": 1,
+            "questionType": "multiple"
+          },
+          "questionId_9": {
+            "questionText": "Select all mammals.",
+            "options": ["Whale", "Shark", "Lion", "Penguin"],
+            "selected_option": ["Whale", "Lion"],
+            "max_marks": 1,
+            "questionType": "multiple"
+          },
+          "questionId_10": {
+            "questionText": "Select all countries in Europe.",
+            "options": ["France", "Brazil", "Germany", "India"],
+            "selected_option": ["France", "Germany"],
+            "max_marks": 1,
+            "questionType": "multiple"
+          }
+        }
+      }
+    },
+    "candidateId_456": {
+      "assessmentId_789": {
+        "subjectId_202": {
+          "questionId_1": {
+            "questionText": "What is the capital of Italy?",
+            "options": ["Rome", "Paris", "Berlin", "Madrid"],
+            "selected_option": ["Rome"],
+            "max_marks": 1,
+            "questionType": "single"
+          },
+          "questionId_2": {
+            "questionText": "Which element has the chemical symbol 'O'?",
+            "options": ["Oxygen", "Hydrogen", "Nitrogen", "Helium"],
+            "selected_option": ["Oxygen"],
+            "max_marks": 1,
+            "questionType": "single"
+          },
+          "questionId_3": {
+            "questionText": "What is 5 * 6?",
+            "options": ["25", "30", "35", "40"],
+            "selected_option": ["30"],
+            "max_marks": 1,
+            "questionType": "single"
+          },
+          "questionId_4": {
+            "questionText": "Select all prime numbers.",
+            "options": ["2", "3", "4", "5", "6"],
+            "selected_option": ["2", "3", "5"],
+            "max_marks": 1,
+            "questionType": "multiple"
+          },
+          "questionId_5": {
+            "questionText": "Select all vowels.",
+            "options": ["A", "E", "I", "O", "U"],
+            "selected_option": ["A", "E", "I", "O", "U"],
+            "max_marks": 1,
+            "questionType": "multiple"
+          },
+          "questionId_6": {
+            "questionText": "Select all oceans.",
+            "options": ["Atlantic", "Pacific", "Arctic", "Mediterranean"],
+            "selected_option": ["Atlantic", "Pacific", "Arctic"],
+            "max_marks": 1,
+            "questionType": "multiple"
+          },
+          "questionId_7": {
+            "questionText": "Explain the theory of relativity.",
+            "options": [],
+            "selected_option": [],
+            "max_marks": 5,
+            "questionType": "descriptive"
+          },
+          "questionId_8": {
+            "questionText": "Describe the process of photosynthesis.",
+            "options": [],
+            "selected_option": [],
+            "max_marks": 5,
+            "questionType": "descriptive"
+          },
+          "questionId_9": {
+            "questionText": "Write a short essay on climate change.",
+            "options": [],
+            "selected_option": [],
+            "max_marks": 10,
+            "questionType": "descriptive"
+          },
+          "questionId_10": {
+            "questionText": "Explain the importance of education.",
+            "options": [],
+            "selected_option": [],
+            "max_marks": 5,
+            "questionType": "descriptive"
+          }
+        }
+      }
+    }
+  }
+  
