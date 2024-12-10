@@ -1,7 +1,12 @@
 export const enum TableNames {
+
     Employee = 'employee',
     Candidate = 'candidate',
-    Subject = "Subject"
+    
 }
 
 
+    Subject = 'subject',
+    Assessment = 'assessment',
+    AssessmentList='assessmentList'
+}
