@@ -24,7 +24,7 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() onSearchQueryChange: (newQuery: string) => void = () => {};
   @Input() tabs: string[] = []; // Empty array means no tabs
   @Input() filterKey: string = '';
-  @Input() tabAliases: { [key: string]: string } = {};
+  @Input() tabAliases: { [key: string]: string } = {};  
   @Input() searchPlaceholder:string='Search';
 
   currentPage: number = 1;

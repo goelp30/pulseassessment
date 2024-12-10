@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
-import { AssessmentList,SubjectCounts } from '../../../models/newassessment'; // Import the AssessmentList type
+import { AssessmentList, SubjectCounts } from '../../../models/newassessment'; // Import the AssessmentList type
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
@@ -7,7 +7,7 @@ import { Subject } from '../../../models/subject';
 import Sortable from 'sortablejs';
 import { Assessment } from '../../../models/assessment';
 import { TableNames } from '../../../enums/TableName';
-import {  Router } from '@angular/router';
+import { NavigationStart, Router } from '@angular/router';
 import { ToastrService, ToastrModule } from 'ngx-toastr';
 @Component({
   selector: 'app-drag-drop',
@@ -15,10 +15,12 @@ import { ToastrService, ToastrModule } from 'ngx-toastr';
   templateUrl: './drag-drop.component.html',
   styleUrls: ['./drag-drop.component.css'],
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
-  providers:[DatePipe],
+  providers: [DatePipe],
 })
 export class DragDropComponent implements AfterViewInit, OnInit {
   leftList: string[] = []; // Dynamically loaded from Firebase
+  subjectList: string[] = [];
+  updatedList: string[] = [];
   rightList: string[] = [];
   createdOn: string = '';
   savedFormData: any = null;
@@ -27,10 +29,16 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   viewMode: 'internal' | 'external' = 'internal'; // Toggle view mode
   validationWarnings: string[] = []; // Warnings for Fvalidation
   assessmentTitle: string = ''; // Title for assessment
-  tableName = 'subject'; // Firebase collection name for subjects
-  assess_table=TableNames.Assessment;
+  tableName = TableNames.Subject; // Firebase collection name for subjects
+  assess_table = TableNames.Assessment;
 
-  constructor(private fb: FormBuilder,private router:Router, private firebaseService: FireBaseService<Subject | AssessmentList | Assessment>, private datePipe: DatePipe,private toastr: ToastrService,) {}
+  constructor(
+    private fb: FormBuilder,
+    private router: Router, // Inject Router service
+    private firebaseService: FireBaseService<Subject | AssessmentList | Assessment>,
+    private datePipe: DatePipe,
+    private toastr: ToastrService,
+  ) { }
 
   ngOnInit(): void {
     this.initializeRightListForm(); // Initialize form
@@ -47,6 +55,13 @@ export class DragDropComponent implements AfterViewInit, OnInit {
 
     // Subscribe to value changes for right list inputs (difficulty levels)
     this.subscribeToFormChanges();
+
+    // Listen for route changes and clear local storage when navigating to a new route
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationStart) {
+        this.clearLocalStorageOnNavigation();  // Clear local storage on route change
+      }
+    });
   }
 
   ngAfterViewInit(): void {
@@ -77,6 +92,18 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       new Sortable(document.getElementById('sortable-left')!, options);
       new Sortable(document.getElementById('sortable-right')!, options);
     }
+  }
+
+  // Method to clear local storage when navigating to another route
+  clearLocalStorageOnNavigation(): void {
+    // Clear all local storage data, or only the data you need
+    localStorage.removeItem('leftList');
+    localStorage.removeItem('rightList');
+    localStorage.removeItem('rightListInputs');
+    localStorage.removeItem('createdOn');
+    localStorage.removeItem('inputText');
+    localStorage.removeItem('savedData');
+    localStorage.removeItem('appVersion'); // Clear the version as well
   }
 
   toggleViewMode(mode: 'internal' | 'external'): void {
@@ -182,6 +209,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     }
   }
 
+
   isBrowser(): boolean {
     return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
   }
@@ -190,7 +218,6 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   addAssessment(): Promise<string> {
     return new Promise((resolve, reject) => {
       const uniqueId = crypto.randomUUID();
-
       const assessment: Assessment = {
         assessmentId: uniqueId,
         assessmentName: this.assessmentTitle,
@@ -198,7 +225,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         dateCreated: Date.now(),
         dateUpdated: Date.now(),
         isDisabled: false,
-        isautoEvaluated: true
+        isautoEvaluated: this.isAutoEvaluated
       };
 
       // Save the new assessment to Firebase
@@ -213,9 +240,15 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         });
     });
   }
+  calculateAutoEvaluated(subjects: any[]): boolean {
+    // Check if any subject has a 'descriptive' value greater than 0
+    return !subjects.some(subject => subject.descriptive > 0);
+  }
+  isAutoEvaluated = this.calculateAutoEvaluated(this.rightList);
+
   checkAssessmentTitleUniqueness(title: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      this.firebaseService.getAllDataByFilter(this.assess_table, 'isDisabled', false).subscribe((assessments: any[]) => {
+      this.firebaseService.getAllData(this.assess_table).subscribe((assessments: any[]) => {
         const existingTitles = assessments.map((assessment) => assessment.assessmentName.toLowerCase());
         if (existingTitles.includes(title.toLowerCase())) {
           resolve(false); // Title already exists
@@ -228,61 +261,60 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     });
   }
   assessmentTitleWarning: string = ''; // Variable to hold the warning message
+  assessmentList: AssessmentList[] = [];
   saveFormData(): void {
     if (this.assessmentTitle.trim().length === 0) {
-        this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
-        return; // Don't proceed if the title is invalid
+      this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
+      return; // Don't proceed if the title is invalid
     } else {
-        this.assessmentTitleWarning = ''; // Clear any previous warning
+      this.assessmentTitleWarning = ''; // Clear any previous warning
     }
 
     this.checkAssessmentTitleUniqueness(this.assessmentTitle).then((isUnique) => {
-        if (!isUnique) {
-            // Set the warning in assessmentTitleWarning instead of using alert
-            this.assessmentTitleWarning = 'This assessment title already exists. Please choose a unique title.';
-            return; // Stop further execution if title is not unique
+      if (!isUnique) {
+        this.assessmentTitleWarning = 'This assessment title already exists. Please choose a unique title.';
+        return; // Stop further execution if title is not unique
+      }
+
+      // Proceed with saving the assessment data if the title is unique
+      this.assessmentTitleWarning = ''; // Clear any previous warning if title is unique
+
+      this.addAssessment().then((assessmentId: string) => {
+        if (this.rightListForm.valid) {
+          const assessmentList: AssessmentList = {
+            assessmentId,
+            dateCreated: Date.now(),
+            dateUpdated: Date.now(),
+            subjects: this.mapRightListInputs(),
+          };
+
+          // Save to Firebase and show success toast
+          this.firebaseService.create('assessmentList/' + assessmentId, assessmentList)
+            .then(() => {
+              // Insert the new assessment at the top of the list
+              this.assessmentList.unshift(assessmentList);  // This adds the new record at the top
+
+              // Re-render the UI (for example, by assigning the new assessment list to the table)
+              this.fetchLeftList();  // Assuming this reloads or updates the table data
+              this.toastr.success('Assessment Created successfully', 'Created');
+
+              // Reset and clear state after save
+              this.resetRightListAndForm();
+              this.assessmentTitle = ''; // Clear the title
+              this.router.navigate(['/assessment-list']);
+            })
+            .catch((error) => {
+              console.error('Error saving data:', error);
+              this.toastr.error('Failed to save data. Please try again.');
+            });
+        } else {
+          this.toastr.warning('Please fill in the form correctly.');
         }
-
-        // Proceed with saving the assessment data if the title is unique
-        this.assessmentTitleWarning = ''; // Clear any previous warning if title is unique
-
-        this.addAssessment().then((assessmentId: string) => {
-            if (this.rightListForm.valid) {
-                const assessmentList: AssessmentList = {
-                    assessmentId,
-                    dateCreated: Date.now(),
-                    dateUpdated: Date.now(),
-                    subjects: this.mapRightListInputs(),
-                };
-
-                // Save to Firebase and show success toast
-                this.firebaseService.create('assessmentList/' + assessmentId, assessmentList)
-                    .then(() => {
-                        // Route immediately after successful creation
-                        this.router.navigate(['/assessment-list']).then(() => {
-                            // Refresh data after navigation
-                            this.fetchLeftList();  // Reload subjects or any data required
-                        });
-
-                        // Show toast after navigation
-                        this.toastr.success('Assessment Created successfully', 'Created');
-
-                        // Reset and clear state after save
-                        this.resetRightListAndForm();
-                        this.assessmentTitle = ''; // Clear the title
-                    })
-                    .catch((error) => {
-                        console.error('Error saving data:', error);
-                        this.toastr.error('Failed to save data. Please try again.');
-                    });
-            } else {
-                this.toastr.warning('Please fill in the form correctly.');
-            }
-        }).catch((error) => {
-            this.toastr.error('Failed to create assessment. ' + error);
-        });
+      }).catch((error) => {
+        this.toastr.error('Failed to create assessment. ' + error);
+      });
     });
-}
+  }
 
 
 
@@ -294,10 +326,17 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     this.fetchLeftList(); // Reload subjects
     this.saveToLocalStorage();
   }
-
+  // trying to
   fetchLeftList(): void {
-    this.firebaseService.getAllData(this.tableName).subscribe((data: any[]) => {
-      this.leftList = data.map(item => item.subjectName); // Assuming subjectName field exists
+    this.firebaseService.getAllDataByFilter(this.tableName,'isDisabled', false).subscribe((data: any[]) => {
+      this.leftList = data
+        .map(item => item.subjectId) // Assuming subjectName field exists
+        .sort((a, b) => a.localeCompare(b)); // Sort subjects alphabetically
+      console.log(this.leftList);
+
+      this.subjectList = this.leftList.map((id) => {
+        return data.find((x: Subject) => x.subjectId === id).subjectName;
+      });
     });
   }
 
@@ -319,7 +358,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   onAssessmentTitleChange(): void {
     // Only validate the title when it changes
     this.validateAssessmentTitle();
-}
+  }
   onInputChange(event: Event, index: number, controlName: string): void {
     const input = event.target as HTMLInputElement;
     let value = Number(input.value);
@@ -334,19 +373,19 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     }
 
     this.rightListInputs.at(index).get(controlName)?.setValue(value);
-}
-validateAssessmentTitle(): void {
-  if (this.assessmentTitle.trim().length === 0) {
+  }
+  validateAssessmentTitle(): void {
+    if (this.assessmentTitle.trim().length === 0) {
       // Title cannot be empty or just spaces
       this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
-  } else if (this.assessmentTitle.length < 2) {
+    } else if (this.assessmentTitle.length < 2) {
       // Title must have at least 2 characters
       this.assessmentTitleWarning = "Assessment Title must be at least 2 characters long.";
-  } else {
+    } else {
       // Clear the warning if the title is valid
       this.assessmentTitleWarning = '';
+    }
   }
-}
 
 
 

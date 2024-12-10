@@ -1,4 +1,5 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { AuthService } from '../../../../sharedServices/auth.service';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Assessment } from '../../../models/assessment';
 import { TableNames } from '../../../enums/TableName';
@@ -7,6 +8,8 @@ import { PopupModuleComponent } from '../../common/popup-module/popup-module.com
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService, ToastrModule } from 'ngx-toastr';
+import { AssessmentList } from '../../../models/newassessment';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-assess-table',
@@ -15,21 +18,32 @@ import { ToastrService, ToastrModule } from 'ngx-toastr';
   templateUrl: './assess-table.component.html',
   styleUrls: ['./assess-table.component.css']
 })
-export class AssessTableComponent {
+export class AssessTableComponent  {
   assessments: Assessment[] = [];
-  tableColumns: string[] = [ 'assessmentName', 'assessmentType'];
+  subjects: any[] = []; // Store the related subjects of the selected assessment
+  tableColumns: string[] = ['assessmentName', 'assessmentType'];
   columnAliases: { [key: string]: string[] } = {
     assessmentName: ['Assessment Name'],
     assessmentType: ['Assessment Type']
   };
+  tableData=this.assessments;
   tableName: string = TableNames.Assessment;
   searchQuery: string = '';
   isModalVisible: boolean = false;
-  selectedAssessment: Assessment | null = null;
+  isLoading = false;
+  selectedAssessment: Assessment = {  // Initialize with a default empty object
+    assessmentId: '',
+    assessmentName: '',
+    assessmentType: 'internal',
+    dateCreated: Date.now(),
+    dateUpdated: Date.now(),
+    isDisabled: false,
+    isautoEvaluated: true
+  };
   isEditMode: boolean = false;
   eConfirmationVisible: boolean = false;
   selectedAssessmentToDelete: Assessment | null = null;
-  searchPlaceholder:string='Search Asessments...'
+  searchPlaceholder: string = 'Search Assessments...';
 
   // For handling tabs
   selectedTab: string = 'all';
@@ -55,8 +69,9 @@ export class AssessTableComponent {
   constructor(
     private fireBaseService: FireBaseService<Assessment>,
     private toastr: ToastrService,
-    private cdr: ChangeDetectorRef  // Inject ChangeDetectorRef
-  ) { }
+    private cdr: ChangeDetectorRef,
+    private router:Router
+  ) {}
 
   onSearchQueryChange(newQuery: string): void {
     this.searchQuery = newQuery;
@@ -102,9 +117,9 @@ export class AssessTableComponent {
 
       this.fireBaseService.update(`${this.tableName}/${assessmentToDelete.assessmentId}`, assessmentToDelete)
         .then(() => {
-          this.toastr.success('Assessment deleted successfully', 'Deleted');
+          this.toastr.error('Assessment deleted successfully', 'Deleted');
           this.eConfirmationVisible = false;
-          this.getAssessments();  // Refresh the assessments list after deletion
+          this.getAssessments();
         })
         .catch(error => {
           console.error('Error deleting assessment:', error);
@@ -113,18 +128,37 @@ export class AssessTableComponent {
     }
   }
 
-  // View the details of the assessment
-  viewAssessment(row: any) {
-    this.selectedAssessment = { ...row };
-    this.isEditMode = false;
-    this.isModalVisible = true;
-  }
+  assessmentListTable=TableNames.AssessmentList;
+  // View the details of the assessment and related subjects
+// In AssessTableComponent (TypeScript)
+viewAssessment(row: any) {
+  this.selectedAssessment = { ...row };
+  this.isEditMode = false;
+  this.isModalVisible = true;
+
+  // Fetch related assessments from 'AssessmentList' where 'assessmentId' matches
+  this.fireBaseService.getAllData(this.assessmentListTable).subscribe((assessmentList: AssessmentList[]) => {
+    // Filter the subjects based on the assessmentId
+    const relatedAssessment = assessmentList.filter(result=>result.assessmentId==row.assessmentId);
+    console.log(relatedAssessment);
+  })
+}
+
+closeModal(): void {
+  this.isModalVisible = false; // For the Assessment Details modal
+  this.eConfirmationVisible = false; // For the Delete Confirmation modal
+}
+
 
   // Edit the selected assessment
   editAssessment(row: any) {
-    this.selectedAssessment = { ...row };
+    this.selectedAssessment = { ...row.assessmentId };
     this.isEditMode = true;
     this.isModalVisible = true;
+    // const selectedAssessmentString = JSON.stringify(this.selectedAssessment);
+
+  // this.router.navigate(['/drag-and-drop'], { queryParams: { selectedAssessment: selectedAssessmentString } });
+    
   }
 
   // Update the selected assessment
@@ -137,10 +171,13 @@ export class AssessTableComponent {
       ).then(() => {
         this.toastr.info('Updated!', 'Assessment Updated', { timeOut: 1000 });
         this.isModalVisible = false;
-        this.getAssessments();  // Refresh the assessments list after update
+        this.getAssessments(); // Refresh the assessments list after update
       }).catch(error => {
         console.error('Error updating assessment:', error);
       });
     }
   }
+
+  // Handle tab change
+ 
 }
