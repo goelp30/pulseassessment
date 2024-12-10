@@ -19,6 +19,7 @@ import { ToastrService, ToastrModule } from 'ngx-toastr';
 })
 export class DragDropComponent implements AfterViewInit, OnInit {
   leftList: string[] = []; // Dynamically loaded from Firebase
+  subjectList:string[]=[];
   updatedList:string[]=[];
   rightList: string[] = [];
   createdOn: string = '';
@@ -30,7 +31,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   assessmentTitle: string = ''; // Title for assessment
   tableName = TableNames.Subject; // Firebase collection name for subjects
   assess_table = TableNames.Assessment;
-
+  
   constructor(
     private fb: FormBuilder,
     private router: Router, // Inject Router service
@@ -61,7 +62,6 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         this.clearLocalStorageOnNavigation();  // Clear local storage on route change
       }
     });
-    this.getSubjectName(this.tableName,this.leftList);
   }
 
   ngAfterViewInit(): void {
@@ -209,6 +209,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     }
   }
 
+
   isBrowser(): boolean {
     return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
   }
@@ -217,7 +218,6 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   addAssessment(): Promise<string> {
     return new Promise((resolve, reject) => {
       const uniqueId = crypto.randomUUID();
-
       const assessment: Assessment = {
         assessmentId: uniqueId,
         assessmentName: this.assessmentTitle,
@@ -248,7 +248,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
 
   checkAssessmentTitleUniqueness(title: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      this.firebaseService.getAllDataByFilter(this.assess_table, 'isDisabled', false).subscribe((assessments: any[]) => {
+      this.firebaseService.getAllData(this.assess_table).subscribe((assessments: any[]) => {
         const existingTitles = assessments.map((assessment) => assessment.assessmentName.toLowerCase());
         if (existingTitles.includes(title.toLowerCase())) {
           resolve(false); // Title already exists
@@ -317,7 +317,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   }
 
 
-
+  
 
   resetRightListAndForm(): void {
     this.rightList = [];
@@ -326,20 +326,18 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     this.fetchLeftList(); // Reload subjects
     this.saveToLocalStorage();
   }
-// trying
+// trying to
   fetchLeftList(): void {
-    this.firebaseService.getAllData(this.tableName).subscribe((data: any[]) => {
+      this.firebaseService.getAllDataByFilter(this.assess_table, 'isDisabled', false).subscribe((data: any[]) => {
       this.leftList = data
         .map(item => item.subjectId) // Assuming subjectName field exists
         .sort((a, b) => a.localeCompare(b)); // Sort subjects alphabetically
-    });
-  }
-  getSubjectName(table: TableNames, list: any[]) {
-    let updatedList: string[] = [];
-    this.updatedList = list.map(id => table[id]);
-    console.log(updatedList);
-  }
 
+      this.subjectList = this.leftList.map((id) => {
+        return data.find((x: Subject) => x.subjectId === id).subjectName;
+      });
+    });
+  }  
 
   getCurrentTimestamp(): string {
     return new Date().toISOString();
@@ -400,15 +398,15 @@ validateAssessmentTitle(): void {
   canSave(): boolean {
     // Check if the form is valid (including all nested fields like difficulty levels, etc.)
     const isFormValid = this.rightListForm.valid;
-
+  
     // Check if the assessment title is valid (not empty or just spaces)
     const isAssessmentTitleValid = this.assessmentTitle.trim().length > 0;
-
+  
     // Additional condition to check if the title is unique (based on warning)
     const isTitleUnique = !this.assessmentTitleWarning;
-
+  
     // If any validation is not fulfilled, the save button should be disabled
     return isFormValid && isAssessmentTitleValid && isTitleUnique;
   }
-
+  
 }

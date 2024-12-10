@@ -1,4 +1,5 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { AuthService } from '../../../../sharedServices/auth.service';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Assessment } from '../../../models/assessment';
 import { TableNames } from '../../../enums/TableName';
@@ -8,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService, ToastrModule } from 'ngx-toastr';
 import { AssessmentList } from '../../../models/newassessment';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-assess-table',
@@ -16,7 +18,7 @@ import { AssessmentList } from '../../../models/newassessment';
   templateUrl: './assess-table.component.html',
   styleUrls: ['./assess-table.component.css']
 })
-export class AssessTableComponent {
+export class AssessTableComponent  {
   assessments: Assessment[] = [];
   subjects: any[] = []; // Store the related subjects of the selected assessment
   tableColumns: string[] = ['assessmentName', 'assessmentType'];
@@ -65,11 +67,11 @@ export class AssessTableComponent {
   ];
 
   constructor(
-    private auth: AuthService,
     private fireBaseService: FireBaseService<Assessment>,
     private toastr: ToastrService,
-    private cdr: ChangeDetectorRef  // Inject ChangeDetectorRef
-  ) { }
+    private cdr: ChangeDetectorRef,
+    private router:Router
+  ) {}
 
   onSearchQueryChange(newQuery: string): void {
     this.searchQuery = newQuery;
@@ -92,6 +94,8 @@ export class AssessTableComponent {
   // Get assessments with isDisabled: false (only active assessments)
   getAssessments() {
     this.fireBaseService.getAllDataByFilter(this.tableName, 'isDisabled', false).subscribe((res: Assessment[]) => {
+      // Initially filter out assessments with isDisabled = true
+      console.log('1', res)
       // Set the filtered active assessments
       this.assessments = res;
       // Trigger change detection manually if needed
@@ -151,6 +155,10 @@ closeModal(): void {
     this.selectedAssessment = { ...row.assessmentId };
     this.isEditMode = true;
     this.isModalVisible = true;
+    // const selectedAssessmentString = JSON.stringify(this.selectedAssessment);
+
+  // this.router.navigate(['/drag-and-drop'], { queryParams: { selectedAssessment: selectedAssessmentString } });
+    
   }
 
   // Update the selected assessment
@@ -169,4 +177,7 @@ closeModal(): void {
       });
     }
   }
+
+  // Handle tab change
+ 
 }

@@ -29,8 +29,6 @@ export class AssessmentListComponent implements OnInit {
 
   ngOnInit(): void {
 
-    // try
-    console.log(this.fireBaseService.createId());
     // assessment
     this.fireBaseService.listensToChangeWithFilter(TableNames.Assessment, 'isDisabled', false).subscribe((res) => {
       this.assessments = res as Assessment[];

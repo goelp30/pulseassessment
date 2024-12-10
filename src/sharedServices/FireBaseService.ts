@@ -25,10 +25,6 @@ export class FireBaseService<T> {
     create(tableName: string, params: T) {
         return this.database.object(tableName).set(params);
     }
-    createId() {
-        return this.database.createPushId()
-        
-    }
 
     /***
      * Update new
@@ -71,6 +67,5 @@ export class FireBaseService<T> {
     addData(tableName: string, id: string, params: T): Promise<void> {
         return this.database.object(`${tableName}/${id}`).set(params);
       }
-      
 
 }
