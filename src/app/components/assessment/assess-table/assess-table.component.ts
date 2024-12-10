@@ -25,6 +25,7 @@ export class AssessTableComponent implements OnInit, AfterViewInit {
     assessmentName: ['Assessment Name'],
     assessmentType: ['Assessment Type']
   };
+  tableData=this.assessments;
   tableName: string = TableNames.Assessment;
   searchQuery: string = '';
   isModalVisible: boolean = false;

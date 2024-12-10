@@ -7,7 +7,7 @@ import { Subject } from '../../../models/subject';
 import Sortable from 'sortablejs';
 import { Assessment } from '../../../models/assessment';
 import { TableNames } from '../../../enums/TableName';
-import {  Router } from '@angular/router';
+import {  NavigationStart, Router } from '@angular/router';
 import { ToastrService, ToastrModule } from 'ngx-toastr';
 @Component({
   selector: 'app-drag-drop',
@@ -19,6 +19,7 @@ import { ToastrService, ToastrModule } from 'ngx-toastr';
 })
 export class DragDropComponent implements AfterViewInit, OnInit {
   leftList: string[] = []; // Dynamically loaded from Firebase
+  updatedList:string[]=[];
   rightList: string[] = [];
   createdOn: string = '';
   savedFormData: any = null;
@@ -27,10 +28,16 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   viewMode: 'internal' | 'external' = 'internal'; // Toggle view mode
   validationWarnings: string[] = []; // Warnings for Fvalidation
   assessmentTitle: string = ''; // Title for assessment
-  tableName = 'subject'; // Firebase collection name for subjects
-  assess_table=TableNames.Assessment;
-
-  constructor(private fb: FormBuilder,private router:Router, private firebaseService: FireBaseService<Subject | AssessmentList | Assessment>, private datePipe: DatePipe,private toastr: ToastrService,) {}
+  tableName = TableNames.Subject; // Firebase collection name for subjects
+  assess_table = TableNames.Assessment;
+  
+  constructor(
+    private fb: FormBuilder,
+    private router: Router, // Inject Router service
+    private firebaseService: FireBaseService<Subject | AssessmentList | Assessment>,
+    private datePipe: DatePipe,
+    private toastr: ToastrService,
+  ) {}
 
   ngOnInit(): void {
     this.initializeRightListForm(); // Initialize form
@@ -47,8 +54,15 @@ export class DragDropComponent implements AfterViewInit, OnInit {
 
     // Subscribe to value changes for right list inputs (difficulty levels)
     this.subscribeToFormChanges();
-  }
 
+    // Listen for route changes and clear local storage when navigating to a new route
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationStart) {
+        this.clearLocalStorageOnNavigation();  // Clear local storage on route change
+      }
+    });
+    this.getSubjectName(this.tableName,this.leftList);
+  }
   ngAfterViewInit(): void {
     if (this.isBrowser()) {
       const updateLists = () => {
@@ -77,6 +91,18 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       new Sortable(document.getElementById('sortable-left')!, options);
       new Sortable(document.getElementById('sortable-right')!, options);
     }
+  }
+
+  // Method to clear local storage when navigating to another route
+  clearLocalStorageOnNavigation(): void {
+    // Clear all local storage data, or only the data you need
+    localStorage.removeItem('leftList');
+    localStorage.removeItem('rightList');
+    localStorage.removeItem('rightListInputs');
+    localStorage.removeItem('createdOn');
+    localStorage.removeItem('inputText');
+    localStorage.removeItem('savedData');
+    localStorage.removeItem('appVersion'); // Clear the version as well
   }
 
   toggleViewMode(mode: 'internal' | 'external'): void {
@@ -182,6 +208,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     }
   }
 
+
   isBrowser(): boolean {
     return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
   }
@@ -212,19 +239,10 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         });
     });
   }
-calculateAutoEvaluated(subjects: any[]): boolean {
-  // Check if any subject has a 'descriptive' value greater than 0
-  let isAutoEvaluated = true; // Default to true
-  subjects.forEach(subject => {
-    console.log(`Subject: ${subject.item}, Descriptive Value: ${subject.descriptive}`); // Log subject and its descriptive value
-    if (subject.descriptive > 0) {
-      isAutoEvaluated = false; // If descriptive value is greater than 0, set to false
-    }
-  });
-  
-  return isAutoEvaluated;
-}
-
+  calculateAutoEvaluated(subjects: any[]): boolean {
+    // Check if any subject has a 'descriptive' value greater than 0
+    return !subjects.some(subject => subject.descriptive > 0);
+  }
   isAutoEvaluated = this.calculateAutoEvaluated(this.rightList);
 
   checkAssessmentTitleUniqueness(title: string): Promise<boolean> {
@@ -307,13 +325,18 @@ calculateAutoEvaluated(subjects: any[]): boolean {
     this.fetchLeftList(); // Reload subjects
     this.saveToLocalStorage();
   }
-
+// trying
   fetchLeftList(): void {
     this.firebaseService.getAllData(this.tableName).subscribe((data: any[]) => {
       this.leftList = data
-        .map(item => item.subjectName) // Assuming subjectName field exists
+        .map(item => item.subjectId) // Assuming subjectName field exists
         .sort((a, b) => a.localeCompare(b)); // Sort subjects alphabetically
     });
+  }
+  getSubjectName(table: TableNames, list: any[]) {
+    let updatedList: string[] = [];
+    this.updatedList = list.map(id => table[id]);
+    console.log(updatedList);
   }
   
 
