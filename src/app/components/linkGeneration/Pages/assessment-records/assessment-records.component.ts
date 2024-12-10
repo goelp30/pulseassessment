@@ -9,7 +9,7 @@ import { Router, RouterLink } from '@angular/router';
   standalone: true,
   imports: [FormsModule,RouterLink],
   templateUrl: './assessment-records.component.html',
-  styleUrl: './assessment-records.component.css'
+  styleUrl: './assessment-records.component.css' 
 })
 export class AssessmentRecordsComponent implements OnInit {
 
