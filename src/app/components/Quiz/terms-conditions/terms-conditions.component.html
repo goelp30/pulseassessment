@@ -1,0 +1,45 @@
+<!-- <div class="max-w-4xl mx-auto mt-10 p-10 bg-white rounded-lg shadow-lg">
+    <h1 class="text-3xl font-extrabold text-center text-blue-700">Terms and Conditions</h1>
+    <p class="mt-6 text-gray-800 text-lg text-center">
+      Please read these Terms and Conditions carefully before using our application or website.
+    </p>
+    <ul class="mt-8 space-y-4 text-lg list-disc list-inside">
+      <li>You agree to comply with all rules and regulations.</li>
+      <li>The content provided is for informational purposes only.</li>
+      <li>We reserve the right to update these terms at any time.</li>
+      <li>Your use of the application signifies acceptance of these terms.</li>
+      <li>Unauthorized use of the application is strictly prohibited.</li>
+      <li>All user data will be handled in compliance with our privacy policy.</li>
+    </ul>
+  
+    <div class="text-center">
+      <button
+        (click)="onAccessQuiz()"
+        class="px-8 py-3 bg-blue-700 text-white text-lg font-semibold rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2"
+      >
+        Continue
+      </button>
+    </div>
+    
+  </div> -->
+
+<div class="quiz-dashboard">
+  <h1 class="dashboard-title">Terms & Conditions</h1>
+  <div *ngFor="let assessment of assessmentDetails" class="assessment-item">
+    <div class="assessment-card">
+      <h2 class="assessment-title">{{ assessment.assessmentName }}</h2>
+      <p class="user-info">
+        User: <span>{{ assessment.userName }}</span>
+      </p>
+      <p class="expiry-info">
+        Expiry Date: <span>{{ assessment.expiryDate }}</span>
+      </p>
+      <button
+        *ngFor="let assessment of assessmentDetails"
+        (click)="onAccessQuiz(assessment)"
+      >
+        Continue for {{ assessment.assessmentId }}
+      </button>
+    </div>
+  </div>
+</div>
