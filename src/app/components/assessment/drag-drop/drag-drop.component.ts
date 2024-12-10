@@ -30,7 +30,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   assessmentTitle: string = ''; // Title for assessment
   tableName = TableNames.Subject; // Firebase collection name for subjects
   assess_table = TableNames.Assessment;
-  
+
   constructor(
     private fb: FormBuilder,
     private router: Router, // Inject Router service
@@ -63,6 +63,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     });
     this.getSubjectName(this.tableName,this.leftList);
   }
+
   ngAfterViewInit(): void {
     if (this.isBrowser()) {
       const updateLists = () => {
@@ -208,7 +209,6 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     }
   }
 
-
   isBrowser(): boolean {
     return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
   }
@@ -217,6 +217,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   addAssessment(): Promise<string> {
     return new Promise((resolve, reject) => {
       const uniqueId = crypto.randomUUID();
+
       const assessment: Assessment = {
         assessmentId: uniqueId,
         assessmentName: this.assessmentTitle,
@@ -247,7 +248,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
 
   checkAssessmentTitleUniqueness(title: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      this.firebaseService.getAllData(this.assess_table).subscribe((assessments: any[]) => {
+      this.firebaseService.getAllDataByFilter(this.assess_table, 'isDisabled', false).subscribe((assessments: any[]) => {
         const existingTitles = assessments.map((assessment) => assessment.assessmentName.toLowerCase());
         if (existingTitles.includes(title.toLowerCase())) {
           resolve(false); // Title already exists
@@ -316,7 +317,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   }
 
 
-  
+
 
   resetRightListAndForm(): void {
     this.rightList = [];
@@ -338,7 +339,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     this.updatedList = list.map(id => table[id]);
     console.log(updatedList);
   }
-  
+
 
   getCurrentTimestamp(): string {
     return new Date().toISOString();
@@ -399,15 +400,15 @@ validateAssessmentTitle(): void {
   canSave(): boolean {
     // Check if the form is valid (including all nested fields like difficulty levels, etc.)
     const isFormValid = this.rightListForm.valid;
-  
+
     // Check if the assessment title is valid (not empty or just spaces)
     const isAssessmentTitleValid = this.assessmentTitle.trim().length > 0;
-  
+
     // Additional condition to check if the title is unique (based on warning)
     const isTitleUnique = !this.assessmentTitleWarning;
-  
+
     // If any validation is not fulfilled, the save button should be disabled
     return isFormValid && isAssessmentTitleValid && isTitleUnique;
   }
-  
+
 }

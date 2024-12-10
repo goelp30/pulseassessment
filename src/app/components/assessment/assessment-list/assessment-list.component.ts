@@ -26,20 +26,15 @@ export class AssessmentListComponent implements OnInit {
   isEditing: boolean = false;
 
   constructor(private fireBaseService: FireBaseService<Assessment>,private toastr: ToastrService,private router:Router) {}
-  listenToAssessmentChanges() {
-    this.fireBaseService.listensToChange(TableNames.Assessment).subscribe((res) => {
-      this.assessments = res as Assessment[];
-      console.log(this.assessments);
-    });
-  }
+
   ngOnInit(): void {
 
     // try
     console.log(this.fireBaseService.createId());
     // assessment
-    this.fireBaseService.listensToChange(TableNames.Assessment).subscribe((res) => {
+    this.fireBaseService.listensToChangeWithFilter(TableNames.Assessment, 'isDisabled', false).subscribe((res) => {
       this.assessments = res as Assessment[];
-      console.log(this.assessments);
+      console.log('test', this.assessments);
     });
     // to have updated subjects
     // this.fireBaseService.listensToChange(TableNames.Subject).subscribe((res) => {
@@ -52,7 +47,7 @@ export class AssessmentListComponent implements OnInit {
   addAssessment() {
 
     const uniqueId = crypto.randomUUID();
-    
+
     const assessment: Assessment = {
       assessmentId: uniqueId,
       assessmentName: 'Sample Assessment 123',
@@ -71,16 +66,6 @@ export class AssessmentListComponent implements OnInit {
   }
 
   /**
-   * Get all assessments
-   */
-  getAssessments() {
-    this.fireBaseService.getAllData(TableNames.Assessment).subscribe((res) => {
-      this.assessments = res as Assessment[];
-      console.log(this.assessments);
-    });
-  }
-
-  /**
    * Listen to assessment changes (real-time updates)
    */
   showSuccess() {this.toastr.info('Hello world!', 'Toastr fun!',{timeOut:1000});}
@@ -88,6 +73,4 @@ export class AssessmentListComponent implements OnInit {
   RouteAssessment(){
     this.router.navigate(['/drag-and-drop']);
   }
-
-
 }
