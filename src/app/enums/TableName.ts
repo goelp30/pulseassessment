@@ -1,6 +1,6 @@
 export const enum TableNames {
     Subject = 'subject',
-    Question = "question"
+    Question = "question",
     Assessment = 'assessment',
     AssessmentList='assessmentList'
 }

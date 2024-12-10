@@ -38,18 +38,6 @@ export class DashboardComponent implements OnInit {
 
 
   /**
-   * Add new subject
-   */
-  addSubject() {
-    const uniqueId = crypto.randomUUID();
-    let sub: Subject = {
-      subjectId: uniqueId,
-      subjectName: (Math.random() + 1).toString(36).substring(7)
-    }
-    this.fireBaseService.create(TableNames.Subject + '/' + uniqueId, sub);
-  }
-
-  /**
    * get all subject
    */
   getSubject() {
