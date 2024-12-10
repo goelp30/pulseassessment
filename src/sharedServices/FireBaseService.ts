@@ -19,9 +19,10 @@ export class FireBaseService<T> {
     /***
      * create new element in table
      */
-    create(tableName: string, params: T) {
+    create<T>(tableName: string, params: T): Promise<void> {
         return this.database.object(tableName).set(params);
-    }
+      }
+      
 
     /***
      * Update new
@@ -50,5 +51,15 @@ export class FireBaseService<T> {
     addData(tableName: string, id: string, params: T): Promise<void> {
         return this.database.object(`${tableName}/${id}`).set(params);
       }
+
+    //   async createques(tableName: string, id: string, params: any): Promise<void> {
+    //     try {
+    //       await this.database.object(`${tableName}/${id}`).set(params);
+    //       console.log(`Data stored at ${tableName}/${id}`);
+    //     } catch (error) {
+    //       console.error('Error while storing data:', error);
+    //     }
+    //   }
+      
 
 }

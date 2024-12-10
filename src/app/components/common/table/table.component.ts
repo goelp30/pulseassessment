@@ -34,7 +34,7 @@ export class TableComponent implements OnInit, OnChanges {
   activeTab: string = '';  // Initially, no active tab
   pageNumbers: number[] = [];
 
-  constructor(private fireBaseService: FireBaseService<any>) {}
+  constructor(private fireBaseService: FireBaseService<any>,) {}
 
   ngOnInit(): void {
     if (this.tableName) {

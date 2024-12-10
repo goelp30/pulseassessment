@@ -1,27 +1,71 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { Question } from '../../../models/question';
-import { TableNames } from '../../../enums/TableName';
+import { FireBaseService } from '../../../../sharedServices/FireBaseService';
+import { SubjectService } from '../../../../sharedServices/Subject.service';
 import { HeaderComponent } from '../../common/header/header.component';
 import { TableComponent } from '../../common/table/table.component';
-import { SubjectService } from '../../../../sharedServices/Subject.service';
+import { QuestionmodalComponent } from '../../common/questionmodal/questionmodal.component';
+import { CommonModule } from '@angular/common';
+
+export type Question = {
+  subjectId: string;
+  questionId: any;
+  questionText: any;
+  questionType: string;
+  questionLevel: string;
+  questionWeightage: number;
+  questionTime: number;
+  createdOn: number;
+  updatedOn: number;
+  isQuesDisabled?: boolean;
+};
+
+export type OptionFormat = {
+  optionId: string;
+  optionText: any;
+  isCorrectOption: boolean;
+};
+
+export type Option = {
+  subjectId: string;
+  questionId: string;
+  options: {
+    [optionId: string]: OptionFormat;
+  };
+};
 
 @Component({
   selector: 'app-mockquestion',
   standalone: true,
-  imports: [HeaderComponent, TableComponent],
   templateUrl: './mockquestion.component.html',
   styleUrls: ['./mockquestion.component.css'],
+  imports:[HeaderComponent,TableComponent,QuestionmodalComponent,CommonModule]
 })
 export class MockquestionComponent implements OnInit {
-  deleteQuestion(row: Question) {
-    console.log('Delete action not implemented', row);
-  }
+  questions: Question[] = [];
+  options: Option[] = [];
 
-  editQuestion(row: Question) {
-    console.log('Edit action not implemented', row);
-  }
+  selectedQuestion: Question = {
+    subjectId: '',
+    questionId: '',
+    questionText: '',
+    questionType: '',
+    questionLevel: '',
+    questionWeightage: 1,
+    questionTime: 60,
+    createdOn: Date.now(),
+    updatedOn: Date.now(),
+  };
+
+  isQuestionModalVisible: boolean = false;
+
+  subjectId: string = '';
+
+  // Table Configurations
+  tableColumns: (keyof Question)[] = ['questionText'];
+  columnAliases: { [key: string]: string[] } = {
+    questionText: ['Question Text'],
+  };
 
   buttons = [
     {
@@ -34,134 +78,118 @@ export class MockquestionComponent implements OnInit {
       colorClass: 'bg-red-500 py-2 px-4 text-white rounded-md',
       action: (row: Question) => this.deleteQuestion(row),
     },
+    {
+      label: 'View Options',
+      colorClass: 'bg-green-500 py-2 px-4 text-white rounded-md',
+      action: (row: Question) => this.getOptions(row.questionId),
+    },
   ];
 
-  questions: Question[] = [];
-  tableColumns: (keyof Question)[] = [
-    'questionText',
-  ];
-  columnAliases: { [key: string]: string[] } = {
-    questionText: ['Question Text'],
-  };
-  tableName: string = TableNames.Question;
+  tableName: string = 'Questions Table';
   searchQuery: string = '';
-  isModalVisible: boolean = false;
-  isAddModal: boolean = false;
-  selectedQuestion: Question | null = null;
-  subjectId: string = '';
-  searchPlaceholder:string='Search Questions'
+  searchPlaceholder: string = 'Search Questions';
 
   constructor(
     private toastr: ToastrService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
-    private subjectService: SubjectService
+    private subjectService: SubjectService,
+    private fireBaseService: FireBaseService<Question | Option>
   ) {}
 
   ngOnInit(): void {
-    // Simulate subjectId selection logic
-    this.subjectId = this.subjectService.getSubjectId() || 'default';
-    console.log('Loaded Subject ID:', this.subjectId);
-
-    // Load mock data directly instead of fetching from Firebase
-    this.loadMockQuestions();
+    this.subjectId = this.subjectService.getSubjectId() || '';
+    if (this.subjectId) {
+      console.log('Loaded Subject ID:', this.subjectId);
+      this.getAllQuestions();
+    } else {
+      console.error('No subject ID provided');
+      this.toastr.error('Please select a subject first');
+    }
   }
 
-  loadMockQuestions(): void {
-    this.questions = [
-      {
-        subjectId: 'angular_001',
-        questionId: 1,
-        questionText: 'What is Angular CLI used for?',
-        questionType: 'MCQ',
-        questionLevel: 'Easy',
-        questionWeightage: 5,
-        questionTime: 30,
-        createdOn: Date.now(),
-        updatedOn: Date.now(),
-      },
-      {
-        subjectId: 'angular_002',
-        questionId: 2,
-        questionText: 'Which decorator is used to define an Angular module?',
-        questionType: 'MCQ',
-        questionLevel: 'Easy',
-        questionWeightage: 4,
-        questionTime: 20,
-        createdOn: Date.now(),
-        updatedOn: Date.now(),
-      },
-      {
-        subjectId: 'angular_003',
-        questionId: 3,
-        questionText: 'What is RxJS in Angular?',
-        questionType: 'MCQ',
-        questionLevel: 'Medium',
-        questionWeightage: 6,
-        questionTime: 40,
-        createdOn: Date.now(),
-        updatedOn: Date.now(),
-      },
-      {
-        subjectId: 'angular_004',
-        questionId: 4,
-        questionText: 'How do you bind a component property in Angular?',
-        questionType: 'MCQ',
-        questionLevel: 'Medium',
-        questionWeightage: 5,
-        questionTime: 30,
-        createdOn: Date.now(),
-        updatedOn: Date.now(),
-      },
-      {
-        subjectId: 'angular_005',
-        questionId: 5,
-        questionText: 'What is the purpose of the `@Injectable()` decorator?',
-        questionType: 'MCQ',
-        questionLevel: 'Hard',
-        questionWeightage: 7,
-        questionTime: 45,
-        createdOn: Date.now(),
-        updatedOn: Date.now(),
-      },
-      {
-        subjectId: 'angular_006',
-        questionId: 6,
-        questionText: 'Which lifecycle hook is called after a component’s view has been initialized?',
-        questionType: 'MCQ',
-        questionLevel: 'Medium',
-        questionWeightage: 6,
-        questionTime: 30,
-        createdOn: Date.now(),
-        updatedOn: Date.now(),
-      },
-      {
-        subjectId: 'angular_007',
-        questionId: 7,
-        questionText: 'What is a Subject in RxJS?',
-        questionType: 'MCQ',
-        questionLevel: 'Hard',
-        questionWeightage: 8,
-        questionTime: 45,
-        createdOn: Date.now(),
-        updatedOn: Date.now(),
-      },
-      {
-        subjectId: 'angular_008',
-        questionId: 8,
-        questionText: 'Which operator is commonly used for HTTP calls in Angular?',
-        questionType: 'MCQ',
-        questionLevel: 'Medium',
-        questionWeightage: 6,
-        questionTime: 40,
-        createdOn: Date.now(),
-        updatedOn: Date.now(),
-      },
-    ];
-    console.log('Mock Questions Loaded:', this.questions);
+  getAllQuestions(): void {
+    if (this.subjectId) {
+      this.fireBaseService.getAllData(`questions/${this.subjectId}`).subscribe(
+        (res: Question[]) => {
+          this.questions = res;
+          console.log('Fetched Questions:', this.questions);
+        },
+        (error: Error) => {
+          console.error('Error fetching questions:', error);
+          this.toastr.error('Error fetching questions');
+        }
+      );
+    } else {
+      this.toastr.error('No subject ID is currently selected');
+    }
   }
-  
 
+  getOptions(questionId: string): void {
+    this.fireBaseService
+      .getAllData(`options/${this.subjectId}/${questionId}`)
+      .subscribe(
+        (res: Option[]) => {
+          this.options = res;
+          console.log('Fetched Options:', this.options);
+          this.toastr.success('Options loaded successfully!');
+        },
+        (error: Error) => {
+          console.error('Error fetching options:', error);
+          this.toastr.error('Error fetching options');
+        }
+      );
+  }
+
+  addQuestion() {
+    this.selectedQuestion = {
+      subjectId: this.subjectId,
+      questionId: crypto.randomUUID(),
+      questionText: '',
+      questionType: '',
+      questionLevel: '',
+      questionWeightage: 1,
+      questionTime: 60,
+      createdOn: Date.now(),
+      updatedOn: Date.now(),
+    };
+    this.isQuestionModalVisible = true;
+  }
+
+  saveQuestion() {
+    if (this.selectedQuestion.questionText.trim() === '') {
+      this.toastr.error('Question text is required.');
+      return;
+    }
+    this.fireBaseService
+      .addData(`questions/${this.subjectId}`, this.selectedQuestion.questionId, this.selectedQuestion)
+      .then(() => {
+        this.questions.push({ ...this.selectedQuestion });
+        this.toastr.success('Question added successfully!');
+        this.isQuestionModalVisible = false;
+      })
+      .catch((error: Error) => {
+        console.error('Error adding question:', error);
+        this.toastr.error('Error adding question');
+      });
+  }
+
+  deleteQuestion(row: Question): void {
+    const index = this.questions.findIndex((q) => q.questionId === row.questionId);
+    if (index !== -1) {
+      this.questions.splice(index, 1);
+      this.toastr.success('Deleted successfully');
+    } else {
+      this.toastr.error('Failed to delete the question');
+    }
+  }
+
+  editQuestion(row: Question): void {
+    this.selectedQuestion = { ...row };
+    this.isQuestionModalVisible = true;
+    this.toastr.info('Edit mode activated');
+  }
+  closeQuestionModal() {
+    this.isQuestionModalVisible = false;
+  }
   onSearchQueryChange(newQuery: string): void {
     this.searchQuery = newQuery;
   }
