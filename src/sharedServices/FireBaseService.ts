@@ -25,7 +25,7 @@ export class FireBaseService<T> {
     create(tableName: string, params: T) {
         return this.database.object(tableName).set(params);
     }
-   
+
     /***
      * Update new
      */
@@ -46,6 +46,24 @@ export class FireBaseService<T> {
     getAllData(tableName: string) {
         return this.database.list(tableName).snapshotChanges().pipe(map(actions => actions.map(this.documentToDomainObject)));
     }
+
+     /***
+     * listens changes with filter
+     */
+     listensToChangeWithFilter(tableName: string, searchField: string, searchValue: string | number | boolean): Observable<T[]> {
+        return this.database.list(tableName, (res) => res.orderByChild(searchField).equalTo(searchValue)).valueChanges() as Observable<T[]>;
+    }
+
+    /***
+     * Once get all with filter
+     */
+    getAllDataByFilter(tableName: string, searchField: string, searchValue: string | number | boolean) {
+        return this.database.list(tableName, (res) => res.orderByChild(searchField).equalTo(searchValue)).snapshotChanges().pipe(map(actions => actions.map(this.documentToDomainObject)));
+    }
+
+    /**
+     * To Add Data
+     */
     addData(tableName: string, id: string, params: T): Promise<void> {
         return this.database.object(`${tableName}/${id}`).set(params);
       }
