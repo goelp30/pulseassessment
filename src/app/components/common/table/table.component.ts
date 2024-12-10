@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-// table.component.ts
->>>>>>> e7e9fb0a3a82198269aa3ae7b6172d8746cb8239
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { CommonModule } from '@angular/common';
@@ -9,27 +5,17 @@ import { ButtonComponent } from '../button/button.component';
 import { SearchbarComponent } from '../searchbar/searchbar.component';
 
 interface Row {
-<<<<<<< HEAD
   [key: string]: any;
-=======
-  [key: string]: any;  // This allows dynamic row properties
->>>>>>> e7e9fb0a3a82198269aa3ae7b6172d8746cb8239
 }
-
 @Component({
   selector: 'app-table',
   standalone: true,
-<<<<<<< HEAD
   imports: [CommonModule, ButtonComponent, SearchbarComponent],
-=======
-  imports: [CommonModule,ButtonComponent,SearchbarComponent],
->>>>>>> e7e9fb0a3a82198269aa3ae7b6172d8746cb8239
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.css']
 })
 export class TableComponent implements OnInit, OnChanges {
   @Input() tableName: string = '';
-<<<<<<< HEAD
   @Input() tableData: any[] = [];
   @Input() tableColumns: string[] = [];
   @Input() columnAliases: { [key: string]: string[] } = {};
@@ -40,30 +26,18 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() filterKey: string = '';
   @Input() tabAliases: { [key: string]: string } = {};
   @Input() searchPlaceholder:string='Search';
-=======
-  @Input() tableData: any[] = [];         // Data for the table to display(rows)
-  @Input() tableColumns: string[] = [];    // Columns for the table(column heads)
-  @Input() columnAliases: { [key: string]: string[] } = {};
-  @Input() buttons: { label: string, colorClass: string, action: Function }[] = [];
-  @Input() searchQuery: string = '';      // Search query input
-  @Input() onSearchQueryChange: (newQuery: string) => void = () => {}; // Function to handle search query change
->>>>>>> e7e9fb0a3a82198269aa3ae7b6172d8746cb8239
 
   currentPage: number = 1;
   itemsPerPage: number = 10;
   totalPages: number = 1;
   filteredData: any[] = [];
-<<<<<<< HEAD
   activeTab: string = '';  // Initially, no active tab
   pageNumbers: number[] = [];
-=======
->>>>>>> e7e9fb0a3a82198269aa3ae7b6172d8746cb8239
 
   constructor(private fireBaseService: FireBaseService<any>) {}
 
   ngOnInit(): void {
     if (this.tableName) {
-<<<<<<< HEAD
       this.fireBaseService.getAllData(this.tableName).subscribe((res) => {
         this.tableData = res;
         this.totalPages = Math.ceil(this.tableData.length / this.itemsPerPage);
@@ -102,53 +76,22 @@ export class TableComponent implements OnInit, OnChanges {
 
     if (this.searchQuery) {
       filtered = filtered.filter(row => {
-=======
-      // Fetch data dynamically based on the table name passed
-      this.fireBaseService.getAllData(this.tableName).subscribe((res) => {
-        this.tableData = res;
-        this.totalPages = Math.ceil(this.tableData.length / this.itemsPerPage);
-        this.filterData();  // Filter data when it loads
-      });
-    }
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    // Check if searchQuery has changed
-    if (changes['searchQuery']) {
-      this.filterData(); // Filter data when the searchQuery changes
-    }
-  }
-
-  filterData(): void {
-    if (this.searchQuery) {
-      this.filteredData = this.tableData.filter(row => {
->>>>>>> e7e9fb0a3a82198269aa3ae7b6172d8746cb8239
         return this.tableColumns.some(column => {
           return row[column] && row[column].toString().toLowerCase().includes(this.searchQuery.toLowerCase());
         });
       });
-<<<<<<< HEAD
     }
 
     this.filteredData = filtered;
     this.totalPages = Math.ceil(this.filteredData.length / this.itemsPerPage);
     this.generatePagination();
     this.currentPage = 1;
-=======
-    } else {
-      this.filteredData = [...this.tableData];  // If no search, show all data
-    }
-
-    this.totalPages = Math.ceil(this.filteredData.length / this.itemsPerPage);
-    this.currentPage = 1; // Reset to first page after filtering
->>>>>>> e7e9fb0a3a82198269aa3ae7b6172d8746cb8239
   }
 
   getColumnAliases(column: string): string[] {
     return this.columnAliases[column] || [column];
   }
 
-<<<<<<< HEAD
   getTabAlias(tab: string): string {
     return this.tabAliases[tab] || tab;
   }
@@ -157,28 +100,18 @@ export class TableComponent implements OnInit, OnChanges {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
     return this.filteredData.slice(startIndex, endIndex);
-=======
-  getPaginatedData(): any[] {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    return this.filteredData.slice(startIndex, endIndex);  // Return paginated filtered data
->>>>>>> e7e9fb0a3a82198269aa3ae7b6172d8746cb8239
   }
 
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-<<<<<<< HEAD
       this.generatePagination();
-=======
->>>>>>> e7e9fb0a3a82198269aa3ae7b6172d8746cb8239
     }
   }
 
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-<<<<<<< HEAD
       this.generatePagination();
     }
   }
@@ -197,8 +130,3 @@ export class TableComponent implements OnInit, OnChanges {
     this.pageNumbers = pages;
   }
 }
-=======
-    }
-  }
-}
->>>>>>> e7e9fb0a3a82198269aa3ae7b6172d8746cb8239
