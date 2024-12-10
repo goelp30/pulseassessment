@@ -12,7 +12,7 @@ import { Router, RouterLink } from '@angular/router';
   styleUrl: './assessment-records.component.css'
 })
 export class AssessmentRecordsComponent implements OnInit {
-[x: string]: any;
+
   assessments: any[] = [];  // This will hold the fetched data
   filteredAssessments: any[] = []; // This will hold the filtered results
   searchQuery: string = ''; // Bind to the search input
