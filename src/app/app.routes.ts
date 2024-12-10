@@ -10,8 +10,8 @@ import { AlreadyAttendedComponent } from './components/linkGeneration/Pages/alre
 import { LinkGenerationComponent } from './components/linkGeneration/link-generation/link-generation.component';
 
 import { DragDropComponent } from './components/assessment/drag-drop/drag-drop.component';
-import { QuizHomeComponent } from './components/Quiz/quiz-home/quiz-home.component';
-import { TestTableComponent } from './components/Quiz/test-table/test-table.component';
+import { TermsConditionsComponent } from './components/Quiz/terms-conditions/terms-conditions.component';
+import { QuizComponent } from './components/Quiz/quiz-components/quiz/quiz.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -27,6 +27,10 @@ export const routes: Routes = [
   { path: 'assessmentrecords', component: AssessmentRecordsComponent },
   { path: 'linkexpired', component: LinkExpiredComponent },
   { path: 'alreadyattended', component: AlreadyAttendedComponent },
+  {
+  path: 'termsandconditions/:assessmentId/:userId',
+  component: TermsConditionsComponent
+},
   // Quiz Module Routes 
   
   {
@@ -39,13 +43,8 @@ export const routes: Routes = [
     component: DragDropComponent,
   },
   {
-    path: 'quiz-home',
-    component: QuizHomeComponent,
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'quiz-table',
-    component: TestTableComponent,
+    path: 'app-quiz',
+    component: QuizComponent,
     canActivate: [AuthGuard],
   },
 

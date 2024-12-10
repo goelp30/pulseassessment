@@ -122,7 +122,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   ngOnDestroy(): void {
     this.subscription.unsubscribe(); // Unsubscribe from all subscriptions
   }
-
+ 
   filterNames(): void {
     // Filter names based on search query
     if (this.assessmentType === 'external') {
@@ -267,6 +267,8 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
         isLinkAccessed: false,
       };
 
+      console.log(record.url)
+
       this.firebaseService
         .create(`/assessmentRecords/${recordKey}`, record)
         .then(() => {
@@ -294,7 +296,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   private buildUrlWithUserId(baseUrl: string, user: any): string {
     const userId = user.candidateId || user.employeeId;
     return `${baseUrl}/${encodeURIComponent(userId)}`;
-  }
+  } 
 
   resetSelectionData(): void {
     // Reset all selection data
