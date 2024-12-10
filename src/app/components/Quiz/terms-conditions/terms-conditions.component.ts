@@ -51,20 +51,48 @@ export class TermsConditionsComponent implements OnInit {
       });
   }
 
+  // updateExpiredStatus(): void {
+  //   this.assessmentDetails.forEach((assessment) => {
+  //     const { assessmentId, userId, expiryDate } = assessment;
+  //     const recordKey = `${assessmentId}_${userId}`;
+  //     const isExpired = this.isLinkExpired(expiryDate);
+  //     const isActive = !isExpired; // Active only if not expired
+  
+  //     // Check if `isExpired` or `isActive` needs an update
+  //     if (assessment.isExpired !== isExpired || assessment.isActive !== isActive) {
+  //       console.log(`Updating isExpired and isActive for ${recordKey}`);
+  //       this.updateState(recordKey, { isExpired, isActive }).catch((error) => {
+  //         console.error(`Error updating status for ${recordKey}:`, error);
+  //       });
+  //     }
+  //   });
+  // }
   updateExpiredStatus(): void {
     this.assessmentDetails.forEach((assessment) => {
       const { assessmentId, userId, expiryDate } = assessment;
       const recordKey = `${assessmentId}_${userId}`;
       const isExpired = this.isLinkExpired(expiryDate);
-
-      if (assessment.isExpired !== isExpired) {
-        console.log(`Updating isExpired for ${recordKey} to ${isExpired}`);
-        this.updateState(recordKey, { isExpired }).catch((error) => {
-          console.error(`Error updating isExpired for ${recordKey}:`, error);
-        });
+      const isActive = !isExpired; // Active only if not expired
+      const isInProgress = assessment.isInProgress && !isExpired ? true : false; // False if expired
+  
+      // Check if `isExpired`, `isActive`, or `isInProgress` needs an update
+      if (
+        assessment.isExpired !== isExpired ||
+        assessment.isActive !== isActive ||
+        assessment.isInProgress !== isInProgress
+      ) {
+        console.log(
+          `Updating isExpired, isActive, and isInProgress for ${recordKey}`
+        );
+        this.updateState(recordKey, { isExpired, isActive, isInProgress }).catch(
+          (error) => {
+            console.error(`Error updating status for ${recordKey}:`, error);
+          }
+        );
       }
     });
   }
+  
 
   // Handle quiz access logic
   onAccessQuiz(assessment: any): void {
