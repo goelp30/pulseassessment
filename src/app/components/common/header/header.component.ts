@@ -27,7 +27,7 @@ export class HeaderComponent {
     });
   }
 
-  onAddSubjectClick() {
+  onClickFun() {
     this.addSubjectEvent.emit();  // Emit event to trigger subject addition
   }
 }
