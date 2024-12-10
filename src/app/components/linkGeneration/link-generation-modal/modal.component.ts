@@ -257,6 +257,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
         url: userLink,
         userId: user.candidateId || user.employeeId || null,
         userName: user.candidateName || user.employeeName,
+        email:user.employeeEmail || user.candidateEmail,
         assessmentName: this.assessmentName,
         expiryDate: this.expiryDate,
         isActive: true,
