@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
-import { AssessmentList, SubjectCounts } from '../../../models/newassessment'; // Import the AssessmentList type
+import { AssessmentList, SubjectCounts } from '../../../models/newassessment';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
@@ -20,7 +20,7 @@ import { ToastrService, ToastrModule } from 'ngx-toastr';
 export class DragDropComponent implements AfterViewInit, OnInit {
   leftList: { subjectId: string, subjectName: string }[] = [];
   rightList: { subjectId: string, subjectName: string }[] = [];
-  subjectList: string[] = [];
+  subjectList: { subjectId: string, subjectName: string }[] = [];
   updatedList: string[] = [];
  
   createdOn: string = '';
@@ -78,8 +78,8 @@ export class DragDropComponent implements AfterViewInit, OnInit {
           document.getElementById('sortable-right')!.querySelectorAll('li span:first-child')
         ).map((el) => el.textContent || '');
 
-        this.leftList = leftListDom.map((item) => ({ subjectId: item, subjectName: item }));
-        this.rightList = rightListDom.map((item) => ({ subjectId: item, subjectName: item }));
+        this.leftList = leftListDom.map((item) => ({ subjectId: this.subjectList.find((sub) => sub.subjectName === leftListDom[0])?.subjectId || '', subjectName: item }));
+        this.rightList = rightListDom.map((item) => ({ subjectId: this.subjectList.find((sub) => sub.subjectName === leftListDom[0])?.subjectId || '', subjectName: item }));
         this.updateRightListForm(this.rightList); // Update right list form
         // this.rightList = rightListDom;
 
@@ -130,7 +130,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     const updatedInputs = this.fb.array(
       newRightList.map((subject) =>  // Use subjectId directly
         this.fb.group({
-          item: [subject.subjectId],  // Store subjectId here, not the name
+          item: [subject],  // Store subjectId here, not the name
           easy: [0, [Validators.min(0), Validators.max(5)]], // Difficulty levels
           medium: [0, [Validators.min(0), Validators.max(5)]],
           hard: [0, [Validators.min(0), Validators.max(5)]],
@@ -329,7 +329,8 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         .map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName })) // Fetch both subjectId and subjectName
         .sort((a, b) => a.subjectName.localeCompare(b.subjectName)); // Sort subjects alphabetically
 
-      this.subjectList = this.leftList.map((item) => item.subjectName); // Use subjectName for display in HTML
+        this.subjectList = this.leftList
+        .map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName })) // Use subjectName for display in HTML
     });
   }
 
@@ -339,7 +340,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
 
   mapRightListInputs(left:any): any {
     return this.rightListInputs.value.reduce((subjects: any, input: any) => {
-      subjects[input.item] = {  // input.item is subjectId now, not subjectName
+      subjects[input.item.subjectId] = {  // input.item is subjectId now, not subjectName
         easy: input.easy,
         medium: input.medium,
         hard: input.hard,
