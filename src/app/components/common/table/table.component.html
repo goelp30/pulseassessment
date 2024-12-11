@@ -46,15 +46,8 @@
   <div class="p-6 px-0">
     <table class="w-full text-left table-auto min-w-max">
       <thead>
-        <tr class="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] text-center gap-4 border-blue-gray-100 bg-blue-gray-50/50 border-y">
-          @for(column of tableColumns; track column){
-          <th class="p-4 ">
-            @for(alias of getColumnAliases(column); track alias){
-            <ng-container>
-              <div>{{ alias }}</div>
-            </ng-container> }
-          </th> }
-          <th class="p-4 text-center">Action</th>
+        <tr>
+          <th *ngFor="let column of tableColumns" class="px-4 py-2">{{ columnAliases[column][0] }}</th>
         </tr>
       </thead>
 

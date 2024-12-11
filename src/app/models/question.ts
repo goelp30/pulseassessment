@@ -10,17 +10,12 @@ export type Question={
     updatedOn:number,
     isQuesDisabled?: boolean;
 }
-export type OptionFormat={
-    optionId : string,
-    optionText:any,
-    isCorrectOption:boolean
-}
+
 export type Option={
     subjectid:string,
     questionId: string,
-    options:{
-        [optionId:string]:OptionFormat
-    }
-   
+    optionId : string,
+    optionText:any,
+    isCorrectOption:boolean
 }
 
