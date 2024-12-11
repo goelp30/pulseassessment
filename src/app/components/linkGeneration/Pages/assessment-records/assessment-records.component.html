@@ -1,6 +1,9 @@
+
 <div class="min-h-screen bg-gray-100 p-6">
-  <div class="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6">
-    <h1 class="text-3xl font-semibold mb-6 text-gray-800 border-b pb-3">Assessment Records</h1>
+  <div class=" bg-white shadow-lg rounded-lg p-6">
+    <h1 class="text-3xl font-semibold mb-6 text-gray-800 border-b pb-3">
+      Assessment Records
+    </h1>
 
     <div class="mb-6">
       <input
@@ -16,19 +19,40 @@
       <table class="min-w-full bg-white border-collapse border border-gray-300 rounded-lg shadow-sm">
         <thead class="bg-gray-100">
           <tr>
-            <th class="px-6 py-3 text-left text-gray-700 font-medium border-b">Assessment Name</th>
-            <th class="px-6 py-3 text-left text-gray-700 font-medium border-b">Candidate Name</th>
-            <th class="px-6 py-3 text-left text-gray-700 font-medium border-b">Candidate Email</th>
-            <th class="px-6 py-3 text-left text-gray-700 font-medium border-b">Status</th>
-            <th class="px-6 py-3 text-left text-gray-700 font-medium border-b">Url</th>
-            <th class="px-6 py-3 text-left text-gray-700 font-medium border-b">Action</th>
+            <th class="px-6 py-3 text-left text-gray-700 font-medium border-b">
+              Assessment Name
+            </th>
+            <th class="px-6 py-3 text-left text-gray-700 font-medium border-b">
+              Candidate Name
+            </th>
+            <th class="px-6 py-3 text-left text-gray-700 font-medium border-b">
+              Candidate Email
+            </th>
+            <th class="px-6 py-3 text-left text-gray-700 font-medium border-b">
+              Status
+            </th>
+            <th class="px-6 py-3 text-left text-gray-700 font-medium border-b">
+              URL
+            </th>
+            <th class="px-6 py-3 text-left text-gray-700 font-medium border-b">
+              Action
+            </th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let assessment of filteredAssessments; let i = index" class="hover:bg-gray-50">
-            <td class="px-6 py-3 border-b text-gray-700">{{ assessment.assessmentName }}</td>
-            <td class="px-6 py-3 border-b text-gray-700">{{ assessment.userName }}</td>
-            <td class="px-6 py-3 border-b text-gray-700">{{ assessment.email }}</td>
+          <tr
+            *ngFor="let assessment of filteredAssessments"
+            class="hover:bg-gray-50"
+          >
+            <td class="px-6 py-3 border-b text-gray-700">
+              {{ assessment.assessmentName }}
+            </td>
+            <td class="px-6 py-3 border-b text-gray-700">
+              {{ assessment.userName }}
+            </td>
+            <td class="px-6 py-3 border-b text-gray-700">
+              {{ assessment.email }}
+            </td>
             <td class="px-6 py-3 border-b">
               <span
                 [ngClass]="{
@@ -40,7 +64,7 @@
                 }"
                 class="font-semibold"
               >
-                {{ assessment.status }}
+                {{ assessment.status || 'Unknown' }}
               </span>
             </td>
             <td class="px-6 py-3 border-b text-blue-600">
@@ -53,7 +77,14 @@
               </a>
             </td>
             <td class="px-6 py-3 border-b text-gray-700">
-              <button class="px-4 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600">Invalidate</button>
+              <button
+                (click)="invalidateAssessment(assessment)"
+                class="px-4 py-2 bg-red-500 text-white font-medium rounded-lg"
+                [disabled]="isInvalidateDisabled(assessment)"
+                [ngClass]="{ 'opacity-50': isInvalidateDisabled(assessment) }"
+              >
+                Invalidate
+              </button>
             </td>
           </tr>
         </tbody>

@@ -264,7 +264,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
         isActive: true,
         isInProgress: false,
         isCompleted: false,
-        isInvalid: false,
+        isValid: true,
         isLinkAccessed: false,
       };
 

@@ -1,63 +1,78 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
 import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';
 import { ModalComponent } from '../link-generation-modal/modal.component';
 import { Assessment } from '../../../models/assessment';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
+import { TableNames } from '../../../enums/TableName';
+import { TableComponent } from '../../common/table/table.component';
 
 @Component({
   selector: 'app-generate-link', 
   standalone: true,
   imports: [
     FormsModule,
-    SearchbarComponent,
     PopupModuleComponent,
     ModalComponent,
+    TableComponent
   ],
-   templateUrl: './link-generation.component.html',
+   templateUrl: './link-generation.component.html', 
   styleUrl: './link-generation.component.css'
 })
 export class LinkGenerationComponent implements OnInit, OnDestroy {
-  assessments: Assessment[] = []; // Original list of assessments
+  @Input() successMessage: string = '';
+  assessments: Assessment[] = []; 
   assessmentId: string = '';
   assessmentName: string = '';
-  assessmentType: 'internal' | 'external' = 'external'; // Default filter type
+  assessmentType: 'internal' | 'external' = 'external'; 
+  filteredAssessments: Assessment[] = []; 
+  selectedLink: string = ''; 
+  isModalVisible: boolean = false; 
 
-  filteredAssessments: Assessment[] = []; // Displayed list after filtering
-  selectedLink: string = ''; // Link for the modal
-  isModalVisible: boolean = false; // Modal visibility toggle
-  @Input() successMessage: string = '';
+  tableName: string = TableNames.Assessment;  
+  tableColumns: string[] = ['assessmentName', 'assessmentType'];
+  columnAliases: { [key: string]: string[] } = {
+    assessmentName: ['Assessment Name'],
+    assessmentType: ['Assessment Type']
+  };
+  tableData=this.assessments;
+  searchQuery: string = '';
+  searchPlaceholder: string = 'Search Assessments...';
+
+  buttons = [
+    {
+      label: 'Generate Link',
+      colorClass: 'bg-blue-500 py-2 px-4 text-white rounded-md',
+      action: (row: any) => this.openModal(row),
+    }
+  ];
 
   constructor(
     private firebaseService: FireBaseService<Assessment>,
   ) {}
 
-  private subscription: Subscription = new Subscription(); // Initialize the subscription
+  private subscription: Subscription = new Subscription(); 
 
   ngOnInit(): void {
-    this.getAssessments(); // Fetch assessments on initialization
+    this.getAssessments(); 
   }
 
   getAssessments(): void {
-    const assessmentSub = this.firebaseService
-      .getAllData('assessment')
-      .subscribe(
+    const assessmentSub = this.firebaseService.getAllData('assessment').subscribe(
         (data) => {
           this.assessments = data;
-          // console.log(this.assessments);
-          this.filteredAssessments = [...data]; // Initialize filtered list
+          this.filteredAssessments = [...data]; 
         },
         (error) => console.error('Error fetching assessments:', error)
       );
-    this.subscription.add(assessmentSub); // Add to subscription
+    this.subscription.add(assessmentSub); 
   }
 
   ngOnDestroy(): void {
-    this.subscription.unsubscribe(); // Unsubscribe from all subscriptions
+    this.subscription.unsubscribe(); 
   }
-  // Filter assessments based on the search query
+  
   filterAssessments(query: string): void {
     this.filteredAssessments = this.assessments.filter((assessment) =>
       assessment.assessmentName?.toLowerCase().includes(query.toLowerCase())
@@ -66,30 +81,26 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
 
   // Handle search input changes and reset filter if empty
   onSearchQueryChange(query: string): void {
-    this.filteredAssessments = query
-      ? this.assessments.filter((assessment) =>
-          assessment.assessmentName.toLowerCase().includes(query.toLowerCase())
-        )
-      : [...this.assessments];
+    this.searchQuery = query;
+    this.filterAssessments(query);
   }
 
   // Generate a link based on the assessment ID
-  generateLink(id: string): any {
-    // this.assessmentId = id;
-    return `http://localhost:4200/termsandconditions/${id}`;
+  generateLink(id: string): string {
+    const baseUrl = 'http://127.0.0.1:4200/termsandconditions';  
+    return `${baseUrl}/${id}`;
   }
 
   // Open the modal with the selected link and type
   openModal(
-    link: string,
-    type: 'internal' | 'external',
-    assessmentName: string,
-    assessmentId: string
+    
+    row:any
   ): void {
-    this.selectedLink = link;
-    this.assessmentType = type;
-    this.assessmentName = assessmentName;
-    this.assessmentId = assessmentId;
+    
+    this.selectedLink = this.generateLink(row.assessmentId);
+    this.assessmentType = row.assessmentType;
+    this.assessmentName = row.assessmentName;
+    this.assessmentId = row.assessmentId;
     this.isModalVisible = true;
   }
 
@@ -98,7 +109,7 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
     this.isModalVisible = false;
   }
 
-  // Efficiently track assessments in lists for rendering optimization
+
   trackAssessment(index: number, assessment: Assessment): string {
     return assessment.assessmentId;
   }
