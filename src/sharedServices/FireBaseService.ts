@@ -64,8 +64,8 @@ export class FireBaseService<T> {
     /**
      * To Add Data
      */
-    addData(tableName: string, id: string, params: T): Promise<void> {
-        return this.database.object(`${tableName}/${id}`).set(params);
-      }
+    // addData(tableName: string, id: string, params: T): Promise<void> {
+    //     return this.database.object(`${tableName}/${id}`).set(params);
+    //   }
 
 }

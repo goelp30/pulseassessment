@@ -18,10 +18,11 @@ import { ToastrService, ToastrModule } from 'ngx-toastr';
   providers: [DatePipe],
 })
 export class DragDropComponent implements AfterViewInit, OnInit {
-  leftList: string[] = []; // Dynamically loaded from Firebase
+  leftList: { subjectId: string, subjectName: string }[] = [];
+  rightList: { subjectId: string, subjectName: string }[] = [];
   subjectList: string[] = [];
   updatedList: string[] = [];
-  rightList: string[] = [];
+ 
   createdOn: string = '';
   savedFormData: any = null;
   rightListForm!: FormGroup; // Form to handle right list inputs
@@ -31,6 +32,8 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   assessmentTitle: string = ''; // Title for assessment
   tableName = TableNames.Subject; // Firebase collection name for subjects
   assess_table = TableNames.Assessment;
+  isModalVisible: boolean=false;
+  eConfirmationVisible: boolean=false;
 
   constructor(
     private fb: FormBuilder,
@@ -43,7 +46,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   ngOnInit(): void {
     this.initializeRightListForm(); // Initialize form
     if (this.isBrowser()) {
-      this.checkVersionAndResetData(); // Clear local storage if version mismatch
+      // this.checkVersionAndResetData(); // Clear local storage if version mismatch
       this.loadFromLocalStorage(); // Load lists from local storage
       this.fetchLeftList(); // Fetch subjects from Firebase
 
@@ -75,9 +78,10 @@ export class DragDropComponent implements AfterViewInit, OnInit {
           document.getElementById('sortable-right')!.querySelectorAll('li span:first-child')
         ).map((el) => el.textContent || '');
 
-        this.leftList = leftListDom; // Update left list
-        this.updateRightListForm(rightListDom); // Update right list form
-        this.rightList = rightListDom;
+        this.leftList = leftListDom.map((item) => ({ subjectId: item, subjectName: item }));
+        this.rightList = rightListDom.map((item) => ({ subjectId: item, subjectName: item }));
+        this.updateRightListForm(this.rightList); // Update right list form
+        // this.rightList = rightListDom;
 
         this.saveToLocalStorage(); // Persist data
       };
@@ -122,11 +126,11 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     return this.rightListForm.get('rightListInputs') as FormArray;
   }
 
-  updateRightListForm(newRightList: string[]): void {
+  updateRightListForm(newRightList: Subject[]): void {
     const updatedInputs = this.fb.array(
-      newRightList.map((item) =>
+      newRightList.map((subject) =>  // Use subjectId directly
         this.fb.group({
-          item: [item],
+          item: [subject.subjectId],  // Store subjectId here, not the name
           easy: [0, [Validators.min(0), Validators.max(5)]], // Difficulty levels
           medium: [0, [Validators.min(0), Validators.max(5)]],
           hard: [0, [Validators.min(0), Validators.max(5)]],
@@ -134,23 +138,18 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         })
       )
     );
-    this.rightListForm.setControl('rightListInputs', updatedInputs);
+    this.rightListForm.setControl('rightListInputs', updatedInputs);  
+    console.log("updated",updatedInputs);
+    
   }
-
+  
   subscribeToFormChanges(): void {
-    // Listen to changes in right list inputs and log them
     this.rightListForm.valueChanges.subscribe((values) => {
-      console.log('Form Values Changed:', values);
-      // You can perform additional actions here when form changes
     });
-
     // Listen to changes in specific fields like difficulty levels
     this.rightListInputs.valueChanges.subscribe((inputs: any) => {
-      console.log('Right List Inputs Changed:', inputs);
-      // You can process changes or trigger validation/warnings here
     });
   }
-
   saveToLocalStorage(): void {
     if (this.isBrowser()) {
       localStorage.setItem('appVersion', this.appVersion);
@@ -165,7 +164,6 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       }
     }
   }
-
   loadFromLocalStorage(): void {
     if (this.isBrowser()) {
       const leftList = localStorage.getItem('leftList');
@@ -183,7 +181,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
           this.fb.array(
             JSON.parse(rightListInputs).map((entry: any) =>
               this.fb.group({
-                item: [entry.item],
+                item: [entry.subjectId],
                 easy: [entry.easy, [Validators.min(0), Validators.max(5)]],
                 medium: [entry.medium, [Validators.min(0), Validators.max(5)]],
                 hard: [entry.hard, [Validators.min(0), Validators.max(5)]],
@@ -228,24 +226,75 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         isautoEvaluated: this.isAutoEvaluated
       };
 
-      // Save the new assessment to Firebase
       this.firebaseService.create(this.assess_table + '/' + uniqueId, assessment)
         .then(() => {
-          // Resolve with the unique assessmentId after successful save
           resolve(uniqueId);
         })
         .catch((error) => {
-          // Reject if there is an error
           reject('Failed to save assessment: ' + error);
         });
     });
   }
+
+  saveFormData(): void {
+    if (this.assessmentTitle.trim().length === 0) {
+      this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
+      return;
+    }
+
+    this.checkAssessmentTitleUniqueness(this.assessmentTitle).then((isUnique) => {
+      if (!isUnique) {
+        this.assessmentTitleWarning = 'This assessment title already exists. Please choose a unique title.';
+        return;
+      }
+
+      this.addAssessment().then((assessmentId: string) => {
+        if (this.rightListForm.valid) {
+          const assessmentList: AssessmentList = {
+            assessmentId,
+            dateCreated: Date.now(),
+            dateUpdated: Date.now(),
+            subjects: this.mapRightListInputs(this.leftList),
+          };
+
+          this.firebaseService.create('assessmentList/' + assessmentId, assessmentList)
+            .then(() => {
+              this.assessmentList.unshift(assessmentList);
+              this.fetchLeftList();
+              this.toastr.success('Assessment Created successfully', 'Created');
+              this.resetRightListAndForm();
+              this.assessmentTitle = '';
+              this.router.navigate(['/assessment-list']);
+            })
+            .catch((error) => {
+              console.error('Error saving data:', error);
+              this.toastr.error('Failed to save data. Please try again.');
+            });
+        } else {
+          this.toastr.warning('Please fill in the form correctly.');
+        }
+      }).catch((error) => {
+        this.toastr.error('Failed to create assessment. ' + error);
+      });
+    });
+  }
   calculateAutoEvaluated(subjects: any[]): boolean {
     // Check if any subject has a 'descriptive' value greater than 0
-    return !subjects.some(subject => subject.descriptive > 0);
+    let isAutoEvaluated = true; // Default to true
+    subjects.forEach(subject => {
+      console.log(`Subject: ${subject.item}, Descriptive Value: ${subject.descriptive}`); // Log subject and its descriptive value
+      if (subject.descriptive > 0) {
+        isAutoEvaluated = false; // If descriptive value is greater than 0, set to false
+      }
+    });
+    
+    return isAutoEvaluated;
   }
   isAutoEvaluated = this.calculateAutoEvaluated(this.rightList);
-
+  closeModal(): void {
+    this.isModalVisible = false; // For the Assessment Details modal
+    this.eConfirmationVisible = false; // For the Delete Confirmation modal
+  }
   checkAssessmentTitleUniqueness(title: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
       this.firebaseService.getAllData(this.assess_table).subscribe((assessments: any[]) => {
@@ -262,59 +311,6 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   }
   assessmentTitleWarning: string = ''; // Variable to hold the warning message
   assessmentList: AssessmentList[] = [];
-  saveFormData(): void {
-    if (this.assessmentTitle.trim().length === 0) {
-      this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
-      return; // Don't proceed if the title is invalid
-    } else {
-      this.assessmentTitleWarning = ''; // Clear any previous warning
-    }
-
-    this.checkAssessmentTitleUniqueness(this.assessmentTitle).then((isUnique) => {
-      if (!isUnique) {
-        this.assessmentTitleWarning = 'This assessment title already exists. Please choose a unique title.';
-        return; // Stop further execution if title is not unique
-      }
-
-      // Proceed with saving the assessment data if the title is unique
-      this.assessmentTitleWarning = ''; // Clear any previous warning if title is unique
-
-      this.addAssessment().then((assessmentId: string) => {
-        if (this.rightListForm.valid) {
-          const assessmentList: AssessmentList = {
-            assessmentId,
-            dateCreated: Date.now(),
-            dateUpdated: Date.now(),
-            subjects: this.mapRightListInputs(),
-          };
-
-          // Save to Firebase and show success toast
-          this.firebaseService.create('assessmentList/' + assessmentId, assessmentList)
-            .then(() => {
-              // Insert the new assessment at the top of the list
-              this.assessmentList.unshift(assessmentList);  // This adds the new record at the top
-
-              // Re-render the UI (for example, by assigning the new assessment list to the table)
-              this.fetchLeftList();  // Assuming this reloads or updates the table data
-              this.toastr.success('Assessment Created successfully', 'Created');
-
-              // Reset and clear state after save
-              this.resetRightListAndForm();
-              this.assessmentTitle = ''; // Clear the title
-              this.router.navigate(['/assessment-list']);
-            })
-            .catch((error) => {
-              console.error('Error saving data:', error);
-              this.toastr.error('Failed to save data. Please try again.');
-            });
-        } else {
-          this.toastr.warning('Please fill in the form correctly.');
-        }
-      }).catch((error) => {
-        this.toastr.error('Failed to create assessment. ' + error);
-      });
-    });
-  }
 
 
 
@@ -328,15 +324,12 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   }
   // trying to
   fetchLeftList(): void {
-    this.firebaseService.getAllDataByFilter(this.tableName,'isDisabled', false).subscribe((data: any[]) => {
+    this.firebaseService.getAllDataByFilter(this.tableName, 'isDisabled', false).subscribe((data: any[]) => {
       this.leftList = data
-        .map(item => item.subjectId) // Assuming subjectName field exists
-        .sort((a, b) => a.localeCompare(b)); // Sort subjects alphabetically
-      console.log(this.leftList);
+        .map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName })) // Fetch both subjectId and subjectName
+        .sort((a, b) => a.subjectName.localeCompare(b.subjectName)); // Sort subjects alphabetically
 
-      this.subjectList = this.leftList.map((id) => {
-        return data.find((x: Subject) => x.subjectId === id).subjectName;
-      });
+      this.subjectList = this.leftList.map((item) => item.subjectName); // Use subjectName for display in HTML
     });
   }
 
@@ -344,17 +337,20 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     return new Date().toISOString();
   }
 
-  mapRightListInputs(): any {
+  mapRightListInputs(left:any): any {
     return this.rightListInputs.value.reduce((subjects: any, input: any) => {
-      subjects[input.item] = {
+      subjects[input.item] = {  // input.item is subjectId now, not subjectName
         easy: input.easy,
         medium: input.medium,
         hard: input.hard,
         descriptive: input.descriptive,
       };
       return subjects;
+
     }, {});
   }
+  
+  
   onAssessmentTitleChange(): void {
     // Only validate the title when it changes
     this.validateAssessmentTitle();
