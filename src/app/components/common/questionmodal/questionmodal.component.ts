@@ -22,11 +22,13 @@ import { Option } from '../../../models/question';
 })
 export class QuestionmodalComponent implements OnInit {
   @Input() question: Question | null = null;
+  
 
   assessmentForm: FormGroup;
   questionTypes = ['Single', 'Multi', 'Descriptive'];
   questionLevels = ['Easy', 'Medium', 'Hard'];
   subjectId: string = '';
+  warningMessage: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -42,7 +44,17 @@ export class QuestionmodalComponent implements OnInit {
       questionTime: [1, [Validators.required, Validators.min(1), Validators.max(10)]],
       questionMarks: [1, [Validators.required, Validators.min(1)]],
       difficulty: ['Low', Validators.required],
-      options: this.fb.array([this.createOptionGroup()], Validators.required),
+      options: this.fb.array([this.createOptionGroup()]),
+    });
+
+    this.assessmentForm.get('questionType')?.valueChanges.subscribe((value) => {
+      if (value === 'Descriptive') {
+        // Clear options and disable them when the question type is descriptive
+        this.assessmentForm.setControl('options', this.fb.array([]));
+      } else {
+        // Ensure options array exists when question type is not descriptive
+        this.assessmentForm.setControl('options', this.fb.array([this.createOptionGroup()]));
+      }
     });
   }
 
@@ -53,6 +65,10 @@ export class QuestionmodalComponent implements OnInit {
     } else {
       alert('No valid subjectId found!');
     }
+
+    this.assessmentForm.get('questionLevel')?.valueChanges.subscribe((value) => {
+      this.setDefaultTime(value);
+    });
   }
 
   get options() {
@@ -70,20 +86,24 @@ export class QuestionmodalComponent implements OnInit {
     if (this.options.length < 6) {
       this.options.push(this.createOptionGroup());
     } else {
-      alert('You cannot add more than 6 options!');
+      this.warningMessage = 'You cannot add more than 6 options!';
     }
   }
 
   removeOption(index: number): void {
-    if (this.options.length > 1) {
+    if (this.options.length > 2) {
       this.options.removeAt(index);
     } else {
-      alert('At least one option must exist!');
+      this.warningMessage = 'At least two options must exist!';
     }
+    
   }
 
   validateOptions(): boolean {
     const questionType = this.assessmentForm.get('questionType')?.value;
+    if (questionType === 'Descriptive') {
+      return true; // Skip option validation for Descriptive questions
+    }
     const correctOptionsCount = this.options.controls.filter(
       (option) => option.get('isCorrectOption')?.value
     ).length;
@@ -93,12 +113,29 @@ export class QuestionmodalComponent implements OnInit {
       return false;
     }
 
-    if (questionType === 'Multi' && correctOptionsCount < 2) {
+    if (questionType === 'Multi') {
+      if (correctOptionsCount < 2) {
       alert('At least 2 options must be correct for Multi type.');
       return false;
     }
-
+    if (correctOptionsCount === this.options.length) {
+      alert('In Multi type, all options cannot be correct.');
+      return false;
+    }
+  }
     return true;
+  }
+
+  setDefaultTime(questionLevel: string): void {
+    let defaultTime = 1; // Default to 1 minute
+
+    if (questionLevel === 'Medium') {
+      defaultTime = 2;
+    } else if (questionLevel === 'Hard') {
+      defaultTime = 3;
+    }
+
+    this.assessmentForm.patchValue({ questionTime: defaultTime });
   }
 
   async saveData() {
@@ -108,9 +145,13 @@ export class QuestionmodalComponent implements OnInit {
     if (this.assessmentForm.valid && this.validateOptions()) {
       try {
         const questionId = await this.addQuestion();
-        await this.storeOptions(questionId);
+        if (this.assessmentForm.value.questionType !== 'Descriptive') {
+          await this.storeOptions(questionId);
+        }
+        
 
         alert('Saved successfully!');
+        
         this.assessmentForm.reset();
         this.options.clear();
         this.addOption();
