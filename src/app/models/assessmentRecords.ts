@@ -1,15 +1,15 @@
 export type assessmentRecords = {
   assessmentId: string;
   assessmentName: string;
+  assessmentType:string;
   userId: string;
   userName: string;
   email:string,
   url: string;
-  expiryDate:string,
-  invalidated: boolean;
+  expiryDate:string | Date;
+  isValid: boolean;
   isActive: Boolean;
   isCompleted: boolean;
-  isExpired: Boolean;
   isInProgress: Boolean;
   isLinkAccessed: Boolean;
   status?: string;

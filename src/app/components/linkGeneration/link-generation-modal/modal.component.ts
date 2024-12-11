@@ -259,11 +259,11 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
         userName: user.candidateName || user.employeeName,
         email:user.employeeEmail || user.candidateEmail,
         assessmentName: this.assessmentName,
+        assessmentType:this.assessmentType,
         expiryDate: this.expiryDate,
         isActive: true,
         isInProgress: false,
         isCompleted: false,
-        isExpired: false,
         isInvalid: false,
         isLinkAccessed: false,
       };
