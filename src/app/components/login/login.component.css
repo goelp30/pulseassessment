@@ -3,14 +3,23 @@
     border-radius: 12px; 
     padding: 20px; 
   }
-  
+
+  .btn-info{
+    background-color: #007bff;
+    color: #ffffff !important;
+  }
+
   .btn-info:hover {
-    background-color: #2cbbd1; 
+    background-color: #007bff; 
   }
 
   h4 {
     font-size: 1.8rem; 
     font-weight: 600;
+  }
+
+  .mb-3 {
+    margin-bottom: 1.7rem !important;
   }
   
   .text-primary {
