@@ -3,9 +3,7 @@ import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { assessmentRecords } from '../../../../models/assessmentRecords';
-import { NgClass, NgFor } from '@angular/common';
-import { TableComponent } from '../../../common/table/table.component';
-import { TableNames } from '../../../../enums/TableName';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-assessment-records',
@@ -22,17 +20,18 @@ export class AssessmentRecordsComponent implements OnInit {
   selectedStatus: string = '';
   filterOptions: string[] = ['Name', 'Email', 'Assessment'];
   statusOptions: string[] = ['Active', 'Expired', 'In Progress', 'Completed', 'Invalid'];
-
+  isLoading:boolean=true;
   constructor(
     private firebaseService: FireBaseService<any>,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.fetchAssessments();
+      this.fetchAssessments();
   }
 
   fetchAssessments() {
+    this.isLoading = true; 
     this.firebaseService
       .getAllData('assessmentRecords')
       .subscribe((data: any[]) => {
@@ -41,7 +40,9 @@ export class AssessmentRecordsComponent implements OnInit {
           status: this.getStatus(assessment) || 'Unknown',
         }));
         this.filteredAssessments = [...this.assessments];
+        this.isLoading = false;
       });
+
   }
 
   invalidateAssessment(assessment: assessmentRecords) {
