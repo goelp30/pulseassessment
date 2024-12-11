@@ -1,62 +1,66 @@
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Router } from '@angular/router';
+import { TableComponent } from '../../common/table/table.component';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
-import evaluationList from '../assets/Evaluation_list_mock.json'
-import { ButtonComponent } from '../../common/button/button.component';
-import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
+import { FormsModule } from '@angular/forms';
+import evaluationList from '../assets/Evaluation_list_mock.json';  
 import { EvaluationService } from '../service/evaluation.service';
-import { FireBaseService } from '../../../../sharedServices/FireBaseService';
-
+import { HeaderComponent } from '../../common/header/header.component';
 
 @Component({
   selector: 'app-evaluation-dashboard',
   standalone: true,
-  imports: [CommonModule ,ButtonComponent,SearchbarComponent],
+  imports: [TableComponent, CommonModule, FormsModule,HeaderComponent],
   templateUrl: './evaluation-dashboard.component.html',
-  styleUrl: './evaluation-dashboard.component.css'
+  styleUrls: ['./evaluation-dashboard.component.css']
 })
-export class EvaluationDashboardComponent {
-  evaluationList: any[] = [];
-  filteredEvaluationList: any[] = []; 
-  searchQuery: string = ''; 
-  constructor(private router: Router,private evaluationService: EvaluationService,private firebaseService:FireBaseService<any>) { }
-  navigateToEvaluate(evalList: any): void {
-    // Set data for the evaluation
-    this.evaluationService.setData(evalList);
 
-    // Check if marksScored is null and navigate accordingly
-    if (!evalList.isEvaluation) {
-      // Navigate to evaluate page if marksScored is null
+export class EvaluationDashboardComponent implements OnInit {
+  evaluationList: any[] = [];  // List of all evaluations
+  filteredEvaluationList: any[] = [];  // List of evaluations after filtering
+  searchQuery: string = ''; // Search query input from the user
+  activeTab: string = 'all'; // Default active tab
+  tabs: string[] = ['all', 'Complete', 'Pending']; // Example tabs for filtering
+  
+  filterKey = 'status'; // Filter by 'status' field (Complete or Pending)
+  tableName:string='List of Evaluations';
+  
+  columnAliases = {
+    'assessmentId': ['Assessment ID'],
+    'status': ['Status'],
+  };
+
+  buttons = [
+    { label: 'Evaluate', colorClass: 'bg-blue-500 py-2 px-4 text-white rounded-md', action: (row: any) => this.navigateToEvaluate(row) },
+  ];
+
+  searchPlaceholder = 'Search By Assessment ID';
+
+  constructor(
+    private router: Router,
+    private evaluationService: EvaluationService,
+    
+  ) {}
+
+  ngOnInit(): void {
+    this.evaluationList = evaluationList; // Load mock data
+    this.filteredEvaluationList = [...this.evaluationList]; // Initialize filtered list with all evaluations
+   }
+ onSearchQueryChange(newQuery: string): void {
+   this.searchQuery = newQuery;
+    ;  
+  }
+  getButtonLabel(row: any): string {
+    return row.status === 'Complete' ? 'View Complete' : 'View Pending';
+  }
+
+ navigateToEvaluate(evalList: any): void {
+    this.evaluationService.setData(evalList);
+  if (!evalList.isEvaluation || !evalList.isAutoEvaluate) {
       this.router.navigate(['/evaluate']);
-    } else {
-      // Navigate to view page if marksScored is not null
+    } else if (evalList.isEvaluation || evalList.isAutoEvaluate) {
       this.router.navigate(['/view']);
     }
   }
- 
-  ngOnInit(): void {
-    this.evaluationList=evaluationList;
-   this.filteredEvaluationList = this.evaluationList;
-  }
-  onSearchQueryChanged(query: string): void {
-    this.searchQuery = query;
-  
-    // If the query is empty, show all evaluations
-    if (query.trim() === '') {
-      this.filteredEvaluationList = [...this.evaluationList];
-    } else {
-      
-      this.filteredEvaluationList = this.evaluationList.filter((evaluation) =>
-        evaluation.assessmentId.toLowerCase().includes(query.trim().toLowerCase())
-      );
-    }
-  }
-  
- 
-  
- 
-  
-
-  
-
 }
+
