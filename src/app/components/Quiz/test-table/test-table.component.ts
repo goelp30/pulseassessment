@@ -29,7 +29,7 @@ export class TestTableComponent implements OnInit {
 
   // Fetch assessments from Firebase
   getAssessments() {
-    this.fireBaseService.getAllData(this.tableName).subscribe(
+    this.fireBaseService.getAllDataByFilter(this.tableName, 'isDisabled', false).subscribe(
       (res: Assessment[]) => {
         // Filter assessments to exclude disabled ones
         this.assessments = res.filter((assessment) => !assessment.isDisabled);
@@ -46,10 +46,10 @@ export class TestTableComponent implements OnInit {
   // Action for starting a quiz
   startQuiz(row: Assessment) {
     console.log('Starting quiz for:', row.assessmentName, 'ID:', row.assessmentId);
-  
+
     // Navigate to the quiz-home route with query parameters
     this.router.navigate(['/quiz-home'], {
       queryParams: { id: row.assessmentId, name: row.assessmentName },
     });
   }
-}  
+}

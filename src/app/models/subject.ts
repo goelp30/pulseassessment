@@ -4,5 +4,5 @@ export type Subject = {
     createdOn:number,
     UpdatedOn:number,
     isDisabled?: boolean;
-
 }
+

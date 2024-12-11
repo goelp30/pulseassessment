@@ -1,0 +1,4 @@
+.disabled-button {
+    pointer-events: none;  /* Prevent clicking */
+    opacity: 0.5;  /* Visually indicate the button is disabled */
+  }
