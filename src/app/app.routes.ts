@@ -25,6 +25,17 @@ export const routes: Routes = [
     },
     { path: 'register', component: RegisterComponent },
     {
+  // Link Generation Routes
+  {path: 'generatelink',component: LinkGenerationComponent,},
+  { path: 'assessmentrecords', component: AssessmentRecordsComponent },
+  { path: 'linkexpired', component: LinkExpiredComponent },
+  { path: 'alreadyattended', component: AlreadyAttendedComponent },
+  {
+  path: 'termsandconditions/:assessmentId/:userId',
+  component: TermsConditionsComponent
+},
+  // Quiz Module Routes 
+  {
     path: 'assessment-list',
     component: AssessmentListComponent,
     canActivate: [AuthGuard],
