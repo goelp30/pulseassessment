@@ -10,7 +10,11 @@ import { NgClass } from '@angular/common';
   standalone: true,
   imports: [FormsModule,NgClass],
   templateUrl: './assessment-records.component.html',
+<<<<<<< HEAD
   styleUrls: ['./assessment-records.component.css']
+=======
+  styleUrl: './assessment-records.component.css' 
+>>>>>>> c1ae72f5ca00993e78a4b8a7bed6b45131ffe056
 })
 export class AssessmentRecordsComponent implements OnInit {
   assessments: assessmentRecords[] = []; // This will hold the fetched data

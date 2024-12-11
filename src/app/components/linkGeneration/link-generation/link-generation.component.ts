@@ -8,7 +8,7 @@ import { Assessment } from '../../../models/assessment';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 
 @Component({
-  selector: 'app-generate-link',
+  selector: 'app-generate-link', 
   standalone: true,
   imports: [
     FormsModule,
@@ -76,7 +76,7 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
   // Generate a link based on the assessment ID
   generateLink(id: string): any {
     // this.assessmentId = id;
-    return `https://example.com/${id}`;
+    return `http://localhost:4200/termsandconditions/${id}`;
   }
 
   // Open the modal with the selected link and type
