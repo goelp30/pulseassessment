@@ -10,12 +10,18 @@
   [tableName]="'questions'"
   [tableData]="questions"
   [tableColumns]="tableColumns"
-  [columnAliases]="columnAliases"
+  [columnAliases]="columnAliases"z
   [searchPlaceholder]="'Search Questions'"
   [onSearchQueryChange]="onSearchQueryChange.bind(this)"
   [buttons]="buttons"
 >
 </app-table>
+
+<h2 class="text-xl font-bold mb-4">Questions List</h2>
+<div *ngFor="let question of questions" class="mb-2">
+  <h3 class="text-lg ml-2 font-medium">{{ question.questionText }}</h3>
+</div>
+
 
 <div *ngIf="isQuestionModalVisible" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 p-4">
   <!-- Modal Box with internal scroll -->
