@@ -43,6 +43,7 @@ export class TableComponent implements OnInit, OnChanges {
         this.totalPages = Math.ceil(this.tableData.length / this.itemsPerPage);
         this.generatePagination();
         this.filterData();
+         console.log('TableComponent initialized with:', this.tableData);
       });
     }
 

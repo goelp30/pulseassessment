@@ -6,6 +6,8 @@ import { HeaderComponent } from '../../common/header/header.component';
 import { TableComponent } from '../../common/table/table.component';
 import { QuestionmodalComponent } from '../../common/questionmodal/questionmodal.component';
 import { CommonModule } from '@angular/common';
+import { Option } from '../../../models/question';
+import { TableNames } from '../../../enums/TableName';
 
 export type Question = {
   subjectId: string;
@@ -18,20 +20,6 @@ export type Question = {
   createdOn: number;
   updatedOn: number;
   isQuesDisabled?: boolean;
-};
-
-export type OptionFormat = {
-  optionId: string;
-  optionText: any;
-  isCorrectOption: boolean;
-};
-
-export type Option = {
-  subjectId: string;
-  questionId: string;
-  options: {
-    [optionId: string]: OptionFormat;
-  };
 };
 
 @Component({
@@ -64,8 +52,11 @@ export class MockquestionComponent implements OnInit {
   // Table Configurations
   tableColumns: (keyof Question)[] = ['questionText'];
   columnAliases: { [key: string]: string[] } = {
-    questionText: ['Question Text'],
+    questionText: ['Question Text']
   };
+  
+
+  
 
   buttons = [
     {
@@ -78,16 +69,15 @@ export class MockquestionComponent implements OnInit {
       colorClass: 'bg-red-500 py-2 px-4 text-white rounded-md',
       action: (row: Question) => this.deleteQuestion(row),
     },
-    {
-      label: 'View Options',
-      colorClass: 'bg-green-500 py-2 px-4 text-white rounded-md',
-      action: (row: Question) => this.getOptions(row.questionId),
-    },
   ];
 
-  tableName: string = 'Questions Table';
-  searchQuery: string = '';
+ 
   searchPlaceholder: string = 'Search Questions';
+  tableName: string = TableNames.Question;
+  searchQuery: string = '';
+  isModalVisible: boolean = false;
+  isAddModal: boolean = false;
+
 
   constructor(
     private toastr: ToastrService,
@@ -95,50 +85,25 @@ export class MockquestionComponent implements OnInit {
     private fireBaseService: FireBaseService<Question | Option>
   ) {}
 
-  ngOnInit(): void {
-    this.subjectId = this.subjectService.getSubjectId() || '';
-    if (this.subjectId) {
-      console.log('Loaded Subject ID:', this.subjectId);
-      this.getAllQuestions();
-    } else {
-      console.error('No subject ID provided');
-      this.toastr.error('Please select a subject first');
-    }
-  }
 
-  getAllQuestions(): void {
-    if (this.subjectId) {
-      this.fireBaseService.getAllData(`questions/${this.subjectId}`).subscribe(
-        (res: Question[]) => {
-          this.questions = res;
-          console.log('Fetched Questions:', this.questions);
-        },
-        (error: Error) => {
-          console.error('Error fetching questions:', error);
-          this.toastr.error('Error fetching questions');
-        }
-      );
-    } else {
-      this.toastr.error('No subject ID is currently selected');
-    }
+  ngOnInit() {
+    this.loadQuestions();
   }
-
-  getOptions(questionId: string): void {
-    this.fireBaseService
-      .getAllData(`options/${this.subjectId}/${questionId}`)
-      .subscribe(
-        (res: Option[]) => {
-          this.options = res;
-          console.log('Fetched Options:', this.options);
-          this.toastr.success('Options loaded successfully!');
-        },
-        (error: Error) => {
-          console.error('Error fetching options:', error);
-          this.toastr.error('Error fetching options');
-        }
-      );
+ 
+  private loadQuestions() {
+    this.fireBaseService.getAllData('questions').subscribe(
+      (response: Question[]) => {
+        this.questions = response; // Pass only questionText to the table
+      },
+      (error) => {
+        console.error('Error loading questions:', error);
+        this.toastr.error('Error loading questions');
+      }
+    );
   }
-
+ 
+  
+  
   addQuestion() {
     this.selectedQuestion = {
       subjectId: this.subjectId,

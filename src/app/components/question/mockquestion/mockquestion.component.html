@@ -5,13 +5,13 @@
   [buttonClasses]="'bg-blue-500 text-white rounded-md px-4 py-2'"
   (addSubjectEvent)="addQuestion()">
 </app-header>
+
 <app-table
-  [tableName]="tableName"
-  [tableData]="questions" 
+  [tableName]="'questions'"
+  [tableData]="questions"
   [tableColumns]="tableColumns"
   [columnAliases]="columnAliases"
-  [searchQuery]="searchQuery"
-  [searchPlaceholder]="searchPlaceholder"
+  [searchPlaceholder]="'Search Questions'"
   [onSearchQueryChange]="onSearchQueryChange.bind(this)"
   [buttons]="buttons"
 >
