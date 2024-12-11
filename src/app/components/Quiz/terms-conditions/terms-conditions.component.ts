@@ -47,12 +47,58 @@ export class TermsConditionsComponent implements OnInit {
       (error) => console.error('Error fetching assessments:', error)
     );
   }
-
-  // Check if the link is expired
-  isLinkExpired(expiryDate: string | Date): boolean {
-    const expiryDateObj = new Date(expiryDate);
-    return expiryDateObj < new Date();
+  checkLinkExpiry(): void {
+    this.firebaseService.getAllData('assessmentRecords').subscribe(
+      (data) => {
+        const assessmentRecord = data.find(
+          (assessment) =>
+            assessment.userId === this.userId &&
+            assessment.assessmentId === this.assessmentId
+        );
+  
+        if (assessmentRecord) {
+          const { expiryDate, isLinkAccessed, isInProgress, isActive } = assessmentRecord;
+  
+          if (this.isLinkExpired(expiryDate, isLinkAccessed)) {
+            const recordKey = `${this.assessmentId}_${this.userId}`;
+            this.updateState(recordKey, {
+              isExpired: true,
+              isActive: false,  // Deactivate link if never accessed and expired
+            })
+              .then(() => this.router.navigate(['/linkexpired']))
+              .catch((error) =>
+                console.error('Error updating isExpired and isActive:', error)
+              );
+          } else if (isLinkAccessed) {
+            // If link is already accessed, it should not be accessed again
+            this.router.navigate(['/alreadyattended']);
+          } else {
+            // If the link is neither expired nor accessed, continue with rendering
+            this.updateState(`${this.assessmentId}_${this.userId}`, {
+              isActive: true,  // Mark as active if valid
+              isInProgress: true,  // Mark as in progress if not expired and active
+            }).catch((error) =>
+              console.error('Error updating status to active and in progress:', error)
+            );
+          }
+        } else {
+          this.router.navigate(['/linkexpired']);
+        }
+      },
+      (error) => {
+        console.error('Error fetching assessments:', error);
+        this.router.navigate(['/linkexpired']);
+      }
+    );
   }
+  
+  // Check if the link is expired
+  isLinkExpired(expiryDate: string | Date, isLinkAccessed: boolean): boolean {
+    const expiryDateObj = new Date(expiryDate);
+    // If link is not accessed and expiry date has passed, consider it expired
+    return !isLinkAccessed && expiryDateObj < new Date();
+  }
+  
 
   async updateState(recordKey: string, updates: any): Promise<void> {
     const tableName = `assessmentRecords/${recordKey}`;
@@ -67,9 +113,9 @@ export class TermsConditionsComponent implements OnInit {
 
   updateExpiredStatus(): void {
     this.assessmentDetails.forEach((assessment) => {
-      const { assessmentId, userId, expiryDate } = assessment;
+      const { assessmentId, userId, expiryDate,isLinkAccessed } = assessment;
       const recordKey = `${assessmentId}_${userId}`;
-      const isExpired = this.isLinkExpired(expiryDate);
+      const isExpired = this.isLinkExpired(expiryDate,isLinkAccessed);
       const isActive = !isExpired; // Active only if not expired
       const isInProgress = assessment.isInProgress && !isExpired ? true : false; // False if expired
 
@@ -95,20 +141,25 @@ export class TermsConditionsComponent implements OnInit {
 
   // Handle quiz access logic
   onAccessQuiz(assessment: any): void {
-    const { assessmentId, userId, expiryDate, isLinkAccessed } = assessment;
+    const { assessmentId, userId, expiryDate, isLinkAccessed, isInProgress } = assessment;
     const recordKey = `${assessmentId}_${userId}`;
-
-    if (this.isLinkExpired(expiryDate)) {
+  
+    if (this.isLinkExpired(expiryDate, isLinkAccessed)) {
       this.router.navigate(['/linkexpired']);
       return;
     }
-
+  
     if (isLinkAccessed) {
+      // If the link has already been accessed, redirect to 'alreadyattended'
       this.router.navigate(['/alreadyattended']);
       return;
     }
-    // Update both `isLinkAccessed` and `isInProgress`
-    this.updateState(recordKey, { isLinkAccessed: true, isInProgress: true })
+  
+    // If the link is valid and not yet accessed, update the state
+    this.updateState(recordKey, {
+      isLinkAccessed: true,  // Mark the link as accessed
+      isInProgress: true,    // Mark it as in progress when accessed
+    })
       .then(() => {
         this.router.navigate(['/app-quiz'], {
           queryParams: { id: assessmentId },
@@ -118,4 +169,5 @@ export class TermsConditionsComponent implements OnInit {
         console.error('Error marking assessment as accessed:', error);
       });
   }
+  
 }
