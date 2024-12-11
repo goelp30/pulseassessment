@@ -238,8 +238,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     this.isSending = true;
   
     this.selectedNames.forEach((user) => {
-      const userLink = this.buildUrlWithUserId(this.link, user);
-  
+      const userLink = this.buildUrlWithUserId(this.link, user);  
       // Call Bitly service to shorten the link
       this.bitlyService.shortenLink(userLink).subscribe(
         (response) => {

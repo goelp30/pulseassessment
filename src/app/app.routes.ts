@@ -32,7 +32,7 @@ export const routes: Routes = [
   component: TermsConditionsComponent
 },
   // Quiz Module Routes 
-  
+  {path:'termsandconditions',component:TermsConditionsComponent},
   {
     path: 'assessment-list',
     component: AssessmentListComponent,

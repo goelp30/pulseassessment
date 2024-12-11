@@ -8,4 +8,3 @@ module.exports = withMT({
   },
   plugins: [],
 });
-//  "./src/**/*.{html,ts}",
