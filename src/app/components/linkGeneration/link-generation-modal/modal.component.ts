@@ -17,6 +17,7 @@ import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Candidate } from '../../../models/candidate';
 import { Employee } from '../../../models/employee';
 import { Subscription } from 'rxjs';
+import { BitlyService } from '../services/bitly.service';
 
 @Component({
   selector: 'app-modal',
@@ -35,6 +36,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   @Output() closeModalEvent = new EventEmitter<void>();
   @Input() assessmentId: string = '';
   @Input() assessmentName: string = '';
+  @Output() successMessageEvent = new EventEmitter<string>();
 
   employees: Employee[] = [];
   candidates: Candidate[] = [];
@@ -45,14 +47,13 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   expiryDateTime: string = '';
   expiryDate: string = '';
   isSending: boolean = false;
-  @Output() successMessageEvent = new EventEmitter<string>();
   sendMessage: string = 'Data has been sent successfully!';
 
-  private subscription: Subscription = new Subscription(); // Initialize the subscription
+  private subscription: Subscription = new Subscription(); 
   constructor(
-    // private firebaseService: FireBaseService<Candidate | Employee>,
     private firebaseService: FireBaseService<any>,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private bitlyService: BitlyService
   ) {}
 
   ngOnInit(): void {
@@ -62,7 +63,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     if (changes['isVisible'] && changes['isVisible'].currentValue == false) {
       this.resetSearchBar();
       this.resetSelectionData();
-      this.loadData(); // Load data again if modal becomes visible
+      this.loadData(); 
       this.searchQuery = '';
       this.filteredNames = [];
     }
@@ -77,54 +78,50 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
 
   resetSearchBar(): void {
     if (this.searchBar) {
-      this.searchBar.searchQuery = ''; // Clear the search query in the SearchbarComponent
-      this.searchBar.searchQueryChange.emit(''); // Emit an empty search query to trigger filtering
+      this.searchBar.searchQuery = ''; 
+      this.searchBar.searchQueryChange.emit(''); 
     }
   }
 
   loadData(): void {
-    // Clear the filtered names before loading new data
     this.filteredNames = [];
 
     if (this.assessmentType === 'internal') {
-      // Load internal (employee) data from Firebase
       const emploYeeSub = this.firebaseService
         .getAllData('employees')
         .subscribe(
           (data: Employee[]) => {
-            this.employees = data; // Store fetched employee data
-            this.filteredNames = [...this.employees]; // Initialize filtered names
-            this.filterNames(); // Filter based on the search query
+            this.employees = data; 
+            this.filteredNames = [...this.employees]; 
+            this.filterNames(); 
           },
           (error: any) => {
             console.error('Error fetching employee data:', error);
           }
         );
-      this.subscription.add(emploYeeSub); // Add to subscription
+      this.subscription.add(emploYeeSub); 
     } else if (this.assessmentType === 'external') {
-      // Load external (candidate) data from Firebase
       const candidateSub = this.firebaseService
         .getAllData('candidates')
         .subscribe(
           (data: Candidate[]) => {
-            this.candidates = data; // Store fetched candidate data
-            this.filteredNames = [...this.candidates]; // Initialize filtered names
-            this.filterNames(); // Filter based on the search query
+            this.candidates = data; 
+            this.filteredNames = [...this.candidates]; 
+            this.filterNames(); 
           },
           (error: any) => {
             console.error('Error fetching candidate data:', error);
           }
         );
-      this.subscription.add(candidateSub); // Add to subscription
+      this.subscription.add(candidateSub); 
     }
   }
 
   ngOnDestroy(): void {
-    this.subscription.unsubscribe(); // Unsubscribe from all subscriptions
+    this.subscription.unsubscribe(); 
   }
  
   filterNames(): void {
-    // Filter names based on search query
     if (this.assessmentType === 'external') {
       this.filteredNames = this.candidates.filter((item) =>
         item.candidateName
@@ -139,17 +136,16 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     this.updateSelectAllState();
   }
 
-  // Method to toggle selection of an individual user
   toggleSelection(name: any): void {
-    const id = name.candidateId || name.employeeId; // Use candidateId or employeeId
+    const id = name.candidateId || name.employeeId; 
     const index = this.selectedNames.findIndex(
       (selected) => (selected.candidateId || selected.employeeId) === id
     );
 
     if (index === -1) {
-      this.selectedNames.push(name); // Add to selected names
+      this.selectedNames.push(name); 
     } else {
-      this.selectedNames.splice(index, 1); // Remove from selected names
+      this.selectedNames.splice(index, 1); 
     }
 
     const personIndex = this.filteredNames.findIndex(
@@ -161,31 +157,27 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
         !this.filteredNames[personIndex].selected;
     }
 
-    this.updateSelectAllState(); // Update the "Select All" checkbox state
+    this.updateSelectAllState(); 
   }
 
-  // Method to handle "Select All" checkbox
   toggleSelectAll(): void {
-    // If Select All is checked, select all users in filteredNames
     if (this.selectAll) {
-      this.selectedNames = [...this.filteredNames]; // Copy all items from filteredNames
+      this.selectedNames = [...this.filteredNames]; 
       this.filteredNames.forEach((name) => {
-        name.selected = true; // Mark each user as selected
+        name.selected = true; 
       });
     } else {
-      this.selectedNames = []; // Clear the selectedNames array
+      this.selectedNames = []; 
       this.filteredNames.forEach((name) => {
-        name.selected = false; // Mark each user as deselected
+        name.selected = false; 
       });
     }
 
-    // Update the 'Select All' checkbox state
     this.updateSelectAllState();
   }
 
-  // Method to update the state of the 'Select All' checkbox
+  
   updateSelectAllState(): void {
-    // If all users in filteredNames are selected, set selectAll to true
     this.selectAll =
       this.filteredNames.length > 0 &&
       this.selectedNames.length === this.filteredNames.length;
@@ -193,13 +185,13 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
 
   // Method to remove a selected user when the cross button is clicked
   removeSelectedName(name: any): void {
-    const id = name.candidateId || name.employeeId; // Use candidateId or employeeId
+    const id = name.candidateId || name.employeeId;
     const index = this.selectedNames.findIndex(
       (selected) => (selected.candidateId || selected.employeeId) === id
     );
 
     if (index !== -1) {
-      this.selectedNames.splice(index, 1); // Remove from selectedNames
+      this.selectedNames.splice(index, 1); 
     }
 
     const personIndex = this.filteredNames.findIndex(
@@ -207,29 +199,27 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     );
 
     if (personIndex !== -1) {
-      this.filteredNames[personIndex].selected = false; // Deselect the user
+      this.filteredNames[personIndex].selected = false; 
     }
 
-    this.updateSelectAllState(); // Update the "Select All" checkbox state
+    this.updateSelectAllState(); 
   }
 
   closeModal(): void {
     this.resetSelectionData();
-    this.searchQuery = ''; // Reset the search query
-    this.filteredNames = []; // Clear the filtered names
-    this.selectAll = false; // Deselect 'Select All'
-    this.selectedNames = []; // Clear the selected names
+    this.searchQuery = ''; 
+    this.filteredNames = []; 
+    this.selectAll = false; 
+    this.selectedNames = []; 
     this.closeModalEvent.emit();
   }
 
   onSearchQueryChange(query: string): void {
-    // Handle search query change and filter names accordingly
     this.searchQuery = query;
     this.filterNames();
   }
 
   onExpiryTimeChange(event: any): void {
-    // Handle expiry time change
   }
 
   dateTime(): void {
@@ -241,44 +231,57 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
 
   onSend(): void {
     if (this.isSending) {
-      return; // Prevent duplicate sending
+      return; 
     }
-
+  
     this.dateTime();
     this.isSending = true;
-
+  
     this.selectedNames.forEach((user) => {
       const userLink = this.buildUrlWithUserId(this.link, user);
-      const recordKey = `${this.assessmentId}_${
-        user.candidateId || user.employeeId
-      }`;
-      const record = {
-        assessmentId: this.assessmentId,
-        url: userLink,
-        userId: user.candidateId || user.employeeId || null,
-        userName: user.candidateName || user.employeeName,
-        assessmentName: this.assessmentName,
-        expiryDate: this.expiryDate,
-        isActive: true,
-        isInProgress: false,
-        isCompleted: false,
-        isExpired: false,
-        invalidated: false,
-        isLinkAccessed: false,
-      };
-
-      console.log(record.url)
-
-      this.firebaseService
-        .create(`/assessmentRecords/${recordKey}`, record)
-        .then(() => {
-          console.log('Record saved successfully');
-        })
-        .catch((error) => {
-          console.error('Error saving record:', error);
-        });
+  
+      // Call Bitly service to shorten the link
+      this.bitlyService.shortenLink(userLink).subscribe(
+        (response) => {
+          const shortenedUrl = response.link; 
+          const recordKey = `${this.assessmentId}_${user.candidateId || user.employeeId}`;
+          
+          const record = {
+            assessmentId: this.assessmentId,
+            url: shortenedUrl,
+            email: user.employeeEmail || user.candidateEmail,
+            userId: user.candidateId || user.employeeId || null,
+            userName: user.candidateName || user.employeeName,
+            assessmentName: this.assessmentName,
+            assessmentType: this.assessmentType,
+            expiryDate: this.expiryDate,
+            isActive: true,
+            isInProgress: false,
+            isCompleted: false,
+            invalidated: false,
+            isLinkAccessed: false,
+          };
+  
+          console.log('Shortened URL:', shortenedUrl);
+          
+          this.firebaseService.create(`/assessmentRecords/${recordKey}`, record)
+            .then(() => {
+              console.log('Record saved successfully');
+            })
+            .catch((error) => {
+              console.error('Error saving record:', error);
+            });
+        },
+        (error) => {
+          console.error('Error shortening link:', error);
+          if (error.error) {
+            console.error('Error details:', error.error);  
+          }
+          this.isSending = false;
+        }
+      );
     });
-
+  
     setTimeout(() => {
       this.resetSelectionData();
       this.closeModalEvent.emit();
@@ -286,6 +289,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
       this.isSending = false;
     }, 2000);
   }
+  
 
   isSendButtonEnabled(): boolean {
     // Check if at least one user is selected and expiry date is filled

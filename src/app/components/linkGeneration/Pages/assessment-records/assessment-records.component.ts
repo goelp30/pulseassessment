@@ -1,70 +1,66 @@
 import { Component, OnInit } from '@angular/core';
 import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
 import { FormsModule } from '@angular/forms';
-import { NgFor, NgIf } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
+import { assessmentRecords } from '../../../../models/assessmentRecords';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-assessment-records',
   standalone: true,
-  imports: [FormsModule,RouterLink],
+  imports: [FormsModule,NgClass],
   templateUrl: './assessment-records.component.html',
   styleUrl: './assessment-records.component.css' 
 })
 export class AssessmentRecordsComponent implements OnInit {
-
-  assessments: any[] = [];  // This will hold the fetched data
-  filteredAssessments: any[] = []; // This will hold the filtered results
+  assessments: assessmentRecords[] = []; // This will hold the fetched data
+  filteredAssessments: assessmentRecords[] = []; // This will hold the filtered results
   searchQuery: string = ''; // Bind to the search input
-  isLinkDisabled: boolean = false; // Add the flag to manage the link state
 
-  constructor(private firebaseService: FireBaseService<any>,private router: Router) {}
+  constructor(
+    private firebaseService: FireBaseService<any>,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    // Fetch data from Firebase when component initializes
+    // Fetch data from Firebase when the component initializes
     this.fetchAssessments();
   }
 
   // Fetch assessments from Firebase
   fetchAssessments() {
     this.firebaseService.getAllData('assessmentRecords').subscribe((data: any[]) => {
-      this.assessments = data;
-      this.filteredAssessments = data;
+      this.assessments = data.map((assessment) => ({
+        ...assessment,
+        status: this.getStatus(assessment)
+      }));
+      this.filteredAssessments = [...this.assessments];
     });
   }
 
-
-  isLinkExpired(expiryDate: string): boolean {
-    const currentDate = new Date().toISOString();
-    return expiryDate < currentDate;
+  // Determine the dynamic status of the assessment
+  getStatus(assessment: assessmentRecords): string {
+    if (assessment.invalidated) return 'Invalidated';
+    if (assessment.isExpired) return 'Expired';
+    if (assessment.isInProgress) return 'In Progress';
+    if (assessment.isCompleted) return 'Completed';
+    if (assessment.isActive) return 'Active';
+    return 'Unknown';
   }
-  
-  // Method to handle the link click
-  onLinkClick(assessment: any): void {
-    if (this.isLinkExpired(assessment.expiryDate)) {
-      // Mark the link as disabled
-      assessment.isLinkDisabled = true;
-  
-      // Use the Router to navigate to the expired link page
-    this.router.navigate(['/linkexpired']);
-    } else {
-       //? If link is not expired, navigate to the  TERMS and CONDITIONS PAGE (Tanya and Team's Page)
-    const decodedUrl = decodeURIComponent(assessment.urlId);
-    // this.router.navigateByUrl(decodedUrl);
-    this.router.navigate(['/generatelink']);
-    }
-  }
-  
 
-  // Filter assessments based on search query
+  // Filter assessments based on the search query
   onSearch() {
     if (this.searchQuery.trim() === '') {
-      this.filteredAssessments = this.assessments;
+      this.filteredAssessments = [...this.assessments];
     } else {
       this.filteredAssessments = this.assessments.filter((assessment) => {
         return (
-          assessment.assessmentName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-          assessment.userName.toLowerCase().includes(this.searchQuery.toLowerCase())
+          assessment.assessmentName
+            .toLowerCase()
+            .includes(this.searchQuery.toLowerCase()) ||
+          assessment.userName
+            .toLowerCase()
+            .includes(this.searchQuery.toLowerCase())
         );
       });
     }
