@@ -7,9 +7,11 @@ import { Router } from '@angular/router';
 import { assessmentRecords } from '../../../../models/assessmentRecords';
 import { NgClass, NgFor } from '@angular/common';
 
+
 @Component({
   selector: 'app-assessment-records',
   standalone: true,
+
   imports: [FormsModule, NgClass, NgFor],
   templateUrl: './assessment-records.component.html',
   styleUrls: ['./assessment-records.component.css'],
@@ -18,7 +20,6 @@ export class AssessmentRecordsComponent implements OnInit {
   assessments: assessmentRecords[] = [];
   filteredAssessments: assessmentRecords[] = [];
   searchQuery: string = '';
-
   constructor(
     private firebaseService: FireBaseService<any>,
     private router: Router
@@ -58,8 +59,6 @@ export class AssessmentRecordsComponent implements OnInit {
         console.error(`Error invalidating assessment ${recordKey}:`, error);
       });
   }
-  
-
   async updateState(recordKey: string, updates: any): Promise<void> {
     const tableName = `assessmentRecords/${recordKey}`;
     return await this.firebaseService
@@ -100,9 +99,9 @@ export class AssessmentRecordsComponent implements OnInit {
         )
       : [...this.assessments];
   }
-
   isInvalidateDisabled(assessment: assessmentRecords): boolean {
     return assessment.status === 'Invalid' || assessment.status?.includes('Expired') || false;
   }
   
 }
+

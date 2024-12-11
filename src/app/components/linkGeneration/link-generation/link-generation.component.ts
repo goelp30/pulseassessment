@@ -47,7 +47,6 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
       action: (row: any) => this.openModal(row),
     }
   ];
-
   constructor(
     private firebaseService: FireBaseService<Assessment>,
   ) {}

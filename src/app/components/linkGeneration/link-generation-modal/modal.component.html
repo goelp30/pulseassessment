@@ -28,13 +28,14 @@
   class="h-32 overflow-y-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
 >
   <!-- Check if filteredNames is empty -->
-  <div
-    *ngIf="filteredNames.length === 0"
-    class="h-32 text-center text-gray-500 font-medium"
-  >
+   @if(filteredNames.length === 0){
+  <div class="h-32 text-center text-gray-500 font-medium">
     User not found
   </div>
-  <div *ngIf="filteredNames.length > 0">
+}
+
+  @if(filteredNames.length > 0){
+    <div>
     <ul class="space-y-1">
       <!-- Loop through filteredNames and display each name -->
       <li *ngFor="let person of filteredNames; trackBy: trackById">
@@ -52,7 +53,7 @@
         </div>
       </li>
     </ul>
-  </div>
+  </div>}
 </div>
 
 <!-- Display selected names -->
