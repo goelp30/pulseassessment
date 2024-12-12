@@ -12,23 +12,21 @@ import { CommonModule } from '@angular/common';
   styleUrl: './view-assessment.component.css'
 })
 export class ViewAssessmentComponent {
-
- clickedData:any;
+  clickedData:any;
   constructor(private evaluationService: EvaluationService,private router:Router){}
   ngOnInit(): void {
   this.clickedData = this.evaluationService.getData();
-  console.log(this.clickedData);
-}
+  }
+// Calculate the total max marks for all questions
 getTotalMarks(): number {
-  // Calculate the total max marks for all questions
   let totalMarks = 0;
   this.clickedData.questions.forEach((question: any) => {
-    totalMarks += question.totalMarks; // Add up totalMarks from all questions
+    totalMarks += question.totalMarks;
   });
   return totalMarks;
 }
+//Routing to the dashboard
 onSubmit(){
 this.router.navigate(['/evaluation']);
-
 }}
 
