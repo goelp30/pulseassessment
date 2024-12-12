@@ -1,6 +1,7 @@
 import { Injectable, Type } from '@angular/core';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
-import { map, Observable } from 'rxjs';
+import { catchError, map, Observable } from 'rxjs';
+import { Options, Question } from '../app/models/question.model';
 
 @Injectable({
     providedIn: 'root'
@@ -22,9 +23,10 @@ export class FireBaseService<T> {
     /***
      * create new element in table
      */
-    create(tableName: string, params: T) {
+    create<T>(tableName: string, params: T): Promise<void> {
         return this.database.object(tableName).set(params);
-    }
+      }
+      
 
     /***
      * Update new
@@ -67,5 +69,41 @@ export class FireBaseService<T> {
     addData(tableName: string, id: string, params: T): Promise<void> {
         return this.database.object(`${tableName}/${id}`).set(params);
       }
+      getItemsByFields(
+        path: string,
+        fields: string[],
+        value: any
+      ): Observable<T[]> {
+        return this.database
+          .list<T>(path)
+          .valueChanges()
+          .pipe(
+            map((items) =>
+              items.filter((item) =>
+                fields.some((field) => (item as any)[field] === value)
+              )
+            ),
+            catchError((error) => {
+              console.error(`Error filtering items in ${path}:`, error);
+              throw error;
+            })
+          );
+      }
 
+        // Get question by its ID
+  getQuestionById(questionId: number): Observable<Question> {
+    return this.database
+      .object(`questions/${questionId}`)
+      .snapshotChanges()
+      .pipe(map(this.documentToDomainObject));
+  }
+
+  // Get options for a specific question
+  getOptionsByQuestionId(questionId: number): Observable<Options[]> {
+    return this.database
+      .list('options', ref => ref.orderByChild('questionId').equalTo(questionId))
+      .snapshotChanges()
+      .pipe(map(actions => actions.map(this.documentToDomainObject)));
+  }
+      
 }

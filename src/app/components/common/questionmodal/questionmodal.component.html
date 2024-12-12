@@ -1,0 +1,104 @@
+<div class="container mx-auto p-6 bg-white rounded-lg shadow-lg w-[500px] max-w-full mt-6">
+  <form [formGroup]="assessmentForm" (ngSubmit)="saveData()" class="space-y-6">
+
+    <!-- Question Type Section -->
+    <div class="px-2">
+      <label for="questionType" class="block text-sm font-medium text-gray-700">Question Type</label>
+      <select
+        id="questionType"
+        formControlName="questionType"
+        class="mt-2 block w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-green-400"
+      >
+        <option *ngFor="let type of questionTypes" [value]="type">{{ type }}</option>
+      </select>
+    </div>
+
+    <!-- Question Level Section -->
+    <div class="px-2">
+      <label for="questionLevel" class="block text-sm font-medium text-gray-700">Question Level</label>
+      <select
+        id="questionLevel"
+        formControlName="questionLevel"
+        class="mt-2 block w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400"
+      >
+        <option *ngFor="let level of questionLevels" [value]="level">{{ level }}</option>
+      </select>
+    </div>
+
+    <!-- Question Text Section -->
+    <div class="px-2">
+      <label class="block text-sm font-medium text-gray-700">Question Text</label>
+      <input
+        type="text"
+        formControlName="questionText"
+        class="mt-2 block w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400"
+      />
+    </div>
+
+    <!-- Weightage Section -->
+    <div class="px-2">
+      <label class="block text-sm font-medium text-gray-700">Weightage</label>
+      <input
+        type="number"
+        formControlName="questionWeightage"
+        class="mt-2 block w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400"
+        min="1"
+      />
+    </div>
+
+    <!-- Question Time Section -->
+    <div class="px-2">
+      <label class="block text-sm font-medium text-gray-700">Time (minutes)</label>
+      <input
+        type="number"
+        formControlName="questionTime"
+        class="mt-2 block w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400"
+        min="1"
+        max="10"
+      />
+    </div>
+
+    <!-- Options Section -->
+    <div *ngIf="assessmentForm.get('questionType')?.value !== 'Descriptive'" formArrayName="options">
+      <h3 class="text-lg font-medium text-gray-700 mb-3">Options</h3>
+      
+      <div *ngFor="let option of options.controls; let i = index" [formGroupName]="i" class="flex items-center space-x-3 mb-3">
+        <input
+          type="text"
+          formControlName="optionText"
+          placeholder="Option text"
+          class="flex-1 border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400"
+        />
+        <input
+          type="checkbox"
+          formControlName="isCorrectOption"
+        />
+        <button
+          type="button"
+          (click)="removeOption(i)"
+          class="px-3 py-1 text-sm text-white bg-red-500 rounded-md hover:bg-red-600"
+        >
+          Remove
+        </button>
+      </div>
+      <p *ngIf="warningMessage" class="text-red-500 text-sm mb-2">{{ warningMessage }}</p>
+      <button
+        type="button"
+        (click)="addOption()"
+        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm text-gray-700"
+      >
+        Add Option
+      </button>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="text-right px-2">
+      <button
+        type="submit"
+        class="inline-flex items-center px-6 py-3 border bg-green-600 hover:bg-green-700 text-white rounded-md focus:ring-2 focus:ring-green-500"
+      >
+        Save
+      </button>
+    </div>
+  </form>
+</div>

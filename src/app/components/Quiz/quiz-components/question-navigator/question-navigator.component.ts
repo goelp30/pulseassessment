@@ -1,13 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Question } from '../../models/question.model';
+import { Question } from '../../../../models/question.model';
 
 @Component({
   selector: 'app-question-navigator',
   standalone: true,
   imports: [CommonModule],
-  templateUrl:"question-navigator.component.html",
-  styleUrl:"question-navigator.component.css",
+  templateUrl: "question-navigator.component.html",
 })
 export class QuestionNavigatorComponent {
   @Input() questions: Question[] = [];
@@ -15,33 +14,29 @@ export class QuestionNavigatorComponent {
   @Output() questionSelect = new EventEmitter<number>();
 
   onQuestionSelect(index: number) {
-    if (this.isNavigable(index)) {
-      this.questionSelect.emit(index);
-    }
-  }
-
-  isNavigable(index: number): boolean {
-    return this.questions[index].selectedAnswer !== undefined || 
-           this.questions[index].isVisited;
+    this.questionSelect.emit(index); // Emit the selected question index
   }
 
   getButtonClass(index: number): string {
     const question = this.questions[index];
-    const baseClass = 'transition-colors';
 
+    // If the current question is selected, highlight it as active
     if (index === this.currentQuestionIndex) {
-      return `${baseClass} bg-blue-500 text-white`;
+      return 'bg-blue-500 text-white';
     }
+    // If the question is marked for review, highlight it
     if (question.isMarkedForReview) {
-      return `${baseClass} bg-yellow-400 text-white`;
+      return 'bg-yellow-400 text-white';
     }
+    // If the question has a selected answer, highlight it as answered
     if (question.selectedAnswer !== undefined) {
-      return `${baseClass}  bg-emerald-500`;
+      return 'bg-green-500 text-white';
     }
+    // If the question is visited but unanswered, apply visited style
     if (question.isVisited) {
-      return `${baseClass} bg-emerald-500`;
+      return 'bg-gray-300';
     }
-    return `${baseClass} bg-gray-500 text-white`;
+    // Default style for unvisited/unanswered questions
+    return 'bg-gray-500 text-white';
   }
 }
-
