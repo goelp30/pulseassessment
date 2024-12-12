@@ -167,26 +167,28 @@ export class QuestionmodalComponent implements OnInit {
       this.options.push(this.createOptionGroup());
       this.warningMessage = '';
     } else {
-      this.warningMessage = 'You cannot add more than 6 options!';
+      this.warningMessage = 'Cannot add more than 6 options.';
+      alert(this.warningMessage);
     }
   }
-
+  
   removeOption(index: number): void {
     const questionType = this.assessmentForm.get('questionType')?.value;
+  
     if (questionType === 'Multi' && this.options.length <= 3) {
-      this.warningMessage = 'Multi type questions require at least 3 options!';
+      alert('Multi-choice questions must have at least 3 options.');
       return;
     }
+  
     if (this.options.length > 1) {
       this.options.removeAt(index);
       this.warningMessage = '';
     } else {
-      this.warningMessage = 'At least two options must exist!';
+      alert('You must have at least two options.');
     }
   }
   
   
-
   validateOptions(): boolean {
     const questionType = this.assessmentForm.get('questionType')?.value;
     const totalOptions = this.options.length;
@@ -196,17 +198,26 @@ export class QuestionmodalComponent implements OnInit {
   
     if (questionType === 'Multi') {
       if (totalOptions < 3) {
-        alert('Multi type questions require at least 3 options.');
+        alert('Multi-choice questions require at least 3 options.');
         return false;
       }
-      if (correctOptionsCount < 2 || correctOptionsCount === totalOptions) {
-        alert('Multi type questions must have at least 2 correct options and cannot have all options marked as correct.');
+  
+      if (correctOptionsCount < 2) {
+        alert('Multi-choice questions must have at least 2 correct options.');
+        return false;
+      }
+  
+      if (correctOptionsCount === totalOptions) {
+        alert('Cannot mark all options as correct in a multi-choice question.');
         return false;
       }
     }
   
-    return true;
+    return true; 
   }
+  
+  
+
   
 
   async saveData() {
@@ -218,7 +229,7 @@ export class QuestionmodalComponent implements OnInit {
           const questionId = await this.addQuestion();
           await this.storeOptions(questionId);
         }
-
+  
         alert('Saved successfully!');
         
         this.assessmentForm.reset({
@@ -236,9 +247,10 @@ export class QuestionmodalComponent implements OnInit {
         alert(`Error: ${error}`);
       }
     } else {
-      alert('Please fill out all required fields correctly.');
+      alert('Please fix validation issues before saving.');
     }
   }
+  
   async addQuestion(): Promise<string> {
     const questionId = crypto.randomUUID(); // Generate unique question ID
     const questionData: Question = {
@@ -314,18 +326,25 @@ export class QuestionmodalComponent implements OnInit {
 
   async storeOptions(questionId: string): Promise<void> {
     const optionPromises = this.options.controls.map((optionControl) => {
+      const optionId = optionControl.get('optionId')?.value; // Use pre-existing ID only if it's there
+      const isExistingOption = !!optionId; // If there's an existing ID, it's an update, otherwise, create new
+  
       const optionData: Option = {
         subjectid: this.subjectId,
         questionId,
-        optionId: crypto.randomUUID(),
+        optionId: isExistingOption ? optionId : crypto.randomUUID(), // Only generate new if no pre-existing ID
         optionText: optionControl.get('optionText')?.value,
         isCorrectOption: optionControl.get('isCorrectOption')?.value,
       };
+  
+      console.log('Saving option:', optionData); // Debug: Log each option attempt
       return this.firebaseService.create(`/options/${optionData.optionId}`, optionData);
     });
-
+  
     await Promise.all(optionPromises);
   }
+  
+  
 
   setDefaultTime(questionLevel: string): void {
     const time = questionLevel === 'Medium' ? 2 : questionLevel === 'Hard' ? 3 : 1;
