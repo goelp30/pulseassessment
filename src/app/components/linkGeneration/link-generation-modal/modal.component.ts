@@ -63,7 +63,6 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   }
   setMinDateTime(): void {
     const currentDate = new Date();
-
     // Extract the local date and time, formatted as 'YYYY-MM-DDTHH:MM'
     const year = currentDate.getFullYear();
     const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
@@ -77,17 +76,12 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   // Event handler when the date or time changes
   onDateTimeChange(event: Event): void {
     const selectedDate = new Date(this.expiryDateTime);
-
-    // Compare the selected date with the current date/time
     const currentDate = new Date();
-
-    // If the selected date is in the past, reset it to the current time
     if (selectedDate < currentDate) {
       alert('The selected time is in the past. Please select a valid time.');
       this.expiryDateTime = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}T${currentDate.getHours().toString().padStart(2, '0')}:${currentDate.getMinutes().toString().padStart(2, '0')}`;
     }
   }
-
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isVisible'] && changes['isVisible'].currentValue == false) {
       this.resetSearchBar();
@@ -111,10 +105,8 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
       this.searchBar.searchQueryChange.emit(''); 
     }
   }
-
   loadData(): void {
     this.filteredNames = [];
-
     if (this.assessmentType === 'internal') {
       const emploYeeSub = this.firebaseService
         .getAllData('employees')
@@ -145,11 +137,9 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
       this.subscription.add(candidateSub); 
     }
   }
-
   ngOnDestroy(): void {
     this.subscription.unsubscribe(); 
   }
- 
   filterNames(): void {
     if (this.assessmentType === 'external') {
       this.filteredNames = this.candidates.filter((item) =>
@@ -170,22 +160,18 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     const index = this.selectedNames.findIndex(
       (selected) => (selected.candidateId || selected.employeeId) === id
     );
-
     if (index === -1) {
       this.selectedNames.push(name); 
     } else {
       this.selectedNames.splice(index, 1); 
     }
-
     const personIndex = this.filteredNames.findIndex(
       (person) => (person.candidateId || person.employeeId) === id
     );
-
     if (personIndex !== -1) {
       this.filteredNames[personIndex].selected =
         !this.filteredNames[personIndex].selected;
     }
-
     this.updateSelectAllState(); 
   }
 
@@ -201,10 +187,8 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
         name.selected = false; 
       });
     }
-
     this.updateSelectAllState();
   }
-
   
   updateSelectAllState(): void {
     this.selectAll =
@@ -218,22 +202,17 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     const index = this.selectedNames.findIndex(
       (selected) => (selected.candidateId || selected.employeeId) === id
     );
-
     if (index !== -1) {
       this.selectedNames.splice(index, 1); 
     }
-
     const personIndex = this.filteredNames.findIndex(
       (person) => (person.candidateId || person.employeeId) === id
     );
-
     if (personIndex !== -1) {
       this.filteredNames[personIndex].selected = false; 
     }
-
     this.updateSelectAllState(); 
   }
-
   closeModal(): void {
     this.resetSelectionData();
     this.searchQuery = ''; 
@@ -247,33 +226,26 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     this.searchQuery = query;
     this.filterNames();
   }
-
   onExpiryTimeChange(event: any): void {
   }
-
   dateTime(): void {
     if (this.expiryDateTime) {
       const date = new Date(this.expiryDateTime);
       this.expiryDate = date.toISOString();
     }
   }
-
   onSend(): void {
     if (this.isSending) {
       return; 
     }
-  
     this.dateTime();
     this.isSending = true;
-  
     this.selectedNames.forEach((user) => {
       const userLink = this.buildUrlWithUserId(this.link, user);
-  
       // this.bitlyService.shortenLink(userLink).subscribe(
         // (response) => {
           // const shortenedUrl = response.link; 
           const recordKey = `${this.assessmentId}_${user.candidateId || user.employeeId}`;
-          
           const record = {
             assessmentId: this.assessmentId,
             // url: shortenedUrl,
@@ -290,7 +262,6 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
             isValid: true,
             isLinkAccessed: false,
           };
-
           
           this.firebaseService.create(`/assessmentRecords/${recordKey}`, record)
             .then(() => {
@@ -318,9 +289,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     }, 2000);
   }
   
-
   isSendButtonEnabled(): boolean {
-    // Check if at least one user is selected and expiry date is filled
     return this.selectedNames.length > 0 && this.expiryDateTime !== '';
   }
 
@@ -330,8 +299,8 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     return `${baseUrl}/${encodeURIComponent(userId)}`;
   } 
 
+  // Reset all selection data
   resetSelectionData(): void {
-    // Reset all selection data
     this.selectedNames = [];
     this.selectAll = false;
     this.filteredNames.forEach((name) => (name.selected = false));

@@ -1,13 +1,9 @@
 <app-searchbar
   [placeholder]="'Search names...'"
   (searchQueryChange)="onSearchQueryChange($event)"
-  [class]="
-    'block w-full px-4 py-2 mb-4 border border-gray-300 rounded-full text-lg shadow-md outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 transition-all duration-100 transform '
-  "
->
+  [class]="'block w-full px-4 py-2 mb-4 border border-gray-300 rounded-full text-lg shadow-md outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 transition-all duration-100 transform '">
 </app-searchbar>
 <span class=" text-blue-600 font-semibold">Assessment Name: {{assessmentName.toUpperCase()}}</span>
-
 <div class="flex justify-between items-center my-2">
   <div class="flex items-center">
     <input
@@ -15,25 +11,20 @@
       id="selectAll" 
       [(ngModel)]="selectAll"
       (change)="toggleSelectAll()"
-      class="mr-2 text-blue-600 focus:ring-2 focus:ring-blue-500"
-    />
+      class="mr-2 text-blue-600 focus:ring-2 focus:ring-blue-500"/>
     <label for="selectAll" class="text-xs font-medium text-gray-700">
       Select All
     </label>
   </div>
   <div class="text-xs text-gray-500">({{ filteredNames.length }} items)</div>
 </div>
-
-<div
-  class="h-32 overflow-y-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
->
+<div class="h-32 overflow-y-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200">
   <!-- Check if filteredNames is empty -->
    @if(filteredNames.length === 0){
   <div class="h-32 text-center text-gray-500 font-medium">
     User not found
   </div>
 }
-
   @if(filteredNames.length > 0){ 
     <div>
     <ul class="space-y-1">
@@ -55,7 +46,6 @@
     </ul>
   </div>}
 </div>
-
 <!-- Display selected names -->
 <div
   class="h-32 overflow-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
@@ -79,15 +69,13 @@
       <button
         type="button"
         (click)="removeSelectedName(name)"
-        class="ml-1 text-red-500 font-bold hover:text-red-700 focus:outline-none transition-all duration-200 ease-in-out"
-      >
+        class="ml-1 text-red-500 font-bold hover:text-red-700 focus:outline-none transition-all duration-200 ease-in-out">
         &times;
       </button>
     </div>
     } }
   </div>
 </div>
-
 <div class="flex justify-between items-center space-x-4 mb-12">
   <!-- DateTime field -->
   <input
@@ -98,14 +86,12 @@
     (change)="onDateTimeChange($event)"
     class="bg-transparent text-center border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 py-2 px-2"
   />
-
   <!-- Send button -->
   <app-button
     [label]="isSending ? 'Sending...' : 'Send'"
     [ngClass]="{ 'disabled-button': !isSendButtonEnabled() }"
     [colorClass]="
-      'px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none transition-all duration-200 ease-in-out'
-    "
+      'px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none transition-all duration-200 ease-in-out'"
     (click)="onSend()"
   ></app-button>
 </div>
