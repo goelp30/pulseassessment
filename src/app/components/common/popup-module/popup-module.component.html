@@ -1,35 +1,28 @@
-@if(isVisible) {
-  <div class="w-auto max-w-full fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+@if(isVisible){
+  <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
     <!-- Modal container -->
-    <div
-      [ngClass]="containerClass"
-      class="inline-block p-6 bg-white rounded-md shadow-lg w-[50vw] h-[50vh] sm:w-[60vw] sm:h-[60vh] md:w-[50vw] md:h-[50vh] lg:w-[40vw] lg:h-[40vh] min-w-[400px] min-h-[250px]"
-    >
-      <!-- Modal Header -->
-      <div [ngClass]="headerClass" class="flex justify-between items-center w-full border-b pb-4 relative">
-        <!-- Title -->
+    <div [ngClass]="containerClass">
+    
+      <!-- Modal Header (Title) -->
+      <div [ngClass]="headerClass">
         <ng-content select="[modalTitle]">
-          @if(!hasProjectedModalTitle()) {
+          <!-- Default title if not provided -->
+           @if(!hasProjectedModalTitle()){
           <ng-container>
-            <h2 class="text-2xl font-bold text">{{ modalTitle || 'Default Modal Title' }}</h2>
+            <h2 >{{ modalTitle || 'Default Modal Title' }}</h2>
           </ng-container>
-          }
+        }
         </ng-content>
-
         <!-- Close Button -->
-        <button
-          type="button"
-          class="text-3xl font-bold text-black-500 hover:text-gray-700 relative "
-          (click)="closeModal()"
-        >
+        <button type="button" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl" (click)="closeModal()">
           &times;
         </button>
       </div>
-
-       <!-- Modal Body for generic content-->
-       <div [ngClass]="[bodyClass]">
+  
+      <!-- Modal Body for generic content-->
+      <div [ngClass]="bodyClass">
         <ng-content></ng-content>  
       </div>
     </div>
   </div>
-}
+  }
