@@ -1,6 +1,7 @@
 import { Injectable, Type } from '@angular/core';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { catchError, map, Observable } from 'rxjs';
+import { Options, Question } from '../app/models/question.model';
 
 @Injectable({
     providedIn: 'root'
@@ -69,12 +70,12 @@ export class FireBaseService<T> {
         return this.database.object(`${tableName}/${id}`).set(params);
       }
       getItemsByFields(
-        tableName: string,
+        path: string,
         fields: string[],
         value: any
       ): Observable<T[]> {
         return this.database
-          .list<T>(tableName)
+          .list<T>(path)
           .valueChanges()
           .pipe(
             map((items) =>
@@ -83,10 +84,27 @@ export class FireBaseService<T> {
               )
             ),
             catchError((error) => {
-              console.error(`Error filtering items in ${tableName}:`, error);
+              console.error(`Error filtering items in ${path}:`, error);
               throw error;
             })
           );
       }
+
+        // Get question by its ID
+  getQuestionById(questionId: number): Observable<Question> {
+    return this.database
+      .object(`questions/${questionId}`)
+      .snapshotChanges()
+      .pipe(map(this.documentToDomainObject));
+  }
+
+  // Get options for a specific question
+  getOptionsByQuestionId(questionId: number): Observable<Options[]> {
+    return this.database
+      .list('options', ref => ref.orderByChild('questionId').equalTo(questionId))
+      .snapshotChanges()
+      .pipe(map(actions => actions.map(this.documentToDomainObject)));
+  }
       
 }
+

@@ -1,72 +1,128 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
 import { FormsModule } from '@angular/forms';
-import { NgFor, NgIf } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
+import { assessmentRecords } from '../../../../models/assessmentRecords';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-assessment-records',
   standalone: true,
-  imports: [FormsModule,RouterLink],
+  imports: [FormsModule, NgClass],
   templateUrl: './assessment-records.component.html',
-  styleUrl: './assessment-records.component.css' 
+  styleUrls: ['./assessment-records.component.css'],
 })
 export class AssessmentRecordsComponent implements OnInit {
+  assessments: assessmentRecords[] = [];
+  filteredAssessments: assessmentRecords[] = [];
+  searchQuery: string = '';
+  selectedFilter: string = 'Name';
+  selectedStatus: string = '';
+  filterOptions: string[] = ['Name', 'Email', 'Assessment'];
+  statusOptions: string[] = ['Active', 'Expired', 'In Progress', 'Completed', 'Invalid'];
+  isLoading:boolean=true;
 
-  assessments: any[] = [];  // This will hold the fetched data
-  filteredAssessments: any[] = []; // This will hold the filtered results
-  searchQuery: string = ''; // Bind to the search input
-  isLinkDisabled: boolean = false; // Add the flag to manage the link state
-
-  constructor(private firebaseService: FireBaseService<any>,private router: Router) {}
-
+  constructor(
+    private firebaseService: FireBaseService<any>,
+    private router: Router
+  ) {}
   ngOnInit(): void {
-    // Fetch data from Firebase when component initializes
     this.fetchAssessments();
   }
 
-  // Fetch assessments from Firebase
   fetchAssessments() {
-    this.firebaseService.getAllData('assessmentRecords').subscribe((data: any[]) => {
-      this.assessments = data;
-      this.filteredAssessments = data;
+    this.isLoading = true; 
+    this.firebaseService
+      .getAllData('assessmentRecords')
+      .subscribe((data: any[]) => {
+        this.assessments = data.map((assessment) => ({
+          ...assessment,
+          status: this.getStatus(assessment) || 'Unknown',
+        }));
+        this.filteredAssessments = [...this.assessments];
+        this.isLoading = false;
+      });
+  }
+
+  invalidateAssessment(assessment: assessmentRecords) {
+    const recordKey = `${assessment.assessmentId}_${assessment.userId}`;
+    assessment.isValid = false;
+
+    this.updateState(recordKey, { isValid: false })
+      .then(() => {
+        console.log(`Successfully invalidated assessment: ${recordKey}`);
+
+        // Update the status in the UI
+        assessment.status = 'Invalid';
+
+        // Optionally trigger a re-filter in case the search query is active
+        this.onSearch();
+      })
+      .catch((error) => {
+        console.error(`Error invalidating assessment ${recordKey}:`, error);
+      });
+  }
+
+  async updateState(recordKey: string, updates: any): Promise<void> {
+    const tableName = `assessmentRecords/${recordKey}`;
+    return await this.firebaseService
+      .update(tableName, updates)
+      .then(() => console.log('Successfully updated:', tableName))
+      .catch((error) => {
+        console.error('Failed to update Firebase:', error);
+        throw error;
+      });
+  }
+
+  getStatus(assessment: assessmentRecords): string {
+    const currentDate = new Date();
+    const expiryDate = new Date(assessment.expiryDate);
+
+    if (assessment.isValid === false) return 'Invalid';
+    if (!assessment.isLinkAccessed && expiryDate < currentDate) {
+      return 'Expired';
+    }
+    if (assessment.isInProgress) return 'In Progress';
+    if (assessment.isCompleted) return 'Completed';
+    if (assessment.isActive && expiryDate >= currentDate) {
+      return 'Active';
+    }
+    if (assessment.isActive && expiryDate < currentDate) {
+      return 'Expired';
+    }
+    return 'Unknown';
+  }
+
+  onSearch() {
+    const query = this.searchQuery.trim().toLowerCase();
+    this.filteredAssessments = this.assessments.filter((assessment) => {
+      const matchesFilter = this.matchFilter(assessment, query);
+      const matchesStatus = this.selectedStatus
+        ? assessment.status?.toLowerCase() === this.selectedStatus.toLowerCase()
+        : true;
+
+      return matchesFilter && matchesStatus;
     });
   }
 
-
-  isLinkExpired(expiryDate: string): boolean {
-    const currentDate = new Date().toISOString();
-    return expiryDate < currentDate;
-  }
-  
-  // Method to handle the link click
-  onLinkClick(assessment: any): void {
-    if (this.isLinkExpired(assessment.expiryDate)) {
-      // Mark the link as disabled
-      assessment.isLinkDisabled = true;
-  
-      // Use the Router to navigate to the expired link page
-    this.router.navigate(['/linkexpired']);
-    } else {
-       //? If link is not expired, navigate to the  TERMS and CONDITIONS PAGE (Tanya and Team's Page)
-    const decodedUrl = decodeURIComponent(assessment.urlId);
-    // this.router.navigateByUrl(decodedUrl);
-    this.router.navigate(['/generatelink']);
+  matchFilter(assessment: assessmentRecords, query: string): boolean {
+    switch (this.selectedFilter) {
+      case 'Name':
+        return assessment.userName.toLowerCase().includes(query);
+      case 'Email':
+        return assessment.email.toLowerCase().includes(query);
+      case 'Assessment':
+        return assessment.assessmentName.toLowerCase().includes(query);
+      default:
+        return false;
     }
   }
-  
 
-  // Filter assessments based on search query
-  onSearch() {
-    if (this.searchQuery.trim() === '') {
-      this.filteredAssessments = this.assessments;
-    } else {
-      this.filteredAssessments = this.assessments.filter((assessment) => {
-        return (
-          assessment.assessmentName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-          assessment.userName.toLowerCase().includes(this.searchQuery.toLowerCase())
-        );
-      });
-    }
+  isInvalidDisabled(assessment: assessmentRecords): boolean {
+    return (
+      assessment.status === 'Invalid' ||
+      assessment.status?.includes('Expired') ||
+      false
+    );
   }
 }

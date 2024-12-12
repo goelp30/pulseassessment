@@ -1,120 +1,90 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
+import { Options, Question } from '../../../../models/question.model';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { QuestionNavigatorComponent } from '../question-navigator/question-navigator.component';
 import { QuestionDisplayComponent } from '../question-display/question-display.component';
+import { QuestionNavigatorComponent } from '../question-navigator/question-navigator.component';
 import { QuizTimerComponent } from '../quiz-timer/quiz-timer.component';
-import { SubmissionModalComponent } from '../submission-modal/submission-modal.component';
-import { QuizService } from '../../services/quiz.service';
-import { ToastService } from '../../services/toast.service';
-import { Question } from '../../models/question.model';
 
 @Component({
   selector: 'app-quiz',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    QuestionNavigatorComponent,
-    QuestionDisplayComponent,
-    QuizTimerComponent,
-    SubmissionModalComponent,
-  ],
-  templateUrl: "quiz.component.html",
-  styleUrls: ["quiz.component.css"] // Corrected to 'styleUrls'
+  imports: [CommonModule, QuestionDisplayComponent, QuestionNavigatorComponent, QuizTimerComponent],
+  templateUrl: './quiz.component.html'
 })
 export class QuizComponent implements OnInit, OnDestroy {
   questions: Question[] = [];
+  options: { [key: string]: Options[] } = {};
   currentQuestion = 0;
-  totalSeconds = 0;
-  private timerInterval: any;
-  showSubmissionModal = false;
+  totalSeconds = 2400; // 40 minutes
+  loading = true;
+  userId: string = '';  // Declare userId variable
 
   constructor(
-    private quizService: QuizService,
-    private toastService: ToastService
+    private route: ActivatedRoute,
+    private firebaseService: FireBaseService<Question | Options>
   ) {}
+
+  ngOnInit(): void {
+    // Access userId from Router state
+    const state = window.history.state;
+    if (state?.userId) {
+      this.userId = state.userId;  // Get userId from router state
+      console.log('User ID from state:', this.userId);
+    } else {
+      console.error('User ID not found in router state');
+    }
+
+    // Load the questions and options
+    this.loadNextQuestion();
+  }
+
+  // Function to load the next question dynamically based on currentQuestionId
+  private loadNextQuestion() {
+    this.loading = true;
+
+    // Load all questions
+    this.firebaseService.getAllData('questions').subscribe(
+      (questions: Question[]) => {
+        this.questions = questions.map(q => ({
+          ...q,
+          isMarkedForReview: false,
+          isVisited: true
+        }));
+
+        // Load options related to this question
+        this.firebaseService.getAllData('options').subscribe(
+          (options: Options[]) => {
+            options.forEach(option => {
+              if (!this.options[option.questionId]) {
+                this.options[option.questionId] = [];
+              }
+              this.options[option.questionId].push(option);
+            });
+
+            // Once data is loaded, set loading to false
+            this.loading = false;
+          }
+        );
+      }
+    );
+  }
 
   get currentQuestionData(): Question {
     return this.questions[this.currentQuestion];
   }
 
-  ngOnInit() {
-    this.questions = this.quizService.generateQuestions();
-    this.calculateTotalTime();
-    this.startTimer();
+  get currentQuestionOptions(): Options[] {
+    return this.options[this.currentQuestionData?.questionId.toString()] || [];
   }
 
-  ngOnDestroy() {
-    this.clearTimer();
-  }
-
-  private calculateTotalTime() {
-    this.totalSeconds = this.questions.reduce((total, q) => 
-      total + this.quizService.calculateQuestionTime(q.questionType), 0);
-  }
-
-  private startTimer() {
-    this.timerInterval = setInterval(() => {
-      if (this.totalSeconds > 0) {
-        this.totalSeconds--;
-        if (this.totalSeconds === 120) {
-          this.toastService.showWarning('⚠️ Only 2 minutes remaining!');
-        }
-      } else {
-        this.handleTimeUp();
-      }
-    }, 1000);
-  }
-
-  private clearTimer() {
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-    }
-  }
-
-  handleTimeUp() {
-    this.clearTimer();
-    this.toastService.showInfo("Time's up! We'll submit your quiz now.");
-    this.confirmSubmit();
-  }
-
-  submitQuiz() {
-    this.showSubmissionModal = true;
-  }
-
-  confirmSubmit() {
-    this.closeSubmissionModal();
-    this.clearTimer();
-    this.toastService.showSuccess('Quiz submitted successfully! Thank you for your participation.');
-    // Here you would typically send the results to a server
-  }
-
-  closeSubmissionModal() {
-    this.showSubmissionModal = false;
-  }
-
-  selectAnswer(answer: number) {
-    // Handle multi-check answer selection
-    if (Array.isArray(this.questions[this.currentQuestion].selectedAnswer)) {
-      const selectedAnswers = this.questions[this.currentQuestion].selectedAnswer as number[];
-      if (selectedAnswers.includes(answer)) {
-        this.questions[this.currentQuestion].selectedAnswer = selectedAnswers.filter(a => a !== answer); // Unselect
-      } else {
-        selectedAnswers.push(answer); // Select
-        this.questions[this.currentQuestion].selectedAnswer = selectedAnswers;
-      }
-    } else {
-      this.questions[this.currentQuestion].selectedAnswer = answer;
-    }
-  }
-
-  setDescriptiveAnswer(answer: string) {
-    this.questions[this.currentQuestion].descriptiveAnswer = answer;
+  onAnswerSelect(optionId: number) {
+    this.questions[this.currentQuestion].selectedAnswer = optionId;
   }
 
   toggleReview() {
-    this.questions[this.currentQuestion].isMarkedForReview = 
+    this.questions[this.currentQuestion].isMarkedForReview =
       !this.questions[this.currentQuestion].isMarkedForReview;
   }
 
@@ -129,6 +99,8 @@ export class QuizComponent implements OnInit, OnDestroy {
   nextQuestion() {
     if (this.currentQuestion < this.questions.length - 1) {
       this.goToQuestion(this.currentQuestion + 1);
+    } else {
+      this.submitQuiz();
     }
   }
 
@@ -138,21 +110,17 @@ export class QuizComponent implements OnInit, OnDestroy {
     }
   }
 
-  isCurrentQuestionAttempted(): boolean {
-    const current = this.questions[this.currentQuestion];
-    return current.questionType === 'descriptive'
-      ? (current.descriptiveAnswer?.trim().length || 0) > 0
-      : current.selectedAnswer !== undefined;
+  submitQuiz() {
+    console.log('Quiz submitted:', this.questions);
+    console.log('User ID:', this.userId);
+    // Handle quiz submission logic here
   }
 
-  // Modified isCurrentQuestionAttempted to include the marked-for-review logic
-  isCurrentQuestionAttemptedOrMarked(): boolean {
-    const current = this.questions[this.currentQuestion];
-    return this.isCurrentQuestionAttempted() || current.isMarkedForReview;
+  handleTimeUp() {
+    this.submitQuiz();
   }
 
-  // Check if the "Next" button should be enabled
-  isNextButtonEnabled(): boolean {
-    return this.isCurrentQuestionAttemptedOrMarked() && this.currentQuestion < this.questions.length - 1;
+  ngOnDestroy() {
+    // Cleanup if needed
   }
 }
