@@ -1,8 +1,7 @@
 <div class="mb-2 mx-auto px-6 max-w-lg mt-4">
-    <p class="text-center text-3xl font-semibold text-blue-700 mb-4">
-      Assessment List
-    </p>
+    <p class="text-center text-3xl font-semibold text-blue-700 mb-4"> Assessment List</p>
   </div>
+  <!-- Common Table component  -->
   <app-table
   [tableName]="tableName"
   [tableColumns]="tableColumns"
@@ -18,7 +17,7 @@
   (openModal)="openModal($event)"
 >
 </app-table>
-  
+  <!-- common popup modal  -->
   <app-popup-module [isVisible]="isModalVisible" (closeModalEvent)="closeModal()">
     <div modalTitle>
       <h5 class="text-xl font-semibold text-blue-600">
