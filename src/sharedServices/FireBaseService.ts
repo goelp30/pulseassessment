@@ -69,12 +69,12 @@ export class FireBaseService<T> {
         return this.database.object(`${tableName}/${id}`).set(params);
       }
       getItemsByFields(
-        path: string,
+        tableName: string,
         fields: string[],
         value: any
       ): Observable<T[]> {
         return this.database
-          .list<T>(path)
+          .list<T>(tableName)
           .valueChanges()
           .pipe(
             map((items) =>
@@ -83,7 +83,7 @@ export class FireBaseService<T> {
               )
             ),
             catchError((error) => {
-              console.error(`Error filtering items in ${path}:`, error);
+              console.error(`Error filtering items in ${tableName}:`, error);
               throw error;
             })
           );

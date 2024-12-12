@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { AssessmentList, SubjectCounts } from '../../../models/newassessment';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AfterViewInit, Component, OnInit } from '@angular/core';
@@ -8,7 +8,7 @@ import Sortable from 'sortablejs';
 import { Assessment } from '../../../models/assessment';
 import { TableNames } from '../../../enums/TableName';
 import { NavigationStart, Router } from '@angular/router';
-import { ToastrService, ToastrModule } from 'ngx-toastr';
+import { ToastrService} from 'ngx-toastr';
 import { AssessmentService } from '../services/assessmentServices/assessment.service';
 @Component({
   selector: 'app-drag-drop',
@@ -16,41 +16,39 @@ import { AssessmentService } from '../services/assessmentServices/assessment.ser
   templateUrl: './drag-drop.component.html',
   styleUrls: ['./drag-drop.component.css'],
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
-  providers: [DatePipe],
 })
 export class DragDropComponent implements AfterViewInit, OnInit {
   leftList: { subjectId: string, subjectName: string }[] = [];
   rightList: { subjectId: string, subjectName: string }[] = [];
   subjectList: { subjectId: string, subjectName: string }[] = [];
   updatedList: string[] = [];
- 
+  assessmentTitleWarning: string = ''; 
+  assessmentList: AssessmentList[] = [];
   createdOn: string = '';
   savedFormData: any = null;
+  isAutoEvaluated:boolean=true
   rightListForm!: FormGroup; // Form to handle right list inputs
-  private appVersion = '1.0.0'; // App version for local storage management
   viewMode: 'internal' | 'external' = 'internal'; // Toggle view mode
-  validationWarnings: string[] = []; // Warnings for Fvalidation
+  validationWarnings: string[] = []; // Warnings for Formvalidation
   assessmentTitle: string = ''; // Title for assessment
-  tableName = TableNames.Subject; // Firebase collection name for subjects
+  subject_table = TableNames.Subject; // Firebase collection name for subjects
   assess_table = TableNames.Assessment;
   isModalVisible: boolean=false;
   eConfirmationVisible: boolean=false;
 
   constructor(
     private fb: FormBuilder,
-    private router: Router, // Inject Router service
+    private router: Router, 
     private firebaseService: FireBaseService<Subject | AssessmentList | Assessment>,
-    private datePipe: DatePipe,
     private toastr: ToastrService,
     private assessmentService:AssessmentService
   ) { }
   assessmentId:string=''
   editFlag:boolean=false;
   ngOnInit(): void {
-    this.initializeRightListForm(); // Initialize form
+    this.initializeRightListForm(); 
     if (this.isBrowser()) {
-      // this.checkVersionAndResetData(); // Clear local storage if version mismatch
-      this.loadFromLocalStorage(); // Load lists from local storage
+      this.loadFromLocalStorage(); 
       this.fetchLeftList(); // Fetch subjects from Firebase
 
       const savedData = localStorage.getItem('savedData'); // Load saved data
@@ -58,26 +56,44 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         this.savedFormData = JSON.parse(savedData);
       }
     }
-
-    // Subscribe to value changes for right list inputs (difficulty levels)
     this.subscribeToFormChanges();
-
-    // Listen for route changes and clear local storage when navigating to a new route
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationStart) {
         this.clearLocalStorageOnNavigation();  // Clear local storage on route change
       }
     });
-    // for edit
+    // for edit functionality
     this.assessmentService.assessmentId$.subscribe((assessmentId) => {
       if (assessmentId) {
         this.assessmentId = assessmentId;
+        this.editFlag=true;
         console.log(this.assessmentId)
-        // this.fetchAssessmentDetails();
       }
     });
+    this.getEditData(this.assessmentId,this.editFlag);
   }
-
+  getEditData(assessmentId: string, isEditing: boolean): void {
+    if (this.assessmentId && this.editFlag) {
+      console.log('We are editing');
+      
+      // Use getItemsByFields to fetch the assessment data based on assessmentId
+      this.firebaseService.getItemsByFields(this.assess_table, ['assessmentId'], this.assessmentId).subscribe((assessments: any[]) => {
+        if (assessments && assessments.length > 0) {
+          const assessment = assessments[0]; // Assuming assessmentId is unique, get the first match
+          this.assessmentTitle = assessment.assessmentName; // Populate assessmentTitle
+          this.viewMode = assessment.assessmentType; // Populate viewMode
+  
+          // You can also update other form fields as needed here
+          this.updateRightListForm(assessment);
+        } else {
+          console.error('Assessment not found in Firebase');
+        }
+      }, (error) => {
+        console.error('Error fetching assessment data:', error);
+      });
+    }
+  }
+  
   ngAfterViewInit(): void {
     if (this.isBrowser()) {
       const updateLists = () => {
@@ -91,58 +107,48 @@ export class DragDropComponent implements AfterViewInit, OnInit {
 
         this.leftList = leftListDom.map((item) => ({ subjectId: this.subjectList.find((sub) => sub.subjectName === leftListDom[0])?.subjectId || '', subjectName: item }));
         this.rightList = rightListDom.map((item) => ({ subjectId: this.subjectList.find((sub) => sub.subjectName === leftListDom[0])?.subjectId || '', subjectName: item }));
-        this.updateRightListForm(this.rightList); // Update right list form
-        // this.rightList = rightListDom;
-
-        this.saveToLocalStorage(); // Persist data
+        this.updateRightListForm(this.rightList); 
+        this.saveToLocalStorage();
       };
-
       const options = {
         group: 'shared',
         animation: 150,
         dragClass: 'bg-gray-200',
-        onEnd: updateLists, // Update lists on drag end
+        onEnd: updateLists, 
       };
 
       new Sortable(document.getElementById('sortable-left')!, options);
       new Sortable(document.getElementById('sortable-right')!, options);
     }
   }
-
-  // Method to clear local storage when navigating to another route
+// clear ls when moving to another route
   clearLocalStorageOnNavigation(): void {
-    // Clear all local storage data, or only the data you need
     localStorage.removeItem('leftList');
     localStorage.removeItem('rightList');
     localStorage.removeItem('rightListInputs');
     localStorage.removeItem('createdOn');
     localStorage.removeItem('inputText');
     localStorage.removeItem('savedData');
-    localStorage.removeItem('appVersion'); // Clear the version as well
   }
-
   toggleViewMode(mode: 'internal' | 'external'): void {
-    this.viewMode = mode; // Toggle view mode
+    this.viewMode = mode; 
   }
-
   initializeRightListForm(): void {
     this.rightListForm = this.fb.group({
       createdOn: [this.getCurrentTimestamp()],
       inputText: [''],
-      rightListInputs: this.fb.array([]), // Dynamic form array for right list inputs
+      rightListInputs: this.fb.array([]),
     });
   }
-
   get rightListInputs(): FormArray {
     return this.rightListForm.get('rightListInputs') as FormArray;
   }
-
   updateRightListForm(newRightList: Subject[]): void {
     const updatedInputs = this.fb.array(
-      newRightList.map((subject) =>  // Use subjectId directly
+      newRightList.map((subject) =>  
         this.fb.group({
-          item: [subject],  // Store subjectId here, not the name
-          easy: [0, [Validators.min(0), Validators.max(5)]], // Difficulty levels
+          item: [subject],  
+          easy: [0, [Validators.min(0), Validators.max(5)]],
           medium: [0, [Validators.min(0), Validators.max(5)]],
           hard: [0, [Validators.min(0), Validators.max(5)]],
           descriptive: [0, [Validators.min(0), Validators.max(5)]],
@@ -151,25 +157,21 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     );
     this.rightListForm.setControl('rightListInputs', updatedInputs);  
     console.log("updated",updatedInputs);
-    
   }
   
   subscribeToFormChanges(): void {
     this.rightListForm.valueChanges.subscribe((values) => {
     });
-    // Listen to changes in specific fields like difficulty levels
     this.rightListInputs.valueChanges.subscribe((inputs: any) => {
     });
   }
   saveToLocalStorage(): void {
     if (this.isBrowser()) {
-      localStorage.setItem('appVersion', this.appVersion);
       localStorage.setItem('leftList', JSON.stringify(this.leftList));
       localStorage.setItem('rightList', JSON.stringify(this.rightList));
       localStorage.setItem('rightListInputs', JSON.stringify(this.rightListInputs.value));
       localStorage.setItem('createdOn', this.rightListForm.value.createdOn);
       localStorage.setItem('inputText', this.rightListForm.value.inputText);
-
       if (this.savedFormData) {
         localStorage.setItem('savedData', JSON.stringify(this.savedFormData));
       }
@@ -202,31 +204,17 @@ export class DragDropComponent implements AfterViewInit, OnInit {
           )
         );
       }
-
       if (createdOn) this.rightListForm.patchValue({ createdOn });
       if (inputText) this.rightListForm.patchValue({ inputText });
     }
   }
 
-  checkVersionAndResetData(): void {
-    const savedVersion = localStorage.getItem('appVersion');
-    if (savedVersion !== this.appVersion) {
-      localStorage.clear(); // Reset storage if app version changes
-      this.leftList = [];
-      this.rightList = [];
-      this.initializeRightListForm();
-    }
-  }
-
-
   isBrowser(): boolean {
     return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
   }
   calculateAutoEvaluated(subjects: any[]): boolean {
-    // Check if any subject has a 'descriptive' value greater than 0
-    let isAutoEvaluated = true; // Default to true
+    let isAutoEvaluated = true;
     subjects.forEach(subject => {
-      console.log(`Subject: ${subject.item}, Descriptive Value: ${subject.descriptive}`); // Log subject and its descriptive value
       if (subject.descriptive > 0) {
         isAutoEvaluated = false; // If descriptive value is greater than 0, set to false
       }
@@ -235,10 +223,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     return isAutoEvaluated;
     console.log("right list",this.rightList);
   }
-  isAutoEvaluated:boolean=true
-    // isAutoEvaluated = this.calculateAutoEvaluated(this.rightList);
-    
-  // Updated addAssessment to return a Promise with the generated assessmentId
+
   addAssessment(): Promise<string> {
     return new Promise((resolve, reject) => {
       const uniqueId = crypto.randomUUID();
@@ -266,8 +251,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       // Check if any subject has descriptive score greater than 0
       return group.get('descriptive')?.value > 0;
     });
-
-    // Set autoevaluated to false if any 'descriptive' value is greater than 0
+   
     this.isAutoEvaluated = !hasDescriptiveGreaterThanZero;
     if (this.assessmentTitle.trim().length === 0) {
       this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
@@ -295,7 +279,6 @@ export class DragDropComponent implements AfterViewInit, OnInit {
               this.toastr.success('Assessment Created successfully', 'Created');
               this.resetRightListAndForm();
               this.assessmentTitle = '';
-              // this.router.navigate(['/assessment-list']);
             })
             .catch((error) => {
               console.error('Error saving data:', error);
@@ -310,15 +293,15 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     });
   }
   closeModal(): void {
-    this.isModalVisible = false; // For the Assessment Details modal
-    this.eConfirmationVisible = false; // For the Delete Confirmation modal
+    this.isModalVisible = false; 
+    this.eConfirmationVisible = false; 
   }
   checkAssessmentTitleUniqueness(title: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
       this.firebaseService.getAllDataByFilter(this.assess_table, 'isDisabled', false).subscribe((assessments: any[]) => {
         const existingTitles = assessments.map((assessment) => assessment.assessmentName.toLowerCase());
         if (existingTitles.includes(title.toLowerCase())) {
-          resolve(false); // Title already exists
+          resolve(false); 
         } else {
           resolve(true); // Title is unique
         }
@@ -327,9 +310,6 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       });
     });
   }
-  assessmentTitleWarning: string = ''; // Variable to hold the warning message
-  assessmentList: AssessmentList[] = [];
-
   resetRightListAndForm(): void {
     this.rightList = [];
     this.rightListForm.reset();
@@ -339,9 +319,9 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   }
   // trying to
   fetchLeftList(): void {
-    this.firebaseService.getAllDataByFilter(this.tableName, 'isDisabled', false).subscribe((data: any[]) => {
+    this.firebaseService.getAllDataByFilter(this.subject_table, 'isDisabled', false).subscribe((data: any[]) => {
       this.leftList = data
-        .map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName })) // Fetch both subjectId and subjectName
+        .map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName })) 
         .sort((a, b) => a.subjectName.localeCompare(b.subjectName)); // Sort subjects alphabetically
 
         this.subjectList = this.leftList
@@ -355,7 +335,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
 
   mapRightListInputs(left:any): any {
     return this.rightListInputs.value.reduce((subjects: any, input: any) => {
-      subjects[input.item.subjectId] = {  // input.item is subjectId now, not subjectName
+      subjects[input.item.subjectId] = { 
         easy: input.easy,
         medium: input.medium,
         hard: input.hard,
@@ -398,9 +378,6 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       this.assessmentTitleWarning = '';
     }
   }
-
-
-
   addWarning(index: number, message: string): void {
     this.validationWarnings[index] = message;
   }

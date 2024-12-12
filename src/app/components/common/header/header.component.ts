@@ -23,7 +23,6 @@ export class HeaderComponent {
   ngOnInit(): void {
     // Your existing code to load subjects (optional)
     this.fireBaseService.listensToChange(TableNames.Subject).subscribe((res) => {
-      console.log(res);
     });
   }
 
