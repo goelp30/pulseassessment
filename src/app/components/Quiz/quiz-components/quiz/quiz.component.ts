@@ -8,6 +8,9 @@ import { SubmissionModalComponent } from '../submission-modal/submission-modal.c
 import { QuizService } from '../../services/quiz.service';
 import { ToastService } from '../../services/toast.service';
 import { Question } from '../../../../models/question.model';
+import { ActivatedRoute } from '@angular/router';
+import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
+import { assessmentRecords } from '../../../../models/assessmentRecords';
 
 @Component({
   selector: 'app-quiz',
@@ -20,8 +23,8 @@ import { Question } from '../../../../models/question.model';
     QuizTimerComponent,
     SubmissionModalComponent,
   ],
-  templateUrl: "quiz.component.html",
-  styleUrls: ["quiz.component.css"] // Corrected to 'styleUrls'
+  templateUrl: 'quiz.component.html',
+  styleUrls: ['quiz.component.css'], // Corrected to 'styleUrls'
 })
 export class QuizComponent implements OnInit, OnDestroy {
   questions: Question[] = [];
@@ -29,10 +32,13 @@ export class QuizComponent implements OnInit, OnDestroy {
   totalSeconds = 0;
   private timerInterval: any;
   showSubmissionModal = false;
-
+  userId: string = '';
+  assessmentId: string = '';
   constructor(
     private quizService: QuizService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private activatedRoute: ActivatedRoute,
+    private firebaseService: FireBaseService<assessmentRecords>
   ) {}
 
   get currentQuestionData(): Question {
@@ -43,6 +49,7 @@ export class QuizComponent implements OnInit, OnDestroy {
     this.questions = this.quizService.generateQuestions();
     this.calculateTotalTime();
     this.startTimer();
+    this.getParamsFromUrl()
   }
 
   ngOnDestroy() {
@@ -50,8 +57,11 @@ export class QuizComponent implements OnInit, OnDestroy {
   }
 
   private calculateTotalTime() {
-    this.totalSeconds = this.questions.reduce((total, q) => 
-      total + this.quizService.calculateQuestionTime(q.questionType), 0);
+    this.totalSeconds = this.questions.reduce(
+      (total, q) =>
+        total + this.quizService.calculateQuestionTime(q.questionType),
+      0
+    );
   }
 
   private startTimer() {
@@ -83,12 +93,37 @@ export class QuizComponent implements OnInit, OnDestroy {
     this.showSubmissionModal = true;
   }
 
+  getParamsFromUrl(): void {
+    this.activatedRoute.params.subscribe((params) => {
+      this.userId = params['userId'];
+      this.assessmentId = params['assessmentId'];
+    });
+  }
+
   confirmSubmit() {
     this.closeSubmissionModal();
     this.clearTimer();
-    this.toastService.showSuccess('Quiz submitted successfully! Thank you for your participation.');
-    // Here you would typically send the results to a server
+    this.toastService.showSuccess(
+      'Quiz submitted successfully! Thank you for your participation.'
+    );
+  
+    // Update isComplete to true in the database
+    const recordKey = `${this.assessmentId}_${this.userId}`;
+    this.firebaseService
+      .update(`assessmentRecords/${recordKey}`, {
+        isCompleted: true, 
+      })
+      .then(() => {
+        this.toastService.showSuccess('Your submission has been recorded.');
+      })
+      .catch((error) => {
+        console.error('Error updating submission status:', error);
+        this.toastService.showError(
+          'There was an error saving your submission. Please try again.'
+        );
+      });
   }
+  
 
   closeSubmissionModal() {
     this.showSubmissionModal = false;
@@ -97,9 +132,11 @@ export class QuizComponent implements OnInit, OnDestroy {
   selectAnswer(answer: number) {
     // Handle multi-check answer selection
     if (Array.isArray(this.questions[this.currentQuestion].selectedAnswer)) {
-      const selectedAnswers = this.questions[this.currentQuestion].selectedAnswer as number[];
+      const selectedAnswers = this.questions[this.currentQuestion]
+        .selectedAnswer as number[];
       if (selectedAnswers.includes(answer)) {
-        this.questions[this.currentQuestion].selectedAnswer = selectedAnswers.filter(a => a !== answer); // Unselect
+        this.questions[this.currentQuestion].selectedAnswer =
+          selectedAnswers.filter((a) => a !== answer); // Unselect
       } else {
         selectedAnswers.push(answer); // Select
         this.questions[this.currentQuestion].selectedAnswer = selectedAnswers;
@@ -114,7 +151,7 @@ export class QuizComponent implements OnInit, OnDestroy {
   }
 
   toggleReview() {
-    this.questions[this.currentQuestion].isMarkedForReview = 
+    this.questions[this.currentQuestion].isMarkedForReview =
       !this.questions[this.currentQuestion].isMarkedForReview;
   }
 
@@ -153,6 +190,9 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   // Check if the "Next" button should be enabled
   isNextButtonEnabled(): boolean {
-    return this.isCurrentQuestionAttemptedOrMarked() && this.currentQuestion < this.questions.length - 1;
+    return (
+      this.isCurrentQuestionAttemptedOrMarked() &&
+      this.currentQuestion < this.questions.length - 1
+    );
   }
 }
