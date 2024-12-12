@@ -1,17 +1,17 @@
-export type assessmentRecords = {
-  assessmentId: string;
-  assessmentName: string;
-  assessmentType:string;
-  userId: string;
-  userName: string;
-  email:string,
-  url: string;
-  expiryDate:string | Date;
-  isValid: boolean;
-  isActive: Boolean;
-  isCompleted: boolean;
-  isInProgress: Boolean;
-  isLinkAccessed: Boolean;
-  status?: string;
+export interface assessmentRecords {
+    assessmentId: string;        
+    url:string;
+    assessmentName: string;      
+    userId: string;             
+    email: string; 
+    userName: string;            
+    expiryDate: string | Date;   
+    isLinkAccessed: boolean;     
+    isInProgress: boolean;       
+    isCompleted: boolean;       
+    isActive: boolean;           
+    isValid: boolean;       
+    assessmentType: string;
+    status?: string;          
 };
 
