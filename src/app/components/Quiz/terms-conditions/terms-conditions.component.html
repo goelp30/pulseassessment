@@ -1,3 +1,9 @@
+@if (isLoading) {
+  <div class="flex justify-center items-center min-h-screen bg-gray-100">
+      <div class="loader"></div>
+    </div>
+  }
+@if(!isLoading){
 <div
   class="max-w-4xl mx-auto mt-12 p-8 bg-white rounded-lg shadow-xl border border-gray-200"
 >
@@ -28,7 +34,7 @@
       @if (assessment.userId === userId && assessment.assessmentId ===
       assessmentId) {
       <button
-        (click)="onAccessQuiz(assessment)"
+      (click)="onAcceptTerms()"
         class="px-6 py-3 bg-blue-600 text-white font-semibold text-lg rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
       >
         Start Quiz
@@ -46,3 +52,4 @@
     <a href="#" class="text-blue-500 hover:underline">Terms of Service</a>.
   </p>
 </div>
+}

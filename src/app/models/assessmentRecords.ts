@@ -6,8 +6,8 @@ export interface assessmentRecords {
     email: string; 
     userName: string;            
     expiryDate: string | Date;   
-    isLinkAccessed: boolean;     
-    isInProgress: boolean;       
+    isAccessed: boolean;     
+    inProgress: boolean;       
     isCompleted: boolean;       
     isActive: boolean;           
     isValid: boolean;       
