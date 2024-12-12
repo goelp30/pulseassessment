@@ -1,0 +1,326 @@
+[
+  {
+    "quizId": "Q133",
+    "assessmentId": "JS001",
+    "title": "JavaScript Basics",
+    "status": "Pending",
+    "isEvaluation": false,
+    "isAutoEvaluate":false,
+    "candidateId": "C466",
+    "marksScored": 0,
+    "result":"",
+    "questions": [
+      {
+        "question_id": 1,
+        "question_text": "What are JavaScript data types?",
+        "question_type": "descriptive",
+       
+        "marksScored":0,
+        "totalMarks": 5,
+        "user_answer": "JavaScript has 7 primitive data types: Number, String, Boolean, Undefined, Null, Symbol, and BigInt."
+      },
+      {
+        "question_id": 2,
+        "question_text": "What is the purpose of 'this' in JavaScript?",
+        "question_type": "descriptive",
+        
+        "marksScored": 0,
+        "totalMarks": 5,
+        "user_answer": "'this' refers to the context in which a function is called, often pointing to the object that invoked the method."
+      },
+      {
+        "question_id": 3,
+        "question_text": "Which of the following is not a valid JavaScript data type?",
+        "question_type": "single_answer",
+        "marks": 2,
+        "marksScored":0,
+        "totalMarks": 2,
+        "options": ["String", "Boolean", "Function", "Integer"],
+        "correct_answer": "Integer",
+        "user_answer": "Integer"
+      },
+      {
+        "question_id": 4,
+        "question_text": "How do you declare a function in JavaScript?",
+        "question_type": "descriptive",
+        "marks": null,
+        "marksScored": 0,
+        "totalMarks": 5,
+        "user_answer": "A function can be declared using the 'function' keyword followed by the function name, parameters, and body."
+      },
+      {
+        "question_id": 5,
+        "question_text": "Explain the concept of closures in JavaScript.",
+        "question_type": "descriptive",
+      
+        "marksScored":0,
+        "totalMarks": 5,
+        "user_answer": "A closure is a function that has access to its own scope, the scope in which it was created, and the global scope."
+      }
+    ]
+  },
+
+  {
+    "quizId": "Q135",
+    "assessmentId": "NODE001",
+    "title": "Node.js and Express.js",
+    "status": "Pending",
+    "isEvaluation": false,
+    "isAutoEvaluate":false,
+    "candidateId": "C468",
+   
+    "marksScored": 0,
+    "result":"",
+    "questions": [
+      {
+        "question_id": 1,
+        "question_text": "What is Node.js?",
+        "question_type": "descriptive",
+        "marks": null,
+        "marksScored": 0,
+        "totalMarks": 5,
+        "user_answer": "Node.js is a JavaScript runtime environment that allows you to run JavaScript code outside of the browser, often used for building backend services."
+      },
+      {
+        "question_id": 2,
+        "question_text": "What is the role of Express.js in Node.js?",
+        "question_type": "descriptive",
+        
+        "marksScored": 0,
+        "totalMarks": 5,
+        "user_answer": "Express.js is a framework built on top of Node.js to simplify the creation of server-side applications by providing useful tools for routing, middleware, etc."
+      },
+      {
+        "question_id": 3,
+        "question_text": "Which of the following is a method to handle GET requests in Express.js?",
+        "question_type": "single_answer",
+       
+        "marksScored": 0,
+        "totalMarks": 2,
+        "options": ["app.get()", "app.post()", "app.put()", "app.delete()"],
+        "correct_answer": "app.post()",
+        "user_answer": "app.get()"
+      },
+      {
+        "question_id": 4,
+        "question_text": "How do you handle errors in Express.js?",
+        "question_type": "descriptive",
+        
+        "marksScored": 0,
+        "totalMarks": 5,
+        "user_answer": "You can use middleware functions in Express.js to handle errors by passing the error to the next middleware with 'next(err)'."
+      },
+      {
+        "question_id": 5,
+        "question_text": "What is the purpose of the 'next()' function in Express.js?",
+        "question_type": "descriptive",
+        
+        "marksScored": 0,
+        "totalMarks": 5,
+        "user_answer": "The 'next()' function passes control to the next middleware function in the stack."
+      }
+    ]
+  },
+  {
+    "quizId": "Q136",
+    "assessmentId": "REACT001",
+    "title": "React Basics",
+    "status": "Pending",
+    "isEvaluation": false,
+    "isAutoEvaluate":false,
+    "candidateId": "C469",
+  
+    "marksScored": 0,
+    "result":"",
+    "questions": [
+      {
+        "question_id": 1,
+        "question_text": "What is React and why is it used?",
+        "question_type": "descriptive",
+       
+        "marksScored": 0,
+        "totalMarks": 5,
+        "user_answer": "React is a JavaScript library for building user interfaces, primarily for single-page applications where data changes dynamically."
+      },
+      {
+        "question_id": 2,
+        "question_text": "What is JSX in React?",
+        "question_type": "descriptive",
+        
+        "marksScored": 0,
+        "totalMarks": 5,
+        "user_answer": "JSX is a syntax extension for JavaScript that allows you to write HTML-like code within JavaScript."
+      },
+      {
+        "question_id": 3,
+        "question_text": "Which of the following is used to pass data to a React component?",
+        "question_type": "single_answer",
+        
+        "marksScored": 0,
+        "totalMarks": 2,
+        "options": ["props", "state", "hooks", "render"],
+        "correct_answer": "props",
+        "user_answer": "props"
+      },
+      {
+        "question_id": 4,
+        "question_text": "What is the purpose of React state?",
+        "question_type": "descriptive",
+      
+        "marksScored": 0,
+        "totalMarks": 5,
+        "user_answer": "State in React is used to store dynamic data that affects the rendering of components."
+      },
+      {
+        "question_id": 5,
+        "question_text": "What are React hooks?",
+        "question_type": "descriptive",
+        
+        "marksScored": 0,
+        "totalMarks": 5,
+        "user_answer": "React hooks are functions that allow you to use state and other React features in functional components."
+      }
+    ]
+  },
+  {
+    "quizId": "Q137",
+    "assessmentId": "VUE001",
+    "title": "Vue.js Basics",
+    "status": "Pending",
+    "isEvaluation": false,
+    "isAutoEvaluate":false,
+    "candidateId": "C470",
+    
+    "marksScored": 0,
+    "result":"",
+    "questions": [
+      {
+        "question_id": 1,
+        "question_text": "What is Vue.js?",
+        "question_type": "descriptive",
+        "marks": null,
+        "marksScored": 0,
+        "totalMarks": 5,
+        "user_answer": "Vue.js is a progressive JavaScript framework used for building user interfaces and single-page applications."
+      },
+      {
+        "question_id": 2,
+        "question_text": "How do you bind data to an element in Vue.js?",
+        "question_type": "descriptive",
+        
+        "marksScored": 0,
+        "totalMarks": 5,
+        "user_answer": "In Vue.js, you can bind data to an element using the 'v-bind' directive."
+      },
+      {
+        "question_id": 3,
+        "question_text": "What are Vue.js directives?",
+        "question_type": "descriptive",
+       
+        "marksScored": 0,
+        "totalMarks": 5,
+        "user_answer": "Vue.js directives are special attributes that apply reactive behavior to elements in the DOM."
+      },
+      
+      {
+        "question_id": 4,
+        "question_text": "What is the purpose of the 'v-for' directive in Vue.js?",
+        "question_type": "descriptive",
+       
+        "marksScored": 0,
+        "totalMarks": 5,
+        "user_answer": "The 'v-for' directive is used to render a list of items by iterating over an array or object."
+      }
+    ]
+  },
+  {
+    "quizId": "Q138",
+    "assessmentId": "ANGULAR001",
+    "title": "Angular Basics",
+    "status": "Pending",
+    "isEvaluation": false,
+    "isAutoEvaluate":false,
+    "candidateId": "C471",
+    "totalMarks": 50,
+    "marksScored": 0,
+    "result":"",
+   "questions": [
+  {
+    "question_id": 1,
+    "question_text": "What is Angular?",
+    "question_type": "descriptive",
+   
+    "marksScored": 0,
+    "totalMarks": 5,
+    "user_answer": "Angular is a platform and framework for building client-side applications using TypeScript and HTML."
+  },
+  {
+    "question_id": 2,
+    "question_text": "What is the difference between Angular and React?",
+    "question_type": "descriptive",
+   
+    "marksScored": 0,
+    "totalMarks": 5,
+    "user_answer": "Angular is a complete framework, while React is a JavaScript library focused mainly on building UIs."
+  },
+  {
+    "question_id": 3,
+    "question_text": "What are Angular services used for?",
+    "question_type": "descriptive",
+    "marks": null,
+    "marksScored": 0,
+    "totalMarks": 5,
+    "user_answer": "Angular services are used to organize and share code across components, providing business logic or data management."
+  },
+  {
+    "question_id": 4,
+    "question_text": "Which of the following is used to create a new component in Angular?",
+    "question_type": "single_answer",
+    "marks": 2,
+    "marksScored": 0,
+    "totalMarks": 2,
+    "options": ["ng generate component", "ng component", "ng create component", "ng add component"],
+    "correct_answer": "ng generate component",
+    "user_answer": "ng generate component"
+  },
+  {
+    "question_id": 5,
+    "question_text": "What is the role of the 'ngOnInit' lifecycle hook in Angular?",
+    "question_type": "descriptive",
+   
+    "marksScored": 0,
+    "totalMarks": 5,
+    "user_answer": "'ngOnInit' is a lifecycle hook that is called after Angular initializes the component, useful for initializing component properties."
+  },
+  {
+    "question_id": 6,
+    "question_text": "Which of the following are Angular directives?",
+    "question_type": "multi_answer",
+    "marks": 3,
+    "marksScored": 0,
+    "totalMarks": 3,
+    "options": ["ngIf", "ngModel", "ngFor", "ngRoute", "ngBind"],
+    "correct_answers": ["ngIf", "ngFor", "ngModel"],
+    "user_answer": ["ngIf"]
+  },
+  {
+    "question_id": 7,
+    "question_text": "What are the key features of Angular?",
+    "question_type": "multi_answer",
+    "marks": 4,
+    "marksScored": 0,
+    "totalMarks": 4,
+    "options": ["Two-way data binding", "Single-page applications", "Cross-platform development", "Component-based architecture", "Native modules"],
+    "correct_answers": ["Two-way data binding", "Component-based architecture"],
+    "user_answer": ["Two-way data binding", "Component-based architecture"]
+  }
+]
+
+  }
+]
+  
+  
+  
+ 
+
+
