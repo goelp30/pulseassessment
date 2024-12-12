@@ -174,82 +174,103 @@ export class QuestionmodalComponent implements OnInit {
   
   removeOption(index: number): void {
     const questionType = this.assessmentForm.get('questionType')?.value;
-  
+
+    if (this.options.length <= 2) {
+        alert('A question must have at least two options.');
+        return;
+    }
+
     if (questionType === 'Multi' && this.options.length <= 3) {
-      alert('Multi-choice questions must have at least 3 options.');
-      return;
+        alert('Multi-choice questions must have at least 3 options.');
+        return;
     }
-  
-    if (this.options.length > 1) {
-      this.options.removeAt(index);
-      this.warningMessage = '';
-    } else {
-      alert('You must have at least two options.');
-    }
-  }
+
+    this.options.removeAt(index);
+}
+
   
   
   validateOptions(): boolean {
     const questionType = this.assessmentForm.get('questionType')?.value;
     const totalOptions = this.options.length;
     const correctOptionsCount = this.options.controls.filter(
-      (option) => option.get('isCorrectOption')?.value
+        (option) => option.get('isCorrectOption')?.value
     ).length;
-  
-    if (questionType === 'Multi') {
-      if (totalOptions < 3) {
-        alert('Multi-choice questions require at least 3 options.');
+
+    // Common validation for both types
+    if (totalOptions < 2) {
+        alert('A question must have at least two options.');
         return false;
-      }
-  
-      if (correctOptionsCount < 2) {
-        alert('Multi-choice questions must have at least 2 correct options.');
-        return false;
-      }
-  
-      if (correctOptionsCount === totalOptions) {
-        alert('Cannot mark all options as correct in a multi-choice question.');
-        return false;
-      }
     }
-  
-    return true; 
-  }
-  
-  
+    if (totalOptions > 6) {
+        alert('A question can have a maximum of 6 options.');
+        return false;
+    }
 
-  
-
-  async saveData() {
-    if (this.assessmentForm.valid && this.validateOptions()) {
-      try {
-        if (this.editingMode) {
-          await this.updateQuestion();
-        } else {
-          const questionId = await this.addQuestion();
-          await this.storeOptions(questionId);
+    if (questionType === 'Single') {
+        // Single-choice validations
+        if (correctOptionsCount === 0) {
+            alert('Single-choice questions must have one correct option.');
+            return false;
         }
-  
-        alert('Saved successfully!');
-        
-        this.assessmentForm.reset({
-          subjectId: this.subjectId,
-          questionType: 'Single',
-          questionLevel: 'Easy',
-          questionWeightage: 1,
-          questionTime: 1,
-          questionMarks: 1,
-          difficulty: 'Low',
-        });
-        this.options.clear();
-        this.addOption();
-      } catch (error) {
-        alert(`Error: ${error}`);
-      }
-    } else {
-      alert('Please fix validation issues before saving.');
+        if (correctOptionsCount > 1) {
+            alert('Single-choice questions cannot have more than one correct option.');
+            return false;
+        }
+    } else if (questionType === 'Multi') {
+        // Multi-choice validations
+        if (totalOptions < 3) {
+            alert('Multi-choice questions require at least 3 options.');
+            return false;
+        }
+        if (correctOptionsCount < 2) {
+            alert('Multi-choice questions must have at least 2 correct options.');
+            return false;
+        }
+        if (correctOptionsCount === totalOptions) {
+            alert('Cannot mark all options as correct in a multi-choice question.');
+            return false;
+        }
     }
+
+    return true;
+}
+
+  
+  
+
+  
+
+async saveData() {
+  if (this.assessmentForm.valid && this.validateOptions()) {
+      try {
+          if (this.editingMode) {
+              await this.updateQuestion();
+          } else {
+              const questionId = await this.addQuestion();
+              await this.storeOptions(questionId);
+          }
+
+          alert('Saved successfully!');
+          this.assessmentForm.reset({
+              subjectId: this.subjectId,
+              questionType: 'Single',
+              questionLevel: 'Easy',
+              questionWeightage: 1,
+              questionTime: 1,
+              questionMarks: 1,
+              difficulty: 'Low',
+          });
+          this.options.clear();
+          this.addOption();
+      } catch (error) {
+          alert(`Error: ${error}`);
+      }
+  } else {
+      alert('Please fix validation issues before saving.');
   }
+}
+
   
   async addQuestion(): Promise<string> {
     const questionId = crypto.randomUUID(); // Generate unique question ID
