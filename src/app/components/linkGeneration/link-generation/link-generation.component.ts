@@ -47,24 +47,6 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
     }
   ];
 
-
-  tableName: string = TableNames.Assessment;  
-  tableColumns: string[] = ['assessmentName', 'assessmentType'];
-  columnAliases: { [key: string]: string[] } = {
-    assessmentName: ['Assessment Name'],
-    assessmentType: ['Assessment Type']
-  };
-  tableData=this.assessments;
-  searchQuery: string = '';
-  searchPlaceholder: string = 'Search Assessments...';
-
-  buttons = [
-    {
-      label: 'Generate Link',
-      colorClass: 'bg-blue-500 py-2 px-4 text-white rounded-md',
-      action: (row: any) => this.openModal(row),
-    }
-  ];
   constructor(
     private firebaseService: FireBaseService<Assessment>,
   ) {}
