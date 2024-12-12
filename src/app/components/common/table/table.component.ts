@@ -33,16 +33,19 @@
     filteredData: any[] = [];
     activeTab: string = '';  // Initially, no active tab
     pageNumbers: number[] = [];
+    isLoading:boolean=true;
 
     constructor(private fireBaseService: FireBaseService<any>,) {}
 
     ngOnInit(): void {
       if (this.tableName) {
+        this.isLoading = true;
         this.fireBaseService.getAllDataByFilter(this.tableName, 'isDisabled', false).subscribe((res) => {
           this.tableData = res;
           this.totalPages = Math.ceil(this.tableData.length / this.itemsPerPage);
           this.generatePagination();
           this.filterData();
+          this.isLoading = false;
         });
       }
 
@@ -53,13 +56,19 @@
 
     ngOnChanges(changes: SimpleChanges): void {
       if (changes['searchQuery']) {
+        this.isLoading = true;
         this.filterData();
+        this.isLoading = false;
       }
       if (changes['tabs'] || changes['filterKey']) {
+        this.isLoading =true;
         this.filterData();
+        this.isLoading = false;
       }
       if (changes['tableData']) {
+        this.isLoading = true;
         this.filterData();
+        this.isLoading = false;
       }
     }
 
