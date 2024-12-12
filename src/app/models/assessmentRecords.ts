@@ -1,5 +1,6 @@
 export interface assessmentRecords {
     assessmentId: string;        
+    url:string;
     assessmentName: string;      
     userId: string;             
     email: string; 
@@ -9,7 +10,7 @@ export interface assessmentRecords {
     isInProgress: boolean;       
     isCompleted: boolean;       
     isActive: boolean;           
-    isvalid: boolean;       
+    isValid: boolean;       
     assessmentType: string;
     status?: string;          
 
