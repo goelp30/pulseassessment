@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { ToastrService, ToastrModule } from 'ngx-toastr';
 import { AssessmentList } from '../../../models/newassessment';
 import { Router } from '@angular/router';
+import { AssessmentService } from '../services/assessmentServices/assessment.service';
 
 @Component({
   selector: 'app-assess-table',
@@ -70,7 +71,8 @@ export class AssessTableComponent  {
     private fireBaseService: FireBaseService<Assessment>,
     private toastr: ToastrService,
     private cdr: ChangeDetectorRef,
-    private router:Router
+    private router:Router,
+    private asessmentService:AssessmentService
   ) {}
 
   onSearchQueryChange(newQuery: string): void {
@@ -151,15 +153,16 @@ closeModal(): void {
 
 
   // Edit the selected assessment
-  editAssessment(row: any) {
-    this.selectedAssessment = { ...row.assessmentId };
-    this.isEditMode = true;
-    this.isModalVisible = true;
-    // const selectedAssessmentString = JSON.stringify(this.selectedAssessment);
-
-  // this.router.navigate(['/drag-and-drop'], { queryParams: { selectedAssessment: selectedAssessmentString } });
+  editAssessment(row: Assessment) {
+      if (row.assessmentId) {
+        this.asessmentService.setAsssessmentId(row.assessmentId); // Store subjectId in service
+        this.router.navigate(['/drag-and-drop']); // Navigate to /questions route
+      } else {
+        console.error('Subject ID is missing.');
+      }
     
   }
+
 
   // Update the selected assessment
   updateAssessment() {

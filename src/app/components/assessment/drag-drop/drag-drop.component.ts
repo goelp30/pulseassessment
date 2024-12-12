@@ -9,6 +9,7 @@ import { Assessment } from '../../../models/assessment';
 import { TableNames } from '../../../enums/TableName';
 import { NavigationStart, Router } from '@angular/router';
 import { ToastrService, ToastrModule } from 'ngx-toastr';
+import { AssessmentService } from '../services/assessmentServices/assessment.service';
 @Component({
   selector: 'app-drag-drop',
   standalone: true,
@@ -41,8 +42,10 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     private firebaseService: FireBaseService<Subject | AssessmentList | Assessment>,
     private datePipe: DatePipe,
     private toastr: ToastrService,
+    private assessmentService:AssessmentService
   ) { }
-
+  assessmentId:string=''
+  editFlag:boolean=false;
   ngOnInit(): void {
     this.initializeRightListForm(); // Initialize form
     if (this.isBrowser()) {
@@ -63,6 +66,14 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationStart) {
         this.clearLocalStorageOnNavigation();  // Clear local storage on route change
+      }
+    });
+    // for edit
+    this.assessmentService.assessmentId$.subscribe((assessmentId) => {
+      if (assessmentId) {
+        this.assessmentId = assessmentId;
+        console.log(this.assessmentId)
+        // this.fetchAssessmentDetails();
       }
     });
   }

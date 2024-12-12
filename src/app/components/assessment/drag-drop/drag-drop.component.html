@@ -1,8 +1,7 @@
-
 <div class="mx-5">
     <button class="btn bg-blue-500 hover:bg-blue-600 text-white m-3" (click)="navigateToAssessments()">Back</button>
-    <div class="items-center justify-center p-2 ">
-      
+    <div class="items-center justify-center p-2">
+
         <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">
             Manage Your Assessments
         </h2>
@@ -19,12 +18,9 @@
             <div *ngIf="assessmentTitleWarning" class="warning-message text-red-900">
                 {{ assessmentTitleWarning }}
             </div>
-            
         </div>
-        
 
         <!-- Toggle Section -->
-       
         <div class="flex justify-around mt-6">
             <div class="mb-3 w-full max-w-sm">
                 <div class="flex items-center">
@@ -56,8 +52,7 @@
                     </p>
                 </div>
             </div>
-        
-      </div>
+        </div>
 
         <!-- Drag-and-Drop Lists Section -->
         <div class="flex flex-col lg:flex-row gap-5 mb-6">
@@ -66,20 +61,11 @@
                 <h3 class="text-lg font-semibold mb-3">Available Subjects</h3>
                 <ul id="sortable-left"
                     class="bg-gray-50 border rounded-lg shadow p-2 min-h-[200px] max-h-[300px] overflow-auto">
-                    @for(item of leftList; track item){<li
-                        class="flex items-center justify-between px-4 py-2 cursor-grab hover:bg-gray-100">
+                    <li *ngFor="let item of leftList" class="flex items-center justify-between px-4 py-2 cursor-grab hover:bg-gray-100">
                         <span>{{ item.subjectName }}</span>
                         <span class="text-gray-500">☰</span>
-                    </li>}
+                    </li>
                 </ul>
-                <!--  <ul id="sortable-left"
-                    class="bg-gray-50 border rounded-lg shadow p-2 min-h-[200px] max-h-[300px] overflow-auto">
-                    @for(subject of updatedList; track subject){<li
-                        class="flex items-center justify-between px-4 py-2 cursor-grab hover:bg-gray-100">
-                        <span>{{ subject }}</span>
-                        <span class="text-gray-500">☰</span>
-                    </li>}
-                </ul> -->
             </div>
 
             <!-- Right List -->
@@ -87,31 +73,25 @@
                 <h3 class="text-lg font-semibold mb-3">Selected Subjects</h3>
                 <ul id="sortable-right"
                     class="bg-gray-50 border rounded-lg shadow p-2 min-h-[200px] max-h-[300px] overflow-auto">
-                    <!-- Placeholder for empty list -->
-                    @if(rightList.length === 0) {<li
-                        class="text-center text-gray-500 italic py-2 flex justify-center items-center pointer-events-none">
+                    <li *ngIf="rightList.length === 0" class="text-center text-gray-500 italic py-2 flex justify-center items-center pointer-events-none">
                         Drag your subjects here
-                    </li>}
-
-                    <!-- List items -->
-                    @for( item of rightList;track rightList) { <li
-                        class="flex items-center justify-between px-4 py-2 cursor-grab hover:bg-gray-100">
+                    </li>
+                    <li *ngFor="let item of rightList" class="flex items-center justify-between px-4 py-2 cursor-grab hover:bg-gray-100">
                         <span>{{ item.subjectName }}</span>
                         <span class="text-gray-500">☰</span>
-                    </li>}
+                    </li>
                 </ul>
             </div>
         </div>
 
         <!-- Form for Selected Items -->
-        @if(rightList.length > 0) {
-        <div>
+        <div *ngIf="rightList.length > 0">
             <h3 class="text-lg font-semibold mb-4">Enter Details for Selected Subjects:</h3>
             <form [formGroup]="rightListForm">
                 <ul formArrayName="rightListInputs">
-                    @for(group of rightListInputs.controls;track group;let i = $index){<li class="py-2 border-b">
-                        <div class="flex flex-col gap-2 ">
-                            <span class="font-bold text-xl">{{ group.value.item.subjectName |titlecase }}</span>
+                    <li *ngFor="let group of rightListInputs.controls; let i = index" class="py-2 border-b">
+                        <div class="flex flex-col gap-2">
+                            <span class="font-bold text-xl">{{ group.value.item.subjectName | titlecase }}</span>
                             <div [formGroupName]="i" class="grid grid-cols-2 gap-3">
                                 <!-- Easy Input -->
                                 <div class="flex items-center">
@@ -159,15 +139,12 @@
                                 {{ validationWarnings[i] }}
                             </span>
                         </div>
-                    </li>}
+                    </li>
                 </ul>
             </form>
-        </div>}
+        </div>
 
         <!-- Save Button -->
-
-
-        <!-- Save Form Data Button -->
         <div class="flex justify-center mt-6">
             <button 
               (click)="saveFormData()"
@@ -179,7 +156,7 @@
               class="text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all">
               Save
             </button>
-          </div>
-          
+        </div>
+
     </div>
 </div>

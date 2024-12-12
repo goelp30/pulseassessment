@@ -1,24 +1,18 @@
 import { Injectable } from '@angular/core';
-import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
-import { AssessmentList } from '../../../../models/newassessment';
+import { BehaviorSubject } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
 export class AssessmentService {
 
-  constructor(private firebaseService: FireBaseService<AssessmentList>) { }
+  private assessmentIdSource = new BehaviorSubject<string | null>(null);
+  assessmentId$ = this.assessmentIdSource.asObservable();
 
-  addDataToAssessmentTable(assessmentData: any): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const assessmentId = assessmentData.assessmentId;
-      // Save data to Firebase
-      this.firebaseService.addData('assessmentList', assessmentId, assessmentData)
-        .then(() => {
-          resolve(assessmentId); // Return the generated ID
-        })
-        .catch((error) => {
-          reject('Error saving assessment data: ' + error);
-        });
-    });
+  setAsssessmentId(id: string) {
+    this.assessmentIdSource.next(id);
+  }
+
+  getAssessmentId(): string | null {
+    return this.assessmentIdSource.getValue();
   }
 }
