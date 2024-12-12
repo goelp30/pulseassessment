@@ -143,7 +143,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   get rightListInputs(): FormArray {
     return this.rightListForm.get('rightListInputs') as FormArray;
   }
-  updateRightListForm(newRightList: Subject[]): void {
+  updateRightListForm(newRightList: any[]): void {
     const updatedInputs = this.fb.array(
       newRightList.map((subject) =>  
         this.fb.group({
