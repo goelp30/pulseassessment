@@ -1,64 +1,73 @@
 import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../../sharedServices/auth.service';
-import { FireBaseService } from '../../../sharedServices/FireBaseService'; 
+import { CommonModule } from '@angular/common';
 import { Subject } from '../../models/subject';
 import { TableNames } from '../../enums/TableName';
-import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../../sharedServices/auth.service';
+import { FireBaseService } from '../../../sharedServices/FireBaseService';
 
 @Component({
   selector: 'app-dashboard',
-  standalone: true,
-  imports:  [RouterModule],
-  templateUrl: './dashboard.component.html'
+  standalone: true, // Indicates that this component is standalone
+  imports: [CommonModule], // Modules imported for this component
+  templateUrl: './dashboard.component.html', // Path to HTML file
+  // styleUrls: ['./dashboard.component.css'], // Path to CSS file
 })
-
 export class DashboardComponent implements OnInit {
-  
+  currentPage: string = 'dashboard';
   subjects: Subject[] = [];
+  isMenuOpen: boolean = false; // To toggle popup menu
 
-  constructor(private auth : AuthService, private fireBaseService: FireBaseService<Subject>,private router: Router) { }
+  navItems = [
+    { label: 'Dashboard', route: 'dashboard', icon: 'fas fa-home' },
+    { label: 'Add Subject', route: 'add-subject', icon: 'fas fa-plus' },
+    { label: 'Get Subjects', route: 'get-subjects', icon: 'fas fa-list' },
+    { label: 'Assessment List', route: 'assessment-list', icon: 'fas fa-tasks' },
+    { label: 'Quiz Home', route: 'quiz-home', icon: 'fas fa-question-circle' },
+  ];
+
+  constructor(
+    private auth: AuthService,
+    private fireBaseService: FireBaseService<Subject>
+  ) {}
 
   ngOnInit(): void {
-    this.fireBaseService.listensToChange(TableNames.Subject).subscribe((res) => {
-      this.subjects = res as Subject[];
-      console.log(this.subjects);
-    });
+    this.getSubject();
   }
 
-  /**
-   * 
-   * @returns logout user
-   */
-  logout() {
+  toggleMenu(): void {
+    this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  logout(): void {
     this.auth.logout();
+    this.isMenuOpen = false; // Close the menu after logout
   }
 
-
-  /**
-   * Add new subject
-   */
-  addSubject() {
-    const uniqueId = crypto.randomUUID();
-    let sub: Subject = {
-      subjectId: uniqueId,
-      subjectName: (Math.random() + 1).toString(36).substring(7)
+  setCurrentPage(page: string): void {
+    this.currentPage = page;
+    if (page === 'get-subjects') {
+      this.getSubject();
     }
-    this.fireBaseService.create(TableNames.Subject + '/' + uniqueId, sub);
   }
 
-  /**
-   * get all subject
-   */
-  getSubject() {
-    this.fireBaseService.getAllData(TableNames.Subject).subscribe((res) => {
-      this.subjects = res as Subject[];
-      console.log(this.subjects);
-    })
+  addSubject(): void {
+    const uniqueId = crypto.randomUUID();
+    const sub: Subject = {
+      subjectId: uniqueId,
+      subjectName: (Math.random() + 1).toString(36).substring(7),
+    };
+    this.fireBaseService
+      .create(TableNames.Subject + '/' + uniqueId, sub)
+      .then(() => {
+        this.getSubject(); // Refresh the subject list after adding
+      });
   }
 
-  getAssessmentList() {
-    this.router.navigate(['/assessment-list']);
+  getSubject(): void {
+    this.fireBaseService
+      .getAllData(TableNames.Subject)
+      .subscribe((res) => {
+        this.subjects = res as Subject[];
+      });
   }
-
 }
