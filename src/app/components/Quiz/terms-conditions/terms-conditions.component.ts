@@ -252,25 +252,26 @@ checkLinkExpiry(): void {
     });
   }
 
-  // Handle quiz access logic
   onAccessQuiz(assessment: any): void {
     const { assessmentId, userId, expiryDate, isLinkAccessed } = assessment;
     const recordKey = `${assessmentId}_${userId}`;
-
+  
     if (this.isLinkExpired(expiryDate)) {
       this.router.navigate(['/linkexpired']);
       return;
     }
-
+  
     if (isLinkAccessed) {
       this.router.navigate(['/alreadyattended']);
       return;
     }
+  
     // Update both `isLinkAccessed` and `isInProgress`
     this.updateState(recordKey, { isLinkAccessed: true, isInProgress: true })
       .then(() => {
+        // Pass userId and assessmentId using Router state
         this.router.navigate(['/app-quiz'], {
-          queryParams: { id: assessmentId },
+          state: { userId: this.userId, assessmentId: this.assessmentId }
         });
       })
       .catch((error) => {
