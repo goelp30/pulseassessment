@@ -24,7 +24,6 @@ export const routes: Routes = [
       canActivate: [AuthGuard],
     },
     { path: 'register', component: RegisterComponent },
-    {
   // Link Generation Routes
   {path: 'generatelink',component: LinkGenerationComponent,},
   { path: 'assessmentrecords', component: AssessmentRecordsComponent },
