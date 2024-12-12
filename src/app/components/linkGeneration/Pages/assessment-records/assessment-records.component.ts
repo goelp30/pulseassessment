@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { assessmentRecords } from '../../../../models/assessmentRecords';
 import { NgClass } from '@angular/common';
 
+
 @Component({
   selector: 'app-assessment-records',
   standalone: true,
@@ -63,7 +64,6 @@ export class AssessmentRecordsComponent implements OnInit {
         console.error(`Error invalidating assessment ${recordKey}:`, error);
       });
   }
-
   async updateState(recordKey: string, updates: any): Promise<void> {
     const tableName = `assessmentRecords/${recordKey}`;
     return await this.firebaseService
@@ -118,12 +118,11 @@ export class AssessmentRecordsComponent implements OnInit {
         return false;
     }
   }
-
   isInvalidDisabled(assessment: assessmentRecords): boolean {
     return (
       assessment.status === 'Invalid' ||
       assessment.status?.includes('Expired') ||
       false
     );
-  }
 }
+

@@ -42,10 +42,11 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
       action: (row: any) => this.openModal(row),
     },
   ];
-  constructor(private firebaseService: FireBaseService<Assessment>) {}
+  constructor(
+    private firebaseService: FireBaseService<Assessment>,
+  ) {}
 
-  private subscription: Subscription = new Subscription();
-
+  private subscription: Subscription = new Subscription(); 
   ngOnInit(): void {
     this.getAssessments();
   }
