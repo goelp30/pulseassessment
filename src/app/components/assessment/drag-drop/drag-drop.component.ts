@@ -309,14 +309,13 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       });
     });
   }
-
   closeModal(): void {
     this.isModalVisible = false; // For the Assessment Details modal
     this.eConfirmationVisible = false; // For the Delete Confirmation modal
   }
   checkAssessmentTitleUniqueness(title: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      this.firebaseService.getAllData(this.assess_table).subscribe((assessments: any[]) => {
+      this.firebaseService.getAllDataByFilter(this.assess_table, 'isDisabled', false).subscribe((assessments: any[]) => {
         const existingTitles = assessments.map((assessment) => assessment.assessmentName.toLowerCase());
         if (existingTitles.includes(title.toLowerCase())) {
           resolve(false); // Title already exists

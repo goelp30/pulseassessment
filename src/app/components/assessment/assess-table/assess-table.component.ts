@@ -139,7 +139,7 @@ viewAssessment(row: any) {
   this.isModalVisible = true;
 
   // Fetch related assessments from 'AssessmentList' where 'assessmentId' matches
-  this.fireBaseService.getAllData(this.assessmentListTable).subscribe((assessmentList: AssessmentList[]) => {
+  this.fireBaseService.getAllDataByFilter(this.assessmentListTable, 'isDisabled', false).subscribe((assessmentList: AssessmentList[]) => {
     // Filter the subjects based on the assessmentId
     const relatedAssessment = assessmentList.filter(result=>result.assessmentId==row.assessmentId);
     console.log(relatedAssessment);
