@@ -1,0 +1,18 @@
+<app-header
+  [title]="'List of Evaluations'"
+  [subtitle]="'Evaluation details displayed below'"
+  [buttonLabel]="''" >
+</app-header>
+<app-table 
+  [tableName]="tableName"
+  [tableData]="filteredEvaluationList"  
+  [tableColumns]="['assessmentId', 'status']"
+  [columnAliases]="columnAliases"
+  [buttons]="buttons"
+  [searchQuery]="searchQuery"
+  [onSearchQueryChange]="onSearchQueryChange.bind(this)" 
+  [tabs]="tabs"
+  [filterKey]="filterKey"
+  [tabAliases]="{'all': 'All', 'Complete': 'Completed', 'Pending': 'Pending'}"
+  [searchPlaceholder]="searchPlaceholder">
+</app-table>

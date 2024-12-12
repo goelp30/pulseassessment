@@ -15,6 +15,9 @@ import { QuestionlistComponent } from './components/question/questionlist/questi
 import { TermsConditionsComponent } from './components/Quiz/terms-conditions/terms-conditions.component';
 import { QuizComponent } from './components/Quiz/quiz-components/quiz/quiz.component';
 import { InvalidComponent } from './components/linkGeneration/Pages/invalid/invalid.component';
+import { EvaluationDashboardComponent } from './components/evaluation/evaluation-dashboard/evaluation-dashboard.component';
+import { EvaluateAssessmentComponent } from './components/evaluation/evaluate-assessment/evaluate-assessment.component';
+import { ViewAssessmentComponent } from './components/evaluation/view-assessment/view-assessment.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -52,5 +55,9 @@ export const routes: Routes = [
     component: QuizComponent,
     canActivate: [AuthGuard],
   },
-  { path: '**', component: DashboardComponent, canActivate: [AuthGuard] },
+  //evaluate module routes
+  {path: 'evaluation',component:EvaluationDashboardComponent,},
+  {path: 'evaluate',component:EvaluateAssessmentComponent,},
+  {path: 'view',component:ViewAssessmentComponent,},
+ { path: '**', component: DashboardComponent, canActivate: [AuthGuard] },
 ];

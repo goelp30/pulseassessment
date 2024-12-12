@@ -32,7 +32,6 @@ export class AssessmentListComponent implements OnInit {
     // assessment
     this.fireBaseService.listensToChangeWithFilter(TableNames.Assessment, 'isDisabled', false).subscribe((res) => {
       this.assessments = res as Assessment[];
-      console.log('test', this.assessments);
     });
     // to have updated subjects
     // this.fireBaseService.listensToChange(TableNames.Subject).subscribe((res) => {
