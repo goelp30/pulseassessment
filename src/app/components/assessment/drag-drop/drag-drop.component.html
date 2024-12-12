@@ -1,6 +1,7 @@
+<div class="mx-5">
+    <button class="btn bg-blue-500 hover:bg-blue-600 text-white m-3" (click)="navigateToAssessments()">Back</button>
+    <div class="items-center justify-center p-2">
 
-<div class="bg-gray-100 min-h-screen flex items-center justify-center p-5 ">
-    <div class="bg-white w-full max-w-5xl rounded-lg shadow-lg border p-6 relative">
         <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">
             Manage Your Assessments
         </h2>
@@ -17,12 +18,9 @@
             <div *ngIf="assessmentTitleWarning" class="warning-message text-red-900">
                 {{ assessmentTitleWarning }}
             </div>
-            
         </div>
-        
 
         <!-- Toggle Section -->
-       
         <div class="flex justify-around mt-6">
             <div class="mb-3 w-full max-w-sm">
                 <div class="flex items-center">
@@ -54,43 +52,7 @@
                     </p>
                 </div>
             </div>
-        
-            <!-- Additional Section: Date Created and Last Updated -->
-            <!-- <div class="mt-0 w-full max-w-sm">
-                <div class="my-2 flex items-center">
-                    <button 
-                        class="px-4 py-2 bg-purple-500 text-white rounded-l-full border border-gray-300 transition-all duration-300 w-1/2">
-                        Created On:
-                    </button>
-                    <input
-                        id="dateCreated"
-                        type="text"
-                        value="{{rightListForm.value.createdOn | date:'yyyy-MM-dd HH:mm:ss'}}"
-                        disabled
-                        class="border border-gray-300 p-2 w-1/2"
-                    />
-                </div>
-                <div class="my-2 flex items-center">
-                    <button 
-                        class="px-4 py-2 bg-purple-500 text-white rounded-l-full border border-gray-300 transition-all duration-300 w-1/2">
-                        Last Updated On:
-                    </button>
-                    <input
-                        id="dateUpdated"
-                        type="text"
-                        value="{{rightListForm.value.createdOn | date:'yyyy-MM-dd HH:mm:ss'}}"
-                        disabled
-                        class="border border-gray-300 p-2 w-1/2"
-                    />
-                </div>
-            </div> -->
         </div>
-        
-       
-        <!-- Conditional Content Based on View Mode -->
-       
-
-       
 
         <!-- Drag-and-Drop Lists Section -->
         <div class="flex flex-col lg:flex-row gap-5 mb-6">
@@ -99,11 +61,10 @@
                 <h3 class="text-lg font-semibold mb-3">Available Subjects</h3>
                 <ul id="sortable-left"
                     class="bg-gray-50 border rounded-lg shadow p-2 min-h-[200px] max-h-[300px] overflow-auto">
-                    @for(item of leftList; track item){<li
-                        class="flex items-center justify-between px-4 py-2 cursor-grab hover:bg-gray-100">
-                        <span>{{ item }}</span>
+                    <li *ngFor="let item of leftList" class="flex items-center justify-between px-4 py-2 cursor-grab hover:bg-gray-100">
+                        <span>{{ item.subjectName }}</span>
                         <span class="text-gray-500">☰</span>
-                    </li>}
+                    </li>
                 </ul>
             </div>
 
@@ -112,31 +73,25 @@
                 <h3 class="text-lg font-semibold mb-3">Selected Subjects</h3>
                 <ul id="sortable-right"
                     class="bg-gray-50 border rounded-lg shadow p-2 min-h-[200px] max-h-[300px] overflow-auto">
-                    <!-- Placeholder for empty list -->
-                    @if(rightList.length === 0) {<li
-                        class="text-center text-gray-500 italic py-2 flex justify-center items-center pointer-events-none">
+                    <li *ngIf="rightList.length === 0" class="text-center text-gray-500 italic py-2 flex justify-center items-center pointer-events-none">
                         Drag your subjects here
-                    </li>}
-
-                    <!-- List items -->
-                    @for( item of rightList;track rightList) { <li
-                        class="flex items-center justify-between px-4 py-2 cursor-grab hover:bg-gray-100">
-                        <span>{{ item }}</span>
+                    </li>
+                    <li *ngFor="let item of rightList" class="flex items-center justify-between px-4 py-2 cursor-grab hover:bg-gray-100">
+                        <span>{{ item.subjectName }}</span>
                         <span class="text-gray-500">☰</span>
-                    </li>}
+                    </li>
                 </ul>
             </div>
         </div>
 
         <!-- Form for Selected Items -->
-        @if(rightList.length > 0) {
-        <div>
+        <div *ngIf="rightList.length > 0">
             <h3 class="text-lg font-semibold mb-4">Enter Details for Selected Subjects:</h3>
             <form [formGroup]="rightListForm">
                 <ul formArrayName="rightListInputs">
-                    @for(group of rightListInputs.controls;track group;let i = $index){<li class="py-2 border-b">
-                        <div class="flex flex-col gap-2 ">
-                            <span class="font-bold text-xl">{{ group.value.item |titlecase }}</span>
+                    <li *ngFor="let group of rightListInputs.controls; let i = index" class="py-2 border-b">
+                        <div class="flex flex-col gap-2">
+                            <span class="font-bold text-xl">{{ group.value.item.subjectName | titlecase }}</span>
                             <div [formGroupName]="i" class="grid grid-cols-2 gap-3">
                                 <!-- Easy Input -->
                                 <div class="flex items-center">
@@ -184,15 +139,12 @@
                                 {{ validationWarnings[i] }}
                             </span>
                         </div>
-                    </li>}
+                    </li>
                 </ul>
             </form>
-        </div>}
+        </div>
 
         <!-- Save Button -->
-
-
-        <!-- Save Form Data Button -->
         <div class="flex justify-center mt-6">
             <button 
               (click)="saveFormData()"
@@ -204,49 +156,7 @@
               class="text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all">
               Save
             </button>
-          </div>
-          
+        </div>
+
     </div>
 </div>
-<!-- removing -->
-<!-- Recently save data -->
-<!-- <div class="bg-gray-100 min-h-screen flex items-center justify-center p-5">
-    <div class="bg-white w-full max-w-5xl rounded-lg shadow-lg border p-6 relative">
-      
-        <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">
-            Recently Saved Data
-        </h2>
-
-        <div class="mt-6">
-            <h3 class="text-lg font-semibold text-blue-500 mb-4">Subjects List:</h3>
-            <div class="bg-gray-50 p-4 rounded-lg border shadow-sm">
-                <ul class="space-y-4">
-                    @for(savedDataItem of savedFormData?.rightListInputs;track savedDataItem){<li
-                        class="p-3 bg-white rounded-lg shadow border">
-                        <div class="flex items-center justify-between">
-                            <p class="font-medium text-gray-800">{{ savedDataItem?.item }}</p>
-                        </div>
-                        <div class="flex space-x-4 mt-2 text-xs text-gray-600">
-                            <small><strong>Assessment Title:</strong> {{ savedFormData.assessmentTitle }}</small>
-                            <small><strong>Easy:</strong> {{ savedDataItem.easy }}</small>
-                            <small><strong>Medium:</strong> {{ savedDataItem.medium }}</small>
-                            <small><strong>Hard:</strong> {{ savedDataItem.hard }}</small>
-                            <small><strong>Descriptive:</strong> {{ savedDataItem.descriptive }}</small>
-                            <small> <strong>Created on:</strong> {{ savedFormData?.createdOn }} </small>
-
-                        </div>
-                    </li>}
-                </ul>
-            </div>
-        </div>
-
-       
-        <div class="flex justify-center mt-6">
-            <button
-                class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all"
-                (click)="toggleViewMode('internal')">
-                Back to Manage Subjects
-            </button>
-        </div>
-    </div>
-</div> -->

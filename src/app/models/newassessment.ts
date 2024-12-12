@@ -10,7 +10,7 @@ export type SubjectCounts = {
     dateCreated: number,
     dateUpdated: number,
     subjects: {
-      [subjectName: string]: SubjectCounts; 
+      [subjectId: string]: SubjectCounts; 
     };
   };
 // assessment id:junior react 

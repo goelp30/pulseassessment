@@ -1,4 +1,4 @@
-  import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
   import { FireBaseService } from '../../../../sharedServices/FireBaseService';
   import { CommonModule } from '@angular/common';
   import { ButtonComponent } from '../button/button.component';
