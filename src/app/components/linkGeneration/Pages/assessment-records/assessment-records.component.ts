@@ -22,17 +22,18 @@ export class AssessmentRecordsComponent implements OnInit {
   selectedStatus: string = '';
   filterOptions: string[] = ['Name', 'Email', 'Assessment'];
   statusOptions: string[] = ['Active', 'Expired', 'In Progress', 'Completed', 'Invalid'];
+  isLoading:boolean=true;
 
   constructor(
     private firebaseService: FireBaseService<any>,
     private router: Router
   ) {}
-
   ngOnInit(): void {
     this.fetchAssessments();
   }
 
   fetchAssessments() {
+    this.isLoading = true; 
     this.firebaseService
       .getAllData('assessmentRecords')
       .subscribe((data: any[]) => {
@@ -41,6 +42,7 @@ export class AssessmentRecordsComponent implements OnInit {
           status: this.getStatus(assessment) || 'Unknown',
         }));
         this.filteredAssessments = [...this.assessments];
+        this.isLoading = false;
       });
   }
 

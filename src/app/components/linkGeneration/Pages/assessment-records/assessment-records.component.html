@@ -98,6 +98,27 @@
           </tr>
         </thead>
         <tbody>
+           <!-- Loader Row -->
+           @if (isLoading) {
+            <tr>
+              <td colspan="6" class="text-center py-6">
+                <div class="flex items-center justify-center">
+                  <div class="loader"></div>
+                </div>
+              </td>
+            </tr>
+            }
+            <!-- No Records Row -->
+            @if (!isLoading && filteredAssessments.length === 0) {
+            <tr>
+              <td colspan="6" class="text-center py-6 text-gray-700">
+                <b class="text-red-600">
+                  No Assessment Record Found
+                </b>
+              </td>
+            </tr>
+            } 
+             <!-- Records Rows -->
           @for (assessment of filteredAssessments; track $index) {
           <tr class="hover:bg-gray-50 even:bg-gray-50">
             <td class="px-4 sm:px-6 py-3 border-b text-gray-700">
