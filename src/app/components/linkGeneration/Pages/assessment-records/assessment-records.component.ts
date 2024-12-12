@@ -1,11 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { assessmentRecords } from '../../../../models/assessmentRecords';
-import { NgClass, NgFor } from '@angular/common';
-import { TableComponent } from '../../../common/table/table.component';
-import { TableNames } from '../../../../enums/TableName';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-assessment-records',
