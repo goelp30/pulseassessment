@@ -1,68 +1,107 @@
+
+
 import { Component, OnInit } from '@angular/core';
 import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { assessmentRecords } from '../../../../models/assessmentRecords';
-import { NgClass } from '@angular/common';
+import { NgClass, NgFor } from '@angular/common';
+
 
 @Component({
   selector: 'app-assessment-records',
   standalone: true,
-  imports: [FormsModule,NgClass],
+
+  imports: [FormsModule, NgClass, NgFor],
   templateUrl: './assessment-records.component.html',
-  styleUrl: './assessment-records.component.css' 
+  styleUrls: ['./assessment-records.component.css'],
 })
 export class AssessmentRecordsComponent implements OnInit {
-  assessments: assessmentRecords[] = []; // This will hold the fetched data
-  filteredAssessments: assessmentRecords[] = []; // This will hold the filtered results
-  searchQuery: string = ''; // Bind to the search input
-
+  assessments: assessmentRecords[] = [];
+  filteredAssessments: assessmentRecords[] = [];
+  searchQuery: string = '';
   constructor(
     private firebaseService: FireBaseService<any>,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    // Fetch data from Firebase when the component initializes
     this.fetchAssessments();
   }
 
-  // Fetch assessments from Firebase
   fetchAssessments() {
-    this.firebaseService.getAllData('assessmentRecords').subscribe((data: any[]) => {
-      this.assessments = data.map((assessment) => ({
-        ...assessment,
-        status: this.getStatus(assessment)
-      }));
-      this.filteredAssessments = [...this.assessments];
-    });
+    this.firebaseService
+      .getAllData('assessmentRecords')
+      .subscribe((data: any[]) => {
+        this.assessments = data.map((assessment) => ({
+          ...assessment,
+          status: this.getStatus(assessment) || 'Unknown',
+        }));
+        this.filteredAssessments = [...this.assessments];
+      });
   }
 
-  // Determine the dynamic status of the assessment
+  invalidateAssessment(assessment: assessmentRecords) {
+    const recordKey = `${assessment.assessmentId}_${assessment.userId}`;
+    assessment.isValid = false;
+  
+    this.updateState(recordKey, { isValid: false })
+      .then(() => {
+        console.log(`Successfully invalidated assessment: ${recordKey}`);
+        
+        // Update the status in the UI
+        assessment.status = 'Invalid';
+  
+        // Optionally trigger a re-filter in case the search query is active
+        this.onSearch();
+      })
+      .catch((error) => {
+        console.error(`Error invalidating assessment ${recordKey}:`, error);
+      });
+  }
+  async updateState(recordKey: string, updates: any): Promise<void> {
+    const tableName = `assessmentRecords/${recordKey}`;
+    return await this.firebaseService
+      .update(tableName, updates)
+      .then(() => console.log('Successfully updated:', tableName))
+      .catch((error) => {
+        console.error('Failed to update Firebase:', error);
+        throw error;
+      });
+  }
+
   getStatus(assessment: assessmentRecords): string {
-    if (assessment.invalidated) return 'Invalidated';
-    if (assessment.isExpired) return 'Expired';
+    const currentDate = new Date();
+    const expiryDate = new Date(assessment.expiryDate);
+
+    if (assessment.isValid === false) return 'Invalid';
+    if (!assessment.isLinkAccessed && expiryDate < currentDate) {
+      return 'Expired';
+    }
     if (assessment.isInProgress) return 'In Progress';
     if (assessment.isCompleted) return 'Completed';
-    if (assessment.isActive) return 'Active';
+    if (assessment.isActive && expiryDate >= currentDate) {
+      return 'Active';
+    }
+    if (assessment.isActive && expiryDate < currentDate) {
+      return 'Expired';
+    }
     return 'Unknown';
   }
 
-  // Filter assessments based on the search query
   onSearch() {
-    if (this.searchQuery.trim() === '') {
-      this.filteredAssessments = [...this.assessments];
-    } else {
-      this.filteredAssessments = this.assessments.filter((assessment) => {
-        return (
-          assessment.assessmentName
-            .toLowerCase()
-            .includes(this.searchQuery.toLowerCase()) ||
-          assessment.userName
-            .toLowerCase()
-            .includes(this.searchQuery.toLowerCase())
-        );
-      });
-    }
+    const query = this.searchQuery.trim().toLowerCase();
+    this.filteredAssessments = query
+      ? this.assessments.filter((assessment) =>
+          [assessment.assessmentName, assessment.userName]
+            .map((field) => field.toLowerCase())
+            .some((field) => field.includes(query))
+        )
+      : [...this.assessments];
   }
+  isInvalidateDisabled(assessment: assessmentRecords): boolean {
+    return assessment.status === 'Invalid' || assessment.status?.includes('Expired') || false;
+  }
+  
 }
+

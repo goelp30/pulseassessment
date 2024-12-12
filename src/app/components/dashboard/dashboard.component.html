@@ -1,8 +1,9 @@
-<p>dashboard</p> <button type="button" class="btn btn-info" (click)="logout()">Logout</button>
-<button type="button" class="btn btn-info" (click)="addSubject()">Add subject</button>
-<button type="button" class="btn btn-info" (click)="getSubject()">get subject</button>
-<button type="button" class="btn btn-info" [routerLink]="['/assessment-list']">Assessment
-    List</button>
-
+<div class="gap-20">
+  <p>dashboard</p>
+  <button type="button" class="btn btn-info" (click)="logout()">Logout</button>
+  <button type="button" class="btn btn-info" (click)="getSubject()">get subject</button>
+  <button type="button" class="btn btn-info" [routerLink]="['/assessment-list']">Assessment List</button>
+  <button (click)="getSubject()" class="btn btn-info">Get All Subjects</button>
+  <button type="button" class="btn btn-info" [routerLink]="['/subjects']">Subject List</button>
 <button type="button" class="btn btn-info" [routerLink]="['/app-quiz']">Quiz Home</button>
-<button type="button" class="btn btn-info" [routerLink]="['/quiz-table']">Quiz Table</button>
+</div>

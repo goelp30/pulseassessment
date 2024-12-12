@@ -1,6 +1,6 @@
 import { Injectable, Type } from '@angular/core';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
-import { map, Observable } from 'rxjs';
+import { catchError, map, Observable } from 'rxjs';
 
 @Injectable({
     providedIn: 'root'
@@ -22,10 +22,11 @@ export class FireBaseService<T> {
     /***
      * create new element in table
      */
-    create(tableName: string, params: T) {
+    create<T>(tableName: string, params: T): Promise<void> {
         return this.database.object(tableName).set(params);
-    }
-   
+      }
+      
+
     /***
      * Update new
      */
@@ -46,8 +47,46 @@ export class FireBaseService<T> {
     getAllData(tableName: string) {
         return this.database.list(tableName).snapshotChanges().pipe(map(actions => actions.map(this.documentToDomainObject)));
     }
+
+     /***
+     * listens changes with filter
+     */
+     listensToChangeWithFilter(tableName: string, searchField: string, searchValue: string | number | boolean): Observable<T[]> {
+        return this.database.list(tableName, (res) => res.orderByChild(searchField).equalTo(searchValue)).valueChanges() as Observable<T[]>;
+    }
+
+    /***
+     * Once get all with filter
+     */
+    getAllDataByFilter(tableName: string, searchField: string, searchValue: string | number | boolean) {
+        return this.database.list(tableName, (res) => res.orderByChild(searchField).equalTo(searchValue)).snapshotChanges().pipe(map(actions => actions.map(this.documentToDomainObject)));
+    }
+
+    /**
+     * To Add Data
+     */
     addData(tableName: string, id: string, params: T): Promise<void> {
         return this.database.object(`${tableName}/${id}`).set(params);
       }
-
+      getItemsByFields(
+        path: string,
+        fields: string[],
+        value: any
+      ): Observable<T[]> {
+        return this.database
+          .list<T>(path)
+          .valueChanges()
+          .pipe(
+            map((items) =>
+              items.filter((item) =>
+                fields.some((field) => (item as any)[field] === value)
+              )
+            ),
+            catchError((error) => {
+              console.error(`Error filtering items in ${path}:`, error);
+              throw error;
+            })
+          );
+      }
+      
 }
