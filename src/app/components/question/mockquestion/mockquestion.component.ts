@@ -77,6 +77,7 @@ export class MockquestionComponent implements OnInit {
   searchQuery: string = '';
   isModalVisible: boolean = false;
   isAddModal: boolean = false;
+  subjectName: string='';
 
 
   constructor(
@@ -86,27 +87,42 @@ export class MockquestionComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Retrieve subjectId from localStorage on component initialization
+    // Retrieve subjectId and subjectName from localStorage on component initialization
     const savedSubjectId = localStorage.getItem('subjectId');
-    if (savedSubjectId) {
+    const savedSubjectName = localStorage.getItem('subjectName');
+  
+    if (savedSubjectId && savedSubjectName) {
       this.subjectId = savedSubjectId;
+      this.subjectName = savedSubjectName;
       console.log('Retrieved subjectId from localStorage:', this.subjectId);
+      console.log('Retrieved subjectName from localStorage:', this.subjectName);
       this.fetchQuestions();
     }
   
-    // Subscribe to subjectId changes and save to localStorage
+    // Subscribe to subjectId and subjectName changes and save them to localStorage
     this.subjectService.subjectId$.subscribe((subjectId) => {
       if (subjectId) {
         this.subjectId = subjectId;
         console.log('New subjectId received:', this.subjectId);
-        
+  
         // Save subjectId to localStorage
         localStorage.setItem('subjectId', subjectId);
-        
+  
         this.fetchQuestions();
       }
     });
+  
+    this.subjectService.subjectName$.subscribe((subjectName) => {
+      if (subjectName) {
+        this.subjectName = subjectName;
+        console.log('New subjectName received:', this.subjectName);
+  
+        // Save subjectName to localStorage
+        localStorage.setItem('subjectName', subjectName);
+      }
+    });
   }
+  
   
   fetchQuestions(): void {
     this.fireBaseService
@@ -131,7 +147,7 @@ export class MockquestionComponent implements OnInit {
       questionType: '',
       questionLevel: '',
       questionWeightage: 1,
-      questionTime: 60,
+      questionTime: 1,
       createdOn: Date.now(),
       updatedOn: Date.now(),
     };

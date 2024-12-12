@@ -29,6 +29,8 @@ export class QuestionmodalComponent implements OnInit {
   subjectId: string = '';
   warningMessage: string = '';
   editingMode = false; // Determine whether editing or creating
+  subjectName: string='';
+  modalTitle: string=this.subjectName;
 
   constructor(
     private fb: FormBuilder,
@@ -52,27 +54,48 @@ export class QuestionmodalComponent implements OnInit {
         this.options.clear();
       } else if (this.options.length === 0) {
         this.options.push(this.createOptionGroup());
+      } else {
+        // Ensure options match the selected question type
+        while (this.options.length < 2) {
+          this.options.push(this.createOptionGroup());
+        }
+        if (value === 'Multi' && this.options.length < 3) {
+          while (this.options.length < 3) {
+            this.options.push(this.createOptionGroup());
+          }
+        }
       }
     });
+    
   }
 
   ngOnInit(): void {
     const savedSubjectId = localStorage.getItem('subjectId');
-    if (savedSubjectId) {
+    const savedSubjectName = localStorage.getItem('subjectName');
+  
+    if (savedSubjectId && savedSubjectName) {
       this.subjectId = savedSubjectId;
-      this.assessmentForm.patchValue({ subjectId: this.subjectId });
+      this.subjectName = savedSubjectName;
+  
+      // Patch both subjectId and subjectName to the form
+      this.assessmentForm.patchValue({ 
+        subjectId: this.subjectId, 
+        subjectName: this.subjectName 
+     
+      });
     }
-
+  
     this.assessmentForm.get('questionLevel')?.valueChanges.subscribe((value) => {
       this.setDefaultTime(value);
     });
-
+  
     if (this.question) {
       this.editingMode = true;
       this.loadFormData();
+      console.log(this.modalTitle)
     }
   }
-
+  
   loadFormData(): void {
     if (this.question) {
       this.assessmentForm.patchValue({
@@ -149,6 +172,11 @@ export class QuestionmodalComponent implements OnInit {
   }
 
   removeOption(index: number): void {
+    const questionType = this.assessmentForm.get('questionType')?.value;
+    if (questionType === 'Multi' && this.options.length <= 3) {
+      this.warningMessage = 'Multi type questions require at least 3 options!';
+      return;
+    }
     if (this.options.length > 1) {
       this.options.removeAt(index);
       this.warningMessage = '';
@@ -156,35 +184,30 @@ export class QuestionmodalComponent implements OnInit {
       this.warningMessage = 'At least two options must exist!';
     }
   }
+  
+  
 
   validateOptions(): boolean {
     const questionType = this.assessmentForm.get('questionType')?.value;
-
-    if (questionType === 'Descriptive') return true;
-
+    const totalOptions = this.options.length;
     const correctOptionsCount = this.options.controls.filter(
       (option) => option.get('isCorrectOption')?.value
     ).length;
-
-    if (questionType === 'Single' && correctOptionsCount > 1) {
-      alert('Only 1 option can be correct in Single type.');
-      return false;
-    }
-
+  
     if (questionType === 'Multi') {
-      if (correctOptionsCount < 2) {
-        alert('At least 2 options must be correct for Multi type.');
+      if (totalOptions < 3) {
+        alert('Multi type questions require at least 3 options.');
         return false;
       }
-
-      if (correctOptionsCount === this.options.length) {
-        alert('In Multi type, all options cannot be correct.');
+      if (correctOptionsCount < 2 || correctOptionsCount === totalOptions) {
+        alert('Multi type questions must have at least 2 correct options and cannot have all options marked as correct.');
         return false;
       }
     }
-
+  
     return true;
   }
+  
 
   async saveData() {
     if (this.assessmentForm.valid && this.validateOptions()) {

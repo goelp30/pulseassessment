@@ -175,13 +175,13 @@ export class SubjectTableComponent {
     this.toastr.error('Subject deleted');
   }
 
-  // Manage subject: Store subjectId and navigate to /questions
   manageSubject(row: Subject) {
-    if (row.subjectId) {
-      this.subjectService.setSubjectId(row.subjectId); // Store subjectId in service
-      this.router.navigate(['/questions']); // Navigate to /questions route
+    if (row.subjectId && row.subjectName) {
+      this.subjectService.setSubjectId(row.subjectId); // Store subjectId
+      this.subjectService.setSubjectName(row.subjectName); // Store subjectName
+      this.router.navigate(['/questions']); // Navigate to /questions
     } else {
-      console.error('Subject ID is missing.');
+      console.error('Subject ID or Subject Name is missing.');
     }
   }
 }
