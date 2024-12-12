@@ -211,7 +211,22 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   isBrowser(): boolean {
     return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
   }
-
+  calculateAutoEvaluated(subjects: any[]): boolean {
+    // Check if any subject has a 'descriptive' value greater than 0
+    let isAutoEvaluated = true; // Default to true
+    subjects.forEach(subject => {
+      console.log(`Subject: ${subject.item}, Descriptive Value: ${subject.descriptive}`); // Log subject and its descriptive value
+      if (subject.descriptive > 0) {
+        isAutoEvaluated = false; // If descriptive value is greater than 0, set to false
+      }
+    });
+    
+    return isAutoEvaluated;
+    console.log("right list",this.rightList);
+  }
+  isAutoEvaluated:boolean=true
+    // isAutoEvaluated = this.calculateAutoEvaluated(this.rightList);
+    
   // Updated addAssessment to return a Promise with the generated assessmentId
   addAssessment(): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -235,13 +250,18 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         });
     });
   }
-
   saveFormData(): void {
+    const hasDescriptiveGreaterThanZero = this.rightListInputs.controls.some((group) => {
+      // Check if any subject has descriptive score greater than 0
+      return group.get('descriptive')?.value > 0;
+    });
+
+    // Set autoevaluated to false if any 'descriptive' value is greater than 0
+    this.isAutoEvaluated = !hasDescriptiveGreaterThanZero;
     if (this.assessmentTitle.trim().length === 0) {
       this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
       return;
     }
-
     this.checkAssessmentTitleUniqueness(this.assessmentTitle).then((isUnique) => {
       if (!isUnique) {
         this.assessmentTitleWarning = 'This assessment title already exists. Please choose a unique title.';
@@ -264,7 +284,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
               this.toastr.success('Assessment Created successfully', 'Created');
               this.resetRightListAndForm();
               this.assessmentTitle = '';
-              this.router.navigate(['/assessment-list']);
+              // this.router.navigate(['/assessment-list']);
             })
             .catch((error) => {
               console.error('Error saving data:', error);
@@ -278,19 +298,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       });
     });
   }
-  calculateAutoEvaluated(subjects: any[]): boolean {
-    // Check if any subject has a 'descriptive' value greater than 0
-    let isAutoEvaluated = true; // Default to true
-    subjects.forEach(subject => {
-      console.log(`Subject: ${subject.item}, Descriptive Value: ${subject.descriptive}`); // Log subject and its descriptive value
-      if (subject.descriptive > 0) {
-        isAutoEvaluated = false; // If descriptive value is greater than 0, set to false
-      }
-    });
-    
-    return isAutoEvaluated;
-  }
-  isAutoEvaluated = this.calculateAutoEvaluated(this.rightList);
+
   closeModal(): void {
     this.isModalVisible = false; // For the Assessment Details modal
     this.eConfirmationVisible = false; // For the Delete Confirmation modal
@@ -311,9 +319,6 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   }
   assessmentTitleWarning: string = ''; // Variable to hold the warning message
   assessmentList: AssessmentList[] = [];
-
-
-
 
   resetRightListAndForm(): void {
     this.rightList = [];
@@ -406,5 +411,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     // If any validation is not fulfilled, the save button should be disabled
     return isFormValid && isAssessmentTitleValid && isTitleUnique;
   }
-
+  navigateToAssessments(){
+    this.router.navigate(['/assessment-list']);
+  }
 }

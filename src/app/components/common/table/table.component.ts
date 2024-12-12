@@ -24,7 +24,7 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() onSearchQueryChange: (newQuery: string) => void = () => {};
   @Input() tabs: string[] = []; // Empty array means no tabs
   @Input() filterKey: string = '';
-  @Input() tabAliases: { [key: string]: string } = {};  
+  @Input() tabAliases: { [key: string]: string } = {};
   @Input() searchPlaceholder:string='Search';
 
   currentPage: number = 1;
@@ -34,7 +34,7 @@ export class TableComponent implements OnInit, OnChanges {
   activeTab: string = '';  // Initially, no active tab
   pageNumbers: number[] = [];
 
-  constructor(private fireBaseService: FireBaseService<any>) {}
+  constructor(private fireBaseService: FireBaseService<any>,) {}
 
   ngOnInit(): void {
     if (this.tableName) {
@@ -58,6 +58,9 @@ export class TableComponent implements OnInit, OnChanges {
     if (changes['tabs'] || changes['filterKey']) {
       this.filterData();
     }
+    if (changes['tableData']) {
+      this.filterData();
+    }
   }
 
   selectTab(tab: string): void {
@@ -65,28 +68,25 @@ export class TableComponent implements OnInit, OnChanges {
     this.filterData();
   }
 
-  filterData(): void {
-    let filtered = [...this.tableData];
-
-    if (this.activeTab && this.activeTab !== 'all') {
-      filtered = filtered.filter(row => {
-        return row[this.filterKey]?.toString().toLowerCase() === this.activeTab.toLowerCase();
+ filterData() {
+  let filtered = [...this.tableData];
+  if (this.searchQuery) {
+    filtered = filtered.filter(row => {
+      return this.tableColumns.some(column => {
+        return row[column] && row[column].toString().toLowerCase().includes(this.searchQuery.toLowerCase());
       });
-    }
-
-    if (this.searchQuery) {
-      filtered = filtered.filter(row => {
-        return this.tableColumns.some(column => {
-          return row[column] && row[column].toString().toLowerCase().includes(this.searchQuery.toLowerCase());
-        });
-      });
-    }
-
-    this.filteredData = filtered;
-    this.totalPages = Math.ceil(this.filteredData.length / this.itemsPerPage);
-    this.generatePagination();
-    this.currentPage = 1;
+    });
   }
+  if (this.activeTab && this.activeTab !== 'all') {
+    filtered = filtered.filter(row => {
+      return row[this.filterKey]?.toString().toLowerCase() === this.activeTab.toLowerCase();
+    });
+  }
+  this.filteredData = filtered;
+  this.totalPages = Math.ceil(this.filteredData.length / this.itemsPerPage);
+  this.generatePagination();
+  this.currentPage = 1;
+}
 
   getColumnAliases(column: string): string[] {
     return this.columnAliases[column] || [column];
