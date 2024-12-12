@@ -100,7 +100,7 @@ export class MockquestionComponent implements OnInit {
       .getItemsByFields('questions', ['subjectId'], this.subjectId)
       .subscribe(
         (data) => {
-          this.questions = data; // Assign only the filtered questions
+          this.questions = data; 
         },
         (error) => {
           console.error('Error while loading questions:', error);
