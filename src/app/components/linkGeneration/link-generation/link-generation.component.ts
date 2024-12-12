@@ -22,6 +22,7 @@ import { TableComponent } from '../../common/table/table.component';
 })
 export class LinkGenerationComponent implements OnInit, OnDestroy {
   @Input() successMessage: string = '';
+
   assessments: Assessment[] = []; 
   assessmentId: string = '';
   assessmentName: string = '';
@@ -29,6 +30,23 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
   filteredAssessments: Assessment[] = []; 
   selectedLink: string = ''; 
   isModalVisible: boolean = false; 
+  tableName: string = TableNames.Assessment;  
+  tableColumns: string[] = ['assessmentName', 'assessmentType'];
+  columnAliases: { [key: string]: string[] } = {
+    assessmentName: ['Assessment Name'],
+    assessmentType: ['Assessment Type']
+  };
+  tableData=this.assessments;
+  searchQuery: string = '';
+  searchPlaceholder: string = 'Search Assessments...';
+  buttons = [
+    {
+      label: 'Generate Link',
+      colorClass: 'bg-blue-500 py-2 px-4 text-white rounded-md',
+      action: (row: any) => this.openModal(row),
+    }
+  ];
+
 
   tableName: string = TableNames.Assessment;  
   tableColumns: string[] = ['assessmentName', 'assessmentType'];
@@ -78,7 +96,6 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
     );
   }
 
-  // Handle search input changes and reset filter if empty
   onSearchQueryChange(query: string): void {
     this.searchQuery = query;
     this.filterAssessments(query);
@@ -86,16 +103,13 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
 
   // Generate a link based on the assessment ID
   generateLink(id: string): string {
-    const baseUrl = 'http://localhost:4200/termsandconditions';  
+    const baseUrl = 'http://127.0.0.1:4200/termsandconditions';  
+    // const baseUrl = 'http://localhost:4200/termsandconditions';  
     return `${baseUrl}/${id}`;
   }
 
   // Open the modal with the selected link and type
-  openModal(
-    
-    row:any
-  ): void {
-    
+  openModal(row:any): void {
     this.selectedLink = this.generateLink(row.assessmentId);
     this.assessmentType = row.assessmentType;
     this.assessmentName = row.assessmentName;
@@ -107,7 +121,6 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
   closeModal(): void {
     this.isModalVisible = false;
   }
-
 
   trackAssessment(index: number, assessment: Assessment): string {
     return assessment.assessmentId;
