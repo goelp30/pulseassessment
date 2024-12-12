@@ -1,0 +1,42 @@
+<app-header
+  [title]="'List of Subjects'"
+  [subtitle]="'Manage your subjects here'"
+  [buttonLabel]="'Add Question'"
+  [buttonClasses]="'bg-blue-500 text-white rounded-md px-4 py-2'"
+  (click)="addQuestion()"
+  >
+</app-header>
+
+<app-table
+  [tableColumns]="['questionText']"
+  [tableData]="questions"
+  [columnAliases]="{ questionText: ['Question Text'] }"
+  [searchPlaceholder]="'Search Questions'"
+  [searchQuery]="searchQuery"
+  [onSearchQueryChange]="onSearchQueryChange.bind(this)"
+  [buttons]="buttons"
+></app-table> 
+
+<div *ngIf="isQuestionModalVisible" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <!-- Modal Box with internal scroll -->
+  <div class="relative bg-white rounded-lg shadow-lg w-auto h-auto mt-4 mb-4 overflow-hidden">
+    <!-- Scrollable Content Area -->
+    <div class="p-4 h-[calc(100vh-8rem)] overflow-y-auto">
+      <app-questionmodal
+        [question]="selectedQuestion"
+        (closeModal)="closeQuestionModal()">
+      </app-questionmodal>
+    </div>
+
+    <!-- Close Button -->
+    <button
+      (click)="closeQuestionModal()"
+      class="absolute top-4 right-4 text-gray-900 m-1"
+    >
+      &#x2715; <!-- Close icon -->
+    </button>
+  </div>
+</div>
+  
+
+
