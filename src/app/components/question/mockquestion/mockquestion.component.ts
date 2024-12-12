@@ -86,21 +86,35 @@ export class MockquestionComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Retrieve subjectId from localStorage on component initialization
+    const savedSubjectId = localStorage.getItem('subjectId');
+    if (savedSubjectId) {
+      this.subjectId = savedSubjectId;
+      console.log('Retrieved subjectId from localStorage:', this.subjectId);
+      this.fetchQuestions();
+    }
+  
+    // Subscribe to subjectId changes and save to localStorage
     this.subjectService.subjectId$.subscribe((subjectId) => {
       if (subjectId) {
         this.subjectId = subjectId;
-        console.log(this.subjectId)
+        console.log('New subjectId received:', this.subjectId);
+        
+        // Save subjectId to localStorage
+        localStorage.setItem('subjectId', subjectId);
+        
         this.fetchQuestions();
       }
     });
   }
-
+  
   fetchQuestions(): void {
     this.fireBaseService
       .getItemsByFields('questions', ['subjectId'], this.subjectId)
       .subscribe(
         (data) => {
-          this.questions = data; 
+          this.questions = data;
+          console.log(this.questions)
         },
         (error) => {
           console.error('Error while loading questions:', error);

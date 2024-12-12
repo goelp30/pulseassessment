@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { AuthService } from '../../../../sharedServices/auth.service';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Subject } from '../../../models/subject';
@@ -42,7 +42,7 @@ export class SubjectTableComponent {
   isModalVisible: boolean = false;
   isAddModal: boolean = false;
   selectedSubject: Subject | null = null;
-  searchPlaceholder:string='Search Subjects...'
+  searchPlaceholder:string='Search Subjects'
 
   // Action buttons for table
   buttons = [
@@ -99,19 +99,34 @@ export class SubjectTableComponent {
 
   // Save a new subject to the database
   saveNewSubject() {
-    if (this.selectedSubject) {
-      this.toastr.success('Subject added successfully', 'Added', { timeOut: 2000 });
-
-      this.fireBaseService
-        .create(`${this.tableName}/${this.selectedSubject.subjectId}`, this.selectedSubject)
-        .then(() => {
-          this.isModalVisible = false;
-          this.selectedSubject = null;
-        })
-        .catch((error) => {
-          console.error('Error adding subject:', error);
-        });
+    if (!this.selectedSubject || !this.selectedSubject.subjectName || this.selectedSubject.subjectName.trim() === '') {
+      this.toastr.warning('Please enter subject name', 'Warning', { timeOut: 2000 });
+      return;
     }
+
+    // Check if the subject already exists
+    this.fireBaseService.getAllData(this.tableName).subscribe(subjects => {
+      const isDuplicate = subjects.some(subject =>
+        subject.subjectName.trim().toLowerCase() === this.selectedSubject?.subjectName.trim().toLowerCase()
+      );
+      if (isDuplicate) {
+        this.toastr.warning('Subject already exists', 'Warning', { timeOut: 2000 });
+        return; // Prevent adding duplicate subject
+      }
+
+      // Proceed with adding the new subject if no duplicates
+      if (this.selectedSubject) {
+        this.fireBaseService.create(`${this.tableName}/${this.selectedSubject.subjectId}`, this.selectedSubject)
+          .then(() => {
+            this.toastr.success('Subject added successfully', 'Added', { timeOut: 2000 });
+            this.isModalVisible = false;
+            this.selectedSubject = null;
+          })
+          .catch((error) => {
+            console.error('Error adding subject:', error);
+          });
+      }
+    });
   }
 
   // Edit an existing subject
@@ -123,19 +138,36 @@ export class SubjectTableComponent {
 
   // Update an existing subject
   updateSubject() {
-    if (this.selectedSubject) {
-      this.toastr.info('Subject updated successfully', 'Updated', { timeOut: 2000 });
-
-      this.fireBaseService
-        .update(`${this.tableName}/${this.selectedSubject.subjectId}`, this.selectedSubject)
-        .then(() => {
-          this.isModalVisible = false;
-          this.selectedSubject = null;
-        })
-        .catch((error) => {
-          console.error('Error updating subject:', error);
-        });
+    if (!this.selectedSubject || !this.selectedSubject.subjectName || this.selectedSubject.subjectName.trim() === '') {
+      this.toastr.warning('Please enter subject name', 'Warning', { timeOut: 2000 });
+      return; // Update and no input is given, then it should not be added
     }
+
+    // Check if the subject already exists (excluding the current subject being updated)
+    this.fireBaseService.getAllData(this.tableName).subscribe(subjects => {
+      const isDuplicate = subjects.some(subject =>
+        subject.subjectId !== this.selectedSubject?.subjectId &&
+        subject.subjectName.trim().toLowerCase() === this.selectedSubject?.subjectName.trim().toLowerCase()
+      );
+      if (isDuplicate) {
+        this.toastr.warning('Subject already exists', 'Warning', { timeOut: 2000 });
+        return; // Prevent updating to duplicate subject
+      }
+
+      // Proceed with updating the subject if no duplicates
+      if (this.selectedSubject) {
+        this.toastr.info('Subject updated successfully', 'Updated', { timeOut: 2000 });
+
+        this.fireBaseService.update(`${this.tableName}/${this.selectedSubject.subjectId}`, this.selectedSubject)
+          .then(() => {
+            this.isModalVisible = false;
+            this.selectedSubject = null;
+          })
+          .catch((error) => {
+            console.error('Error updating subject:', error);
+          });
+      }
+    });
   }
 
   // Delete subject

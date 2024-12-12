@@ -1,8 +1,9 @@
-<div class="container mx-auto p-6 bg-white rounded-lg shadow-lg w-[500px] max-w-full mt-6">
+<div class="container mx-auto p-6 bg-white rounded-lg  w-[500px]  mt-6">
   <form [formGroup]="assessmentForm" (ngSubmit)="saveData()" class="space-y-6">
 
+  <div class="flex space-x-4">
     <!-- Question Type Section -->
-    <div class="px-2">
+    <div class="w-1/2">
       <label for="questionType" class="block text-sm font-medium text-gray-700">Question Type</label>
       <select
         id="questionType"
@@ -14,7 +15,7 @@
     </div>
 
     <!-- Question Level Section -->
-    <div class="px-2">
+    <div class="w-1/2">
       <label for="questionLevel" class="block text-sm font-medium text-gray-700">Question Level</label>
       <select
         id="questionLevel"
@@ -24,9 +25,11 @@
         <option *ngFor="let level of questionLevels" [value]="level">{{ level }}</option>
       </select>
     </div>
+  </div>  
 
     <!-- Question Text Section -->
-    <div class="px-2">
+  <div class="flex space-x-4">   
+    <div class="w-full">
       <label class="block text-sm font-medium text-gray-700">Question Text</label>
       <input
         type="text"
@@ -34,9 +37,11 @@
         class="mt-2 block w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400"
       />
     </div>
+  </div>
 
+  <div class="flex space-x-4">
     <!-- Weightage Section -->
-    <div class="px-2">
+    <div class="w-1/2">
       <label class="block text-sm font-medium text-gray-700">Weightage</label>
       <input
         type="number"
@@ -47,7 +52,7 @@
     </div>
 
     <!-- Question Time Section -->
-    <div class="px-2">
+    <div class="w-1/2">
       <label class="block text-sm font-medium text-gray-700">Time (minutes)</label>
       <input
         type="number"
@@ -57,6 +62,7 @@
         max="10"
       />
     </div>
+  </div>
 
     <!-- Options Section -->
     <div *ngIf="assessmentForm.get('questionType')?.value !== 'Descriptive'" formArrayName="options">
@@ -95,7 +101,7 @@
     <div class="text-right px-2">
       <button
         type="submit"
-        class="inline-flex items-center px-6 py-3 border bg-green-600 hover:bg-green-700 text-white rounded-md focus:ring-2 focus:ring-green-500"
+        class="inline-flex items-center px-4 py-2 border bg-blue-500 hover:bg-blue-600 text-white rounded-md focus:ring-2 focus:ring-blue-500"
       >
         Save
       </button>
