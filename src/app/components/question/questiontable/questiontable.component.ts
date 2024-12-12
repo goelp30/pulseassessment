@@ -23,13 +23,13 @@ export type Question = {
 };
 
 @Component({
-  selector: 'app-mockquestion',
+  selector: 'app-questiontable',
   standalone: true,
-  templateUrl: './mockquestion.component.html',
-  styleUrls: ['./mockquestion.component.css'],
+  templateUrl: './questiontable.component.html',
+  styleUrls: ['./questiontable.component.css'],
   imports:[HeaderComponent,TableComponent,QuestionmodalComponent,CommonModule]
 })
-export class MockquestionComponent implements OnInit {
+export class QuestiontableComponent implements OnInit {
   questions: Question[] = [];
   options: Option[] = [];
 

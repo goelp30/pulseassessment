@@ -1,6 +1,6 @@
 <app-header
-  [title]="'List of Subjects'"
-  [subtitle]="'Manage your subjects here'"
+  [title]="'List of Questions'"
+  [subtitle]="'Manage your questions here'"
   [buttonLabel]="'Add Question'"
   [buttonClasses]="'bg-blue-500 text-white rounded-md px-4 py-2'"
   (click)="addQuestion()"
@@ -30,11 +30,12 @@
 
     <!-- Close Button -->
     <button
-      (click)="closeQuestionModal()"
-      class="absolute top-4 right-4 text-gray-900 m-1"
-    >
-      &#x2715; <!-- Close icon -->
-    </button>
+  (click)="closeQuestionModal()"
+  class="absolute top-4 right-4 text-red-600 text-3xl p-2"
+>
+  <i class="fa fa-times"></i>
+</button>
+
   </div>
 </div>
   

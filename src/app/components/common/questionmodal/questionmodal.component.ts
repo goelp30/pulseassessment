@@ -50,22 +50,9 @@ export class QuestionmodalComponent implements OnInit {
     });
 
     this.assessmentForm.get('questionType')?.valueChanges.subscribe((value) => {
-      if (value === 'Descriptive') {
-        this.options.clear();
-      } else if (this.options.length === 0) {
-        this.options.push(this.createOptionGroup());
-      } else {
-        // Ensure options match the selected question type
-        while (this.options.length < 2) {
-          this.options.push(this.createOptionGroup());
-        }
-        if (value === 'Multi' && this.options.length < 3) {
-          while (this.options.length < 3) {
-            this.options.push(this.createOptionGroup());
-          }
-        }
-      }
+      this.options.clear(); 
     });
+    
     
   }
 
@@ -163,32 +150,52 @@ export class QuestionmodalComponent implements OnInit {
   }
 
   addOption(): void {
+    if (this.assessmentForm.value.questionType === 'Descriptive') {
+        return; // Do nothing for Descriptive questions
+    }
+
     if (this.options.length < 6) {
-      this.options.push(this.createOptionGroup());
-      this.warningMessage = '';
+        this.options.push(this.createOptionGroup());
+        this.warningMessage = '';
     } else {
-      this.warningMessage = 'Cannot add more than 6 options.';
-      alert(this.warningMessage);
+        this.warningMessage = 'Cannot add more than 6 options.';
+        alert(this.warningMessage);
     }
-  }
-  
-  removeOption(index: number): void {
-    const questionType = this.assessmentForm.get('questionType')?.value;
-
-    if (this.options.length <= 2) {
-        alert('A question must have at least two options.');
-        return;
-    }
-
-    if (questionType === 'Multi' && this.options.length <= 3) {
-        alert('Multi-choice questions must have at least 3 options.');
-        return;
-    }
-
-    this.options.removeAt(index);
 }
 
+
   
+removeOption(index: number): void {
+  const questionType = this.assessmentForm.get('questionType')?.value;
+
+  // Validation: At least two options for Single and Multi types
+  if ((questionType === 'Single' || questionType === 'Multi') && this.options.length <= 2) {
+      alert('A question must have at least two options.');
+      return;
+  }
+
+  // Additional validation for Multi-choice questions
+  if (questionType === 'Multi' && this.options.length <= 3) {
+      alert('Multi-choice questions must have at least 3 options.');
+      return;
+  }
+
+  this.options.removeAt(index);
+
+  // Clear warning if options are now below the limit
+  if (this.options.length < 6) {
+      this.warningMessage = '';
+  }
+}
+
+
+toggleCorrectOption(index: number) {
+  const option = this.options.at(index);
+  option.patchValue({
+    isCorrectOption: !option.get('isCorrectOption')?.value,
+  });
+}
+
   
   validateOptions(): boolean {
     const questionType = this.assessmentForm.get('questionType')?.value;
@@ -197,11 +204,6 @@ export class QuestionmodalComponent implements OnInit {
         (option) => option.get('isCorrectOption')?.value
     ).length;
 
-    // Common validation for both types
-    if (totalOptions < 2) {
-        alert('A question must have at least two options.');
-        return false;
-    }
     if (totalOptions > 6) {
         alert('A question can have a maximum of 6 options.');
         return false;
@@ -209,13 +211,17 @@ export class QuestionmodalComponent implements OnInit {
 
     if (questionType === 'Single') {
         // Single-choice validations
-        if (correctOptionsCount === 0) {
+        if (correctOptionsCount !== 1) {
             alert('Single-choice questions must have one correct option.');
             return false;
         }
         if (correctOptionsCount > 1) {
             alert('Single-choice questions cannot have more than one correct option.');
             return false;
+        }
+        if (totalOptions < 2) {
+          alert('Single-choice questions must have exactly 2 options.');
+          return false;
         }
     } else if (questionType === 'Multi') {
         // Multi-choice validations
@@ -232,44 +238,77 @@ export class QuestionmodalComponent implements OnInit {
             return false;
         }
     }
+    if (questionType === 'Descriptive') {
+      return true;
+  }
 
     return true;
 }
 
+validateCorrectOptions(formArray: FormArray): { [key: string]: any } | null {
+  const hasCorrectOption = formArray.controls.some(
+    (control) => control.get('isCorrectOption')?.value === true
+  );
+  return hasCorrectOption ? null : { noCorrectOption: true };
+}
   
   
 
   
 
 async saveData() {
-  if (this.assessmentForm.valid && this.validateOptions()) {
-      try {
-          if (this.editingMode) {
-              await this.updateQuestion();
-          } else {
-              const questionId = await this.addQuestion();
-              await this.storeOptions(questionId);
-          }
+  let alertShown = false; // Flag to prevent repeated alerts
 
-          alert('Saved successfully!');
-          this.assessmentForm.reset({
-              subjectId: this.subjectId,
-              questionType: 'Single',
-              questionLevel: 'Easy',
-              questionWeightage: 1,
-              questionTime: 1,
-              questionMarks: 1,
-              difficulty: 'Low',
-          });
-          this.options.clear();
-          this.addOption();
-      } catch (error) {
-          alert(`Error: ${error}`);
-      }
-  } else {
+  if (!this.assessmentForm.valid || !this.validateOptions()) {
+    if (!alertShown) {
       alert('Please fix validation issues before saving.');
+      alertShown = true; // Set the flag to true after showing the alert
+    }
+    return; // Exit the function early
+  }
+
+  // Reset the flag once the form is valid
+  alertShown = false;
+
+  try {
+    if (this.editingMode) {
+      await this.updateQuestion();
+    } else {
+      const questionId = await this.addQuestion();
+      if (this.assessmentForm.value.questionType !== 'Descriptive') {
+        await this.storeOptions(questionId);
+      }
+    }
+
+    alert('Saved successfully!');
+
+    // Reset the form but do not add a new option automatically
+    this.assessmentForm.reset({
+      subjectId: this.subjectId,
+      questionType: 'Single',
+      questionLevel: 'Easy',
+      questionWeightage: 1,
+      questionTime: 1,
+      questionMarks: 1,
+      difficulty: 'Low',
+    });
+
+    // Clear the options array entirely to start fresh
+    this.options.clear();
+
+    // Add a single initial option only if it is a new question
+    if (!this.editingMode) {
+      this.addOption();
+    }
+  } catch (error) {
+    console.error('Error saving data:', error);
+    alert(`Error: ${error}`);
   }
 }
+
+
+
+
 
   
   async addQuestion(): Promise<string> {

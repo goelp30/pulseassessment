@@ -10,7 +10,7 @@
         <select
           id="questionType"
           formControlName="questionType"
-          class="mt-2 block w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-green-400"
+          class="mt-2 block w-full border rounded-md px-3 py-2 "
         >
           <option *ngFor="let type of questionTypes" [value]="type">{{ type }}</option>
         </select>
@@ -21,7 +21,7 @@
         <select
           id="questionLevel"
           formControlName="questionLevel"
-          class="mt-2 block w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400"
+          class="mt-2 block w-full border rounded-md px-3 py-2 "
         >
           <option *ngFor="let level of questionLevels" [value]="level">{{ level }}</option>
         </select>
@@ -36,7 +36,7 @@
           type="text"
           formControlName="questionText"
           placeholder="Enter the question here"
-          class="mt-2 block w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400"
+          class="mt-2 block w-full border rounded-md px-3 py-2 "
         />
       </div>
     </div>
@@ -48,7 +48,7 @@
         <input
           type="number"
           formControlName="questionWeightage"
-          class="mt-2 block w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400"
+          class="mt-2 block w-full border rounded-md px-3 py-2"
           min="1"
         />
       </div>
@@ -58,7 +58,7 @@
         <input
           type="number"
           formControlName="questionTime"
-          class="mt-2 block w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400"
+          class="mt-2 block w-full border rounded-md px-3 py-2 "
           min="1"
           max="10"
         />
@@ -74,20 +74,27 @@
           type="text"
           formControlName="optionText"
           placeholder="Option text"
-          class="flex-1 border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400"
-        />
-        <input
-          type="checkbox"
-          formControlName="isCorrectOption"
+          class="flex-1 border rounded-md px-3 py-2 "
         />
         <button
-          type="button"
-          class="bg-red-500 p-2 rounded-md text-white"
-          (click)="removeOption(i)"
-          [disabled]="options.length <= 2"
-        >
-          Remove
-        </button>
+      type="button"
+      class="text-green-500 focus:outline-none text-2xl"
+      (click)="toggleCorrectOption(i)"
+    >
+      <i
+        class="fa"
+        [class.fa-check-square]="option.get('isCorrectOption')?.value"
+        [class.fa-square]="!option.get('isCorrectOption')?.value"
+      ></i>
+    </button>
+        <button
+        type="button"
+        class="text-red-500 focus:outline-none text-2xl"
+        (click)="removeOption(i)"
+        [disabled]="options.length <= 1"
+      >
+        <i class="fa fa-trash"></i>
+      </button>
       </div>
       <p *ngIf="warningMessage" class="text-red-500 text-sm mb-2">{{ warningMessage }}</p>
       <button
@@ -102,11 +109,20 @@
     <!-- Submit Button -->
     <div class="text-right px-2">
       <button
-        type="submit"
-        class="inline-flex items-center px-4 py-2 border bg-blue-500 hover:bg-blue-600 text-white rounded-md focus:ring-2 focus:ring-blue-500"
-      >
-        Save
-      </button>
+      (click)="saveData()"
+      class="select-none rounded-lg border py-2 px-4"
+      [disabled]="!assessmentForm.valid || assessmentForm.get('options')?.errors?.['noCorrectOption']"
+      [class.bg-gray-400]="!assessmentForm.valid || assessmentForm.get('options')?.errors?.['noCorrectOption']"
+      [class.cursor-not-allowed]="!assessmentForm.valid || assessmentForm.get('options')?.errors?.['noCorrectOption']"
+      [class.bg-blue-500]="assessmentForm.valid && !assessmentForm.get('options')?.errors?.['noCorrectOption']"
+      [class.text-white]="assessmentForm.valid && !assessmentForm.get('options')?.errors?.['noCorrectOption']"
+    >
+      Save
+    </button>
+    
+    <p *ngIf="assessmentForm.get('options')?.errors?.['noCorrectOption']" class="text-red-500 text-sm">
+      At least one correct option must be selected.
+    </p>    
     </div>
   </form>
 </div>
