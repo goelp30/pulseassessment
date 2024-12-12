@@ -12,7 +12,7 @@
   <div class="flex items-center">
     <input
       type="checkbox"
-      id="selectAll"
+      id="selectAll" 
       [(ngModel)]="selectAll"
       (change)="toggleSelectAll()"
       class="mr-2 text-blue-600 focus:ring-2 focus:ring-blue-500"
@@ -34,7 +34,7 @@
   </div>
 }
 
-  @if(filteredNames.length > 0){
+  @if(filteredNames.length > 0){ 
     <div>
     <ul class="space-y-1">
       <!-- Loop through filteredNames and display each name -->
@@ -94,6 +94,8 @@
     type="datetime-local"
     id="expiryDate"
     [(ngModel)]="expiryDateTime"
+    [min]="minDateTime"
+    (change)="onDateTimeChange($event)"
     class="bg-transparent text-center border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 py-2 px-2"
   />
 

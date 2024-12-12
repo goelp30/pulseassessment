@@ -8,7 +8,7 @@ import {
   SimpleChanges,
   OnDestroy,
   ViewChild,
-} from '@angular/core';
+} from '@angular/core'; 
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
@@ -47,6 +47,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   expiryDateTime: string = '';
   expiryDate: string = '';
   isSending: boolean = false;
+  minDateTime: string = '';
   sendMessage: string = 'Data has been sent successfully!';
 
   private subscription: Subscription = new Subscription(); 
@@ -58,7 +59,35 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnInit(): void {
     this.loadData();
+    this.setMinDateTime();
   }
+  setMinDateTime(): void {
+    const currentDate = new Date();
+
+    // Extract the local date and time, formatted as 'YYYY-MM-DDTHH:MM'
+    const year = currentDate.getFullYear();
+    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = currentDate.getDate().toString().padStart(2, '0');
+    const hours = currentDate.getHours().toString().padStart(2, '0');
+    const minutes = currentDate.getMinutes().toString().padStart(2, '0');
+
+    // Construct the minDateTime in local time format
+    this.minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+  // Event handler when the date or time changes
+  onDateTimeChange(event: Event): void {
+    const selectedDate = new Date(this.expiryDateTime);
+
+    // Compare the selected date with the current date/time
+    const currentDate = new Date();
+
+    // If the selected date is in the past, reset it to the current time
+    if (selectedDate < currentDate) {
+      alert('The selected time is in the past. Please select a valid time.');
+      this.expiryDateTime = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}T${currentDate.getHours().toString().padStart(2, '0')}:${currentDate.getMinutes().toString().padStart(2, '0')}`;
+    }
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isVisible'] && changes['isVisible'].currentValue == false) {
       this.resetSearchBar();
@@ -133,7 +162,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
         item.employeeName.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     }
-    this.updateSelectAllState();
+    this.updateSelectAllState(); 
   }
 
   toggleSelection(name: any): void {
@@ -240,15 +269,15 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     this.selectedNames.forEach((user) => {
       const userLink = this.buildUrlWithUserId(this.link, user);
   
-      // Call Bitly service to shorten the link
-      this.bitlyService.shortenLink(userLink).subscribe(
-        (response) => {
-          const shortenedUrl = response.link; 
+      // this.bitlyService.shortenLink(userLink).subscribe(
+        // (response) => {
+          // const shortenedUrl = response.link; 
           const recordKey = `${this.assessmentId}_${user.candidateId || user.employeeId}`;
           
           const record = {
             assessmentId: this.assessmentId,
-            url: shortenedUrl,
+            // url: shortenedUrl,
+            url: userLink,
             email: user.employeeEmail || user.candidateEmail,
             userId: user.candidateId || user.employeeId || null,
             userName: user.candidateName || user.employeeName,
@@ -258,11 +287,10 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
             isActive: true,
             isInProgress: false,
             isCompleted: false,
-            invalidated: false,
+            isValid: true,
             isLinkAccessed: false,
           };
-  
-          console.log('Shortened URL:', shortenedUrl);
+
           
           this.firebaseService.create(`/assessmentRecords/${recordKey}`, record)
             .then(() => {
@@ -271,15 +299,15 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
             .catch((error) => {
               console.error('Error saving record:', error);
             });
-        },
-        (error) => {
-          console.error('Error shortening link:', error);
-          if (error.error) {
-            console.error('Error details:', error.error);  
-          }
-          this.isSending = false;
-        }
-      );
+        // },
+        // (error) => {
+        //   console.error('Error shortening link:', error);
+        //   if (error.error) {
+        //     console.error('Error details:', error.error);  
+        //   }
+        //   this.isSending = false;
+        // }
+      // );
     });
   
     setTimeout(() => {
