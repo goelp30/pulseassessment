@@ -85,7 +85,7 @@ export class TermsConditionsComponent implements OnInit {
       })
       .then(() => {
         this.router.navigate(['/app-quiz'], {
-          queryParams: { id: this.assessmentId, userId: this.userId },
+          queryParams: { assessmentId: this.assessmentId, userId: this.userId },
         });
         this.isLoading = false;
       })
