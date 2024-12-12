@@ -257,10 +257,10 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
             assessmentType: this.assessmentType,
             expiryDate: this.expiryDate,
             isActive: true,
-            isInProgress: false,
+            inProgress: false,
             isCompleted: false,
             isValid: true,
-            isLinkAccessed: false,
+            isAccessed: false,
           };
           
           this.firebaseService.create(`/assessmentRecords/${recordKey}`, record)

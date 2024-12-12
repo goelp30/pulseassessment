@@ -85,8 +85,8 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
 
   // Generate a link based on the assessment ID
   generateLink(id: string): string {
-    const baseUrl = 'http://127.0.0.1:4200/termsandconditions';  
-    // const baseUrl = 'http://localhost:4200/termsandconditions';  
+    // const baseUrl = 'http://127.0.0.1:4200/termsandconditions';  
+    const baseUrl = 'http://localhost:4200/termsandconditions';  
     return `${baseUrl}/${id}`;
   }
 
