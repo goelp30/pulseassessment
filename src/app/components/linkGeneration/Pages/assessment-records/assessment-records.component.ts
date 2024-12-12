@@ -79,10 +79,10 @@ export class AssessmentRecordsComponent implements OnInit {
     const expiryDate = new Date(assessment.expiryDate);
 
     if (assessment.isValid === false) return 'Invalid';
-    if (!assessment.isLinkAccessed && expiryDate < currentDate) {
+    if (!assessment.isAccessed && expiryDate < currentDate) {
       return 'Expired';
     }
-    if (assessment.isInProgress) return 'In Progress';
+    if (assessment.inProgress) return 'In Progress';
     if (assessment.isCompleted) return 'Completed';
     if (assessment.isActive && expiryDate >= currentDate) {
       return 'Active';
