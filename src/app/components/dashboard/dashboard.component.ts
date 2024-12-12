@@ -52,7 +52,7 @@ export class DashboardComponent implements OnInit {
 
   addSubject(): void {
     const uniqueId = crypto.randomUUID();
-    const sub: Subject = {
+    const sub: Partial<Subject>  = {
       subjectId: uniqueId,
       subjectName: (Math.random() + 1).toString(36).substring(7),
     };
