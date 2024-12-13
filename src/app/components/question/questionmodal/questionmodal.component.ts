@@ -1,4 +1,4 @@
-import { Component, Input, OnInit,Output,EventEmitter } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -52,6 +52,7 @@ export class QuestionmodalComponent implements OnInit {
     });
 
     this.assessmentForm.get('questionType')?.valueChanges.subscribe((value) => {
+      this.warningMessage = '';
       this.options.clear(); 
     });
     
@@ -153,8 +154,7 @@ export class QuestionmodalComponent implements OnInit {
         this.options.push(this.createOptionGroup());
         this.warningMessage = '';
     } else {
-        this.warningMessage = 'Cannot add more than 6 options.';
-        alert(this.warningMessage);
+        this.warningMessage = 'Cannot add more than 6 options.';  
     }
 }
 
@@ -165,14 +165,15 @@ removeOption(index: number): void {
   const questionType = this.assessmentForm.get('questionType')?.value;
 
   // Validation: At least two options for Single and Multi types
-  if ((questionType === 'Single' || questionType === 'Multi') && this.options.length <= 2) {
-      this.warningMessage="A question must have at least two options."
+
+  if (questionType === 'Single' && this.options.length <= 2) {
+      this.warningMessage = "Single-choice question must have at least two options.";
       return;
   }
 
   // Additional validation for Multi-choice questions
   if (questionType === 'Multi' && this.options.length <= 3) {
-      alert('Multi-choice questions must have at least 3 options.');
+      this.warningMessage = "Multi-choice questions must have at least 3 options.";
       return;
   }
 
@@ -201,36 +202,36 @@ toggleCorrectOption(index: number) {
     ).length;
 
     if (totalOptions > 6) {
-        alert('A question can have a maximum of 6 options.');
+        this.warningMessage = "A question can have a maximum of 6 options.";
         return false;
     }
 
     if (questionType === 'Single') {
         // Single-choice validations
         if (correctOptionsCount !== 1) {
-            alert('Single-choice questions must have one correct option.');
+            this.warningMessage = "Single-choice questions must have one correct option.";
             return false;
         }
         if (correctOptionsCount > 1) {
-            alert('Single-choice questions cannot have more than one correct option.');
+            this.warningMessage = "Single-choice questions cannot have more than one correct option.";
             return false;
         }
         if (totalOptions < 2) {
-          alert('Single-choice questions must have exactly 2 options.');
+          this.warningMessage = "Single-choice questions must have exactly 2 options.";
           return false;
         }
     } else if (questionType === 'Multi') {
         // Multi-choice validations
         if (totalOptions < 3) {
-            alert('Multi-choice questions require at least 3 options.');
+            this.warningMessage = 'Multi-choice questions require at least 3 options.';
             return false;
         }
         if (correctOptionsCount < 2) {
-            alert('Multi-choice questions must have at least 2 correct options.');
+            this.warningMessage = 'Multi-choice questions must have at least 2 correct options.';
             return false;
         }
         if (correctOptionsCount === totalOptions) {
-            alert('Cannot mark all options as correct in a multi-choice question.');
+            this.warningMessage = 'Cannot mark all options as correct in a multi-choice question.';
             return false;
         }
     }
