@@ -100,42 +100,34 @@ export class QuestionmodalComponent implements OnInit {
 
   loadOptions(): void {
     if (this.question?.questionId) {
-      (this.firebaseService.getAllData('/options') as Observable<Option[]>)
+      this.firebaseService.getAllData('/options')
         .pipe(
           map((options: Option[]) => {
-            // Filter options by matching questionId
-            const filteredOptions = options.filter(option => option.questionId === this.question?.questionId);
-  
-            // Deduplicate by optionId
-            const uniqueOptions = filteredOptions.reduce((acc, option) => {
-              if (!acc.some(existingOption => existingOption.optionId === option.optionId)) {
-                acc.push(option);
-              }
-              return acc;
-            }, [] as Option[]);
-  
-            return uniqueOptions;
+            // Filter options by questionId and deduplicate by optionId
+            const filteredOptions = options.filter((option) => option.questionId === this.question?.questionId);
+            return Array.from(new Map(filteredOptions.map((opt) => [opt.optionId, opt])).values());
           })
         )
         .subscribe({
           next: (uniqueOptions: Option[]) => {
-            this.options.clear(); // Clear the existing options form array
-            uniqueOptions.forEach(option => {
+            this.options.clear(); // Clear existing options
+            uniqueOptions.forEach((option) => {
               this.options.push(
                 this.fb.group({
                   optionText: [option.optionText, Validators.required],
                   isCorrectOption: [option.isCorrectOption],
-                  optionId: [option.optionId] // Retain optionId for future updates
+                  optionId: [option.optionId],
                 })
               );
             });
           },
           error: (error) => {
             console.error('Failed to load options:', error);
-          }
+          },
         });
     }
   }
+  
   
 
   get options() {
@@ -355,24 +347,32 @@ async saveData() {
     await this.updateOptions();
    console.log(this.options)
   }
-  async updateOptions() {
+  async updateOptions(): Promise<void> {
+    // Map current options to their IDs
+    const existingOptionIds = this.options.controls
+      .map((control) => control.get('optionId')?.value)
+      .filter((id) => id); // Filter out null or undefined IDs
+  
     const optionPromises = this.options.controls.map((optionControl) => {
-      const optionId = optionControl.get('optionId')?.value; // Get the existing option ID directly from the form control
+      const optionId = optionControl.get('optionId')?.value; // Use the existing option ID
+      if (!optionId) {
+        console.warn('Option ID missing for one of the options. Skipping update.');
+        return Promise.resolve(); // Skip any option that doesn't have an ID
+      }
   
       const optionData: Option = {
-        optionId: optionId || crypto.randomUUID(), // Use existing ID or generate a new one if missing
-        questionId: this.question?.questionId || '', // Link the option to the current question
+        optionId,
+        questionId: this.question?.questionId || '',
         subjectid: this.subjectId,
         optionText: optionControl.get('optionText')?.value,
         isCorrectOption: optionControl.get('isCorrectOption')?.value,
       };
   
-      // Update existing option or create a new one if needed
-      return this.firebaseService.create(`/options/${optionData.optionId}`, optionData);
+      return this.firebaseService.update(`/options/${optionId}`, optionData); // Only update
     });
   
     try {
-      await Promise.all(optionPromises); // Wait for all options to be updated
+      await Promise.all(optionPromises);
       console.log('Options updated successfully');
     } catch (error) {
       console.error('Failed to update options:', error);
@@ -383,25 +383,34 @@ async saveData() {
   
   
   
+  
 
   async storeOptions(questionId: string): Promise<void> {
     const optionPromises = this.options.controls.map((optionControl) => {
-      const optionId = optionControl.get('optionId')?.value; // Use pre-existing ID only if it's there
-      const isExistingOption = !!optionId; // If there's an existing ID, it's an update, otherwise, create new
+      const optionId = optionControl.get('optionId')?.value;
+      if (!optionId) {
+        console.warn('Option ID missing during store operation. Skipping.');
+        return Promise.resolve();
+      }
   
       const optionData: Option = {
-        subjectid: this.subjectId,
+        optionId,
         questionId,
-        optionId: isExistingOption ? optionId : crypto.randomUUID(), // Only generate new if no pre-existing ID
+        subjectid: this.subjectId,
         optionText: optionControl.get('optionText')?.value,
         isCorrectOption: optionControl.get('isCorrectOption')?.value,
       };
   
-      console.log('Saving option:', optionData); // Debug: Log each option attempt
-      return this.firebaseService.create(`/options/${optionData.optionId}`, optionData);
+      return this.firebaseService.update(`/options/${optionId}`, optionData); // Use only update
     });
   
-    await Promise.all(optionPromises);
+    try {
+      await Promise.all(optionPromises);
+      console.log('Options stored successfully');
+    } catch (error) {
+      console.error('Failed to store options:', error);
+      throw error;
+    }
   }
   
   
