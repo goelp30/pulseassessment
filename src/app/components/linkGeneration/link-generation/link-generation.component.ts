@@ -44,11 +44,10 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
   buttons = [
     {
       label: 'Generate Link',
-      colorClass: 'bg-blue-500 py-2 px-4 text-white rounded-md',
+      colorClass: 'bg-blue-500 py-3 px-4 text-white font-semibold hover:bg-blue-700  text-white rounded-md transition duration-300 ease-in-out transform',
       action: (row: any) => this.openModal(row),
     }
   ];
-
   constructor(
     private firebaseService: FireBaseService<Assessment>,
   ) {}
