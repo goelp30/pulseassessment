@@ -7,10 +7,10 @@ import {
   ReactiveFormsModule,
   FormsModule,
 } from '@angular/forms';
-import { FireBaseService } from '../../../sharedServices/FireBaseService';
-import { SubjectService } from '../../../sharedServices/Subject.service';
-import { CommonModule } from '@angular/common';
-import { Question, Option } from '../../models/question';
+import { FireBaseService } from '../../../../sharedServices/FireBaseService';
+import { SubjectService } from '../../../../sharedServices/Subject.service';
+import { CommonModule, TitleCasePipe } from '@angular/common';
+import { Question, Option } from '../../../models/question';
 import { map, Observable } from 'rxjs';
 
 @Component({
@@ -18,7 +18,7 @@ import { map, Observable } from 'rxjs';
   templateUrl: './questionmodal.component.html',
   styleUrls: ['./questionmodal.component.css'],
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, CommonModule],
+  imports: [ReactiveFormsModule, FormsModule, CommonModule,TitleCasePipe],
 })
 export class QuestionmodalComponent implements OnInit {
   @Input() question: Question | null = null; // Input for editing mode

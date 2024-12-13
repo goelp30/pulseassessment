@@ -1,5 +1,5 @@
 <div class="container mx-auto p-6 bg-white rounded-lg w-[500px] mt-2">
-  <h4 class="text-center  mb-4 text-2xl">{{subjectName }}</h4>
+  <h4 class="text-center  mb-4 text-2xl">{{subjectName |titlecase }}</h4>
   <form [formGroup]="assessmentForm" class="space-y-6">
 
     <!-- Question Type and Level -->
@@ -77,16 +77,27 @@
           class="flex-1 border rounded-md px-3 py-2 "
         />
         <button
-      type="button"
-      class="text-green-500 focus:outline-none text-2xl"
-      (click)="toggleCorrectOption(i)"
-    >
-      <i
-        class="fa"
-        [class.fa-check-square]="option.get('isCorrectOption')?.value"
-        [class.fa-square]="!option.get('isCorrectOption')?.value"
-      ></i>
-    </button>
+        type="button"
+        class="focus:outline-none text-2xl"
+        (click)="toggleCorrectOption(i)"
+      >
+        <!-- Gray Check Square when NOT the correct option -->
+        <i
+          class="fa fa-check-square"
+          *ngIf="!option.get('isCorrectOption')?.value"
+          [ngStyle]="{ color: 'gray' }"
+        ></i>
+      
+        <!-- Green Check Square when the correct option -->
+        <i
+          class="fa fa-check-square"
+          *ngIf="option.get('isCorrectOption')?.value"
+          [ngStyle]="{ color: '#1976d2' }"
+        ></i>
+      </button>
+      
+
+
         <button
         type="button"
         class="text-red-500 focus:outline-none text-2xl"
