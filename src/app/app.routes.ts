@@ -18,6 +18,7 @@ import { InvalidComponent } from './components/linkGeneration/Pages/invalid/inva
 import { EvaluationDashboardComponent } from './components/evaluation/evaluation-dashboard/evaluation-dashboard.component';
 import { EvaluateAssessmentComponent } from './components/evaluation/evaluate-assessment/evaluate-assessment.component';
 import { ViewAssessmentComponent } from './components/evaluation/view-assessment/view-assessment.component';
+import { LinkStatusGuard } from './auth/link-status.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -37,6 +38,7 @@ export const routes: Routes = [
   {
     path: 'termsandconditions/:assessmentId/:userId',
     component: TermsConditionsComponent,
+    canActivate: [LinkStatusGuard],
   },
 
   {
@@ -56,8 +58,8 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   //evaluate module routes
-  {path: 'evaluation',component:EvaluationDashboardComponent,},
-  {path: 'evaluate',component:EvaluateAssessmentComponent,},
-  {path: 'view',component:ViewAssessmentComponent,},
- { path: '**', component: DashboardComponent, canActivate: [AuthGuard] },
+  { path: 'evaluation', component: EvaluationDashboardComponent },
+  { path: 'evaluate', component: EvaluateAssessmentComponent },
+  { path: 'view', component: ViewAssessmentComponent },
+  { path: '**', component: DashboardComponent, canActivate: [AuthGuard] },
 ];
