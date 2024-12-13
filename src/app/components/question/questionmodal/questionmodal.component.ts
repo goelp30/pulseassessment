@@ -207,19 +207,15 @@ toggleCorrectOption(index: number) {
     }
 
     if (questionType === 'Single') {
-        // Single-choice validations
-        if (correctOptionsCount !== 1) {
-            this.warningMessage = "Single-choice questions must have one correct option.";
-            return false;
-        }
-        if (correctOptionsCount > 1) {
-            this.warningMessage = "Single-choice questions cannot have more than one correct option.";
-            return false;
-        }
-        if (totalOptions < 2) {
+      // Single-choice validations
+      if (totalOptions !== 2) {
           this.warningMessage = "Single-choice questions must have exactly 2 options.";
           return false;
-        }
+      }
+      if (correctOptionsCount !== 1) {
+          this.warningMessage = "Single-choice questions must have exactly one correct option.";
+          return false;
+      }
     } else if (questionType === 'Multi') {
         // Multi-choice validations
         if (totalOptions < 3) {
