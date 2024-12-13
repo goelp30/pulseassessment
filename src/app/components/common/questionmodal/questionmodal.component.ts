@@ -136,11 +136,12 @@ export class QuestionmodalComponent implements OnInit {
 
   createOptionGroup(): FormGroup {
     return this.fb.group({
+      optionId: [crypto.randomUUID()], // Generate a unique ID
       optionText: ['', Validators.required],
       isCorrectOption: [false],
     });
   }
-
+  
   addOption(): void {
     if (this.assessmentForm.value.questionType === 'Descriptive') {
         return; // Do nothing for Descriptive questions
