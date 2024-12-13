@@ -105,8 +105,22 @@ export class DragDropComponent implements AfterViewInit, OnInit {
           document.getElementById('sortable-right')!.querySelectorAll('li span:first-child')
         ).map((el) => el.textContent || '');
 
-        this.leftList = leftListDom.map((item) => ({ subjectId: this.subjectList.find((sub) => sub.subjectName === leftListDom[0])?.subjectId || '', subjectName: item }));
-        this.rightList = rightListDom.map((item) => ({ subjectId: this.subjectList.find((sub) => sub.subjectName === leftListDom[0])?.subjectId || '', subjectName: item }));
+        this.leftList = leftListDom.map((item) => {
+          const subject = this.subjectList.find((sub) => sub.subjectName === item);
+          return {
+            subjectId: subject ? subject.subjectId : '', // Get the correct subjectId
+            subjectName: item
+          };
+        });
+        
+        this.rightList = rightListDom.map((item) => {
+          const subject = this.subjectList.find((sub) => sub.subjectName === item);
+          return {
+            subjectId: subject ? subject.subjectId : '', // Get the correct subjectId
+            subjectName: item
+          };
+        });
+        
         this.updateRightListForm(this.rightList); 
         this.saveToLocalStorage();
       };
@@ -251,31 +265,37 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       // Check if any subject has descriptive score greater than 0
       return group.get('descriptive')?.value > 0;
     });
-   
+  
     this.isAutoEvaluated = !hasDescriptiveGreaterThanZero;
+  
     if (this.assessmentTitle.trim().length === 0) {
       this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
       return;
     }
+  
     this.checkAssessmentTitleUniqueness(this.assessmentTitle).then((isUnique) => {
       if (!isUnique) {
         this.assessmentTitleWarning = 'This assessment title already exists. Please choose a unique title.';
         return;
       }
-
+  
       this.addAssessment().then((assessmentId: string) => {
         if (this.rightListForm.valid) {
+          // Map the right list inputs to include subjects and their ratings
+          const subjects = this.mapRightListInputs(this.rightList);
+  
           const assessmentList: AssessmentList = {
             assessmentId,
             dateCreated: Date.now(),
             dateUpdated: Date.now(),
-            subjects: this.mapRightListInputs(this.leftList),
+            subjects: subjects,  // Store the subjects object
           };
-
+  
+          // Now save the assessmentList object with subjects to Firebase
           this.firebaseService.create('assessmentList/' + assessmentId, assessmentList)
             .then(() => {
               this.assessmentList.unshift(assessmentList);
-              this.fetchLeftList();
+              this.fetchLeftList();  // Reload subjects
               this.toastr.success('Assessment Created successfully', 'Created');
               this.resetRightListAndForm();
               this.assessmentTitle = '';
@@ -292,6 +312,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       });
     });
   }
+  
   closeModal(): void {
     this.isModalVisible = false; 
     this.eConfirmationVisible = false; 
@@ -328,22 +349,31 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         .map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName })) // Use subjectName for display in HTML
     });
   }
-
   getCurrentTimestamp(): string {
     return new Date().toISOString();
   }
-
-  mapRightListInputs(left:any): any {
-    return this.rightListInputs.value.reduce((subjects: any, input: any) => {
-      subjects[input.item.subjectId] = { 
-        easy: input.easy,
-        medium: input.medium,
-        hard: input.hard,
-        descriptive: input.descriptive,
-      };
-      return subjects;
-
-    }, {});
+  mapRightListInputs(list: any[]): any {
+    const subjects: any = {}; // Initialize an empty object to hold the subject data
+  
+    // Iterate over the form inputs and the left list to map data
+    this.rightListInputs.value.forEach((input: any) => {
+      // Find the corresponding subject from the left list based on subjectId
+      const subject = list.find((item: any) => item.subjectId === input.item.subjectId);
+  
+      if (subject) {
+        // Create an entry for each subject with ratings
+        subjects[subject.subjectId] = {
+          subjectId: subject.subjectId,        // Store the subjectId
+          subjectName: subject.subjectName,    // Store the subjectName
+          easy: input.easy,                     // Store the easy rating
+          medium: input.medium,                 // Store the medium rating
+          hard: input.hard,                     // Store the hard rating
+          descriptive: input.descriptive        // Store the descriptive rating
+        };
+      }
+    });
+  
+    return subjects; // Return the object containing subject data
   }
   
   

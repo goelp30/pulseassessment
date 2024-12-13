@@ -1,4 +1,5 @@
 export type SubjectCounts = {
+  subjectName:string;
     easy: number;      
     medium: number;    
     hard: number;   
@@ -13,6 +14,7 @@ export type SubjectCounts = {
       [subjectId: string]: SubjectCounts; 
     };
   };
+
 // assessment id:junior react 
 // sub->
 //     subjname:angular
