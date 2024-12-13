@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { assessmentRecords } from '../../../../models/assessmentRecords';
 import { NgClass } from '@angular/common';
+import { HeaderComponent } from "../../../common/header/header.component";
 
 @Component({
   selector: 'app-assessment-records',
   standalone: true,
-  imports: [FormsModule, NgClass],
+  imports: [FormsModule, NgClass, HeaderComponent],
   templateUrl: './assessment-records.component.html',
   styleUrls: ['./assessment-records.component.css'],
 })
