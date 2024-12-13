@@ -7,6 +7,7 @@ import { Assessment } from '../../../models/assessment';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { TableNames } from '../../../enums/TableName';
 import { TableComponent } from '../../common/table/table.component';
+import { HeaderComponent } from "../../common/header/header.component";
 
 @Component({
   selector: 'app-generate-link', 
@@ -15,8 +16,9 @@ import { TableComponent } from '../../common/table/table.component';
     FormsModule,
     PopupModuleComponent,
     ModalComponent,
-    TableComponent
-  ],
+    TableComponent,
+    HeaderComponent
+],
    templateUrl: './link-generation.component.html', 
   styleUrl: './link-generation.component.css'
 })
