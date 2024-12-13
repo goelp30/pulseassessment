@@ -11,7 +11,7 @@ import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { SubjectService } from '../../../../sharedServices/Subject.service';
 import { CommonModule, TitleCasePipe } from '@angular/common';
 import { Question, Option } from '../../../models/question';
-import { map, Observable } from 'rxjs';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-questionmodal',
@@ -159,13 +159,14 @@ export class QuestionmodalComponent implements OnInit {
 }
 
 
+
   
 removeOption(index: number): void {
   const questionType = this.assessmentForm.get('questionType')?.value;
 
   // Validation: At least two options for Single and Multi types
   if ((questionType === 'Single' || questionType === 'Multi') && this.options.length <= 2) {
-      alert('A question must have at least two options.');
+      this.warningMessage="A question must have at least two options."
       return;
   }
 

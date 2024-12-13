@@ -8,6 +8,7 @@ import { QuestionmodalComponent } from '../questionmodal/questionmodal.component
 import { CommonModule } from '@angular/common';
 import { Option } from '../../../models/question';
 import { TableNames } from '../../../enums/TableName';
+import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';
 
 export type Question = {
   subjectId: string;
@@ -27,7 +28,7 @@ export type Question = {
   standalone: true,
   templateUrl: './questiontable.component.html',
   styleUrls: ['./questiontable.component.css'],
-  imports:[HeaderComponent,TableComponent,QuestionmodalComponent,CommonModule]
+  imports:[HeaderComponent,TableComponent,QuestionmodalComponent,CommonModule,PopupModuleComponent]
 })
 export class QuestiontableComponent implements OnInit {
   questions: Question[] = [];
@@ -48,6 +49,11 @@ export class QuestiontableComponent implements OnInit {
   isQuestionModalVisible: boolean = false;
 
   subjectId: string = '';
+  isquDisabled:boolean=false;
+  selectedQuestionToDelete: Question | null = null;
+  eConfirmationVisible: boolean = false;
+  QuestionToDelete:boolean=false;
+  isQuesDisabled:boolean=false;
 
   // Table Configurations
   tableColumns: (keyof Question)[] = ['questionText'];
@@ -67,7 +73,8 @@ export class QuestiontableComponent implements OnInit {
     {
       label: 'Delete',
       colorClass: 'bg-red-500 py-2 px-4 text-white rounded-md',
-      action: (row: Question) => this.deleteQuestion(row),
+      action: (row: any) => this.confirmDelete(row),
+ 
     },
   ];
 
@@ -125,9 +132,7 @@ export class QuestiontableComponent implements OnInit {
   
   
   fetchQuestions(): void {
-    this.fireBaseService
-      .getItemsByFields('questions', ['subjectId'], this.subjectId)
-      .subscribe(
+    this.fireBaseService.getItemsByFields('questions', ['subjectId'], this.subjectId).subscribe(
         (data) => {
           this.questions = data;
           console.log(this.questions)
@@ -175,20 +180,35 @@ export class QuestiontableComponent implements OnInit {
   }
   
 
-  deleteQuestion(row: Question): void {
-    const index = this.questions.findIndex((q) => q.questionId === row.questionId);
-    if (index !== -1) {
-      this.questions.splice(index, 1);
-      this.toastr.success('Deleted successfully');
-    } else {
-      this.toastr.error('Failed to delete the question');
+// Delete subject
+  confirmDelete(question:Question) {
+    this.selectedQuestionToDelete = question;
+    this.eConfirmationVisible = true;
+  }
+  deleteSubject() {
+    if (this.selectedQuestionToDelete) {
+      const QuestionToDelete = this.selectedQuestionToDelete;
+      QuestionToDelete.isQuesDisabled = true; // Mark as deleted (disabled)
+ 
+      this.fireBaseService.update(`${this.tableName}/${QuestionToDelete.subjectId}`,QuestionToDelete)
+        .then(() => {
+          this.toastr.error('Question deleted successfully', 'Deleted');
+          this.eConfirmationVisible = false;
+          // this.getAssessments();
+        })
+        .catch(error => {
+          console.error('Error deleting question:', error);
+          this.toastr.error('Failed to delete question', 'Error');
+        });
     }
   }
-
+  closeModal(): void {
+    this.isModalVisible = false; 
+    this.eConfirmationVisible = false;
+  }
   editQuestion(row: Question): void {
     this.selectedQuestion = { ...row };
     this.isQuestionModalVisible = true;
-    this.toastr.info('Edit mode activated');
   }
   closeQuestionModal() {
     this.isQuestionModalVisible = false;
