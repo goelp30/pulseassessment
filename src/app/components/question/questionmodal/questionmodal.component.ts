@@ -22,7 +22,7 @@ import { map, Observable } from 'rxjs';
 })
 export class QuestionmodalComponent implements OnInit {
   @Input() question: Question | null = null; // Input for editing mode
-  @Output() closeModal = new EventEmitter<void>();
+  @Output() closeModal = new EventEmitter<void>(); // output for close modal
  
 
   assessmentForm: FormGroup;
