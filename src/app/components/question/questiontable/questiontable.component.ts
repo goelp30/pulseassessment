@@ -4,7 +4,7 @@ import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { SubjectService } from '../../../../sharedServices/Subject.service';
 import { HeaderComponent } from '../../common/header/header.component';
 import { TableComponent } from '../../common/table/table.component';
-import { QuestionmodalComponent } from '../../common/questionmodal/questionmodal.component';
+import { QuestionmodalComponent } from '../../questionmodal/questionmodal.component';
 import { CommonModule } from '@angular/common';
 import { Option } from '../../../models/question';
 import { TableNames } from '../../../enums/TableName';

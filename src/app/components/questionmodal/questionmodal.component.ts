@@ -7,10 +7,10 @@ import {
   ReactiveFormsModule,
   FormsModule,
 } from '@angular/forms';
-import { FireBaseService } from '../../../../sharedServices/FireBaseService';
-import { SubjectService } from '../../../../sharedServices/Subject.service';
+import { FireBaseService } from '../../../sharedServices/FireBaseService';
+import { SubjectService } from '../../../sharedServices/Subject.service';
 import { CommonModule } from '@angular/common';
-import { Question, Option } from '../../../models/question';
+import { Question, Option } from '../../models/question';
 import { map, Observable } from 'rxjs';
 
 @Component({
