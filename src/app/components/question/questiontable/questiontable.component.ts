@@ -151,26 +151,29 @@ export class QuestiontableComponent implements OnInit {
       createdOn: Date.now(),
       updatedOn: Date.now(),
     };
-    this.isQuestionModalVisible = true;
+    this.isQuestionModalVisible = true; // Open only for adding a new question
   }
+  
 
   saveQuestion() {
     if (this.selectedQuestion.questionText.trim() === '') {
       this.toastr.error('Question text is required.');
       return;
     }
+  
     this.fireBaseService
       .addData(`questions/${this.subjectId}`, this.selectedQuestion.questionId, this.selectedQuestion)
       .then(() => {
         this.questions.push({ ...this.selectedQuestion });
         this.toastr.success('Question added successfully!');
-        this.isQuestionModalVisible = false;
+        this.isQuestionModalVisible = false; // Only close here
       })
       .catch((error: Error) => {
         console.error('Error adding question:', error);
         this.toastr.error('Error adding question');
       });
   }
+  
 
   deleteQuestion(row: Question): void {
     const index = this.questions.findIndex((q) => q.questionId === row.questionId);

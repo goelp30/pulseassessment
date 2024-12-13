@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit,Output,EventEmitter } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -22,6 +22,8 @@ import { map, Observable } from 'rxjs';
 })
 export class QuestionmodalComponent implements OnInit {
   @Input() question: Question | null = null; // Input for editing mode
+  @Output() closeModal = new EventEmitter<void>();
+ 
 
   assessmentForm: FormGroup;
   questionTypes = ['Single', 'Multi', 'Descriptive'];
@@ -274,6 +276,9 @@ async saveData() {
     }
 
     alert('Saved successfully!');
+    this.closeModal.emit();
+ 
+ 
 
     // Reset the form but do not add a new option automatically
     this.assessmentForm.reset({
