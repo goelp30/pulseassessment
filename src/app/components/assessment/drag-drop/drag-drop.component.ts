@@ -75,7 +75,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   getEditData(assessmentId: string, isEditing: boolean): void {
     if (this.assessmentId && this.editFlag) {
       console.log('We are editing');
-      
+  
       // Use getItemsByFields to fetch the assessment data based on assessmentId
       this.firebaseService.getItemsByFields(this.assess_table, ['assessmentId'], this.assessmentId).subscribe((assessments: any[]) => {
         if (assessments && assessments.length > 0) {
@@ -83,8 +83,68 @@ export class DragDropComponent implements AfterViewInit, OnInit {
           this.assessmentTitle = assessment.assessmentName; // Populate assessmentTitle
           this.viewMode = assessment.assessmentType; // Populate viewMode
   
-          // You can also update other form fields as needed here
-          this.updateRightListForm(assessment);
+          // Fetch associated subjects and their ratings from the 'assessmentList' table
+          this.firebaseService.getItemsByFields(TableNames.AssessmentList, ['assessmentId'], this.assessmentId).subscribe((assessmentLists: any[]) => {
+            if (assessmentLists && assessmentLists.length > 0) {
+              const assessmentList = assessmentLists[0]; // Assuming assessmentId is unique, get the first match
+              const subjectsWithRatings = assessmentList.subjects; // subjects with ratings
+  
+              // Initialize two new lists to store subject IDs and subjects with ratings
+              const subjectIds: string[] = [];
+              const subjectDetailsWithRatings: any[] = [];
+  
+              // Iterate through the subjects to extract subjectId and ratings
+              for (const subjectId in subjectsWithRatings) {
+                if (subjectsWithRatings.hasOwnProperty(subjectId)) {
+                  const subject = subjectsWithRatings[subjectId];
+                  subjectIds.push(subject.subjectId); // Store subjectId
+                  subjectDetailsWithRatings.push({
+                    subjectId: subject.subjectId,
+                    subjectName: subject.subjectName,
+                    easy: subject.easy,
+                    medium: subject.medium,
+                    hard: subject.hard,
+                    descriptive: subject.descriptive
+                  }); // Store subject details with ratings
+                }
+              }
+  
+              // Log the subjectIds and subjectDetailsWithRatings
+              console.log('Subject IDs:', subjectIds);
+              console.log('Subject Details with Ratings:', subjectDetailsWithRatings);
+  
+              // Now update rightList with subject names using subjectIds
+              this.rightList = subjectIds.map((subjectId) => {
+                const subject = this.subjectList.find(sub => sub.subjectId === subjectId); 
+                return {
+                  subjectId: subject ? subject.subjectId : '',  // Get the correct subjectId
+                  subjectName: subject ? subject.subjectName : '', // Get the correct subjectName
+                };
+              });
+  
+              // Update rightListInputs with ratings data using subjectDetailsWithRatings
+              const rightListInputs = this.fb.array(
+                subjectDetailsWithRatings.map(subject => 
+                  this.fb.group({
+                    item: [subject],  
+                    easy: [subject.easy, [Validators.min(0), Validators.max(5)]],
+                    medium: [subject.medium, [Validators.min(0), Validators.max(5)]],
+                    hard: [subject.hard, [Validators.min(0), Validators.max(5)]],
+                    descriptive: [subject.descriptive, [Validators.min(0), Validators.max(5)]],
+                  })
+                )
+              );
+  
+              // Update the form control for rightListInputs
+              this.rightListForm.setControl('rightListInputs', rightListInputs);
+  
+            } else {
+              console.error('No matching assessmentList found for the given assessmentId');
+            }
+          }, (error) => {
+            console.error('Error fetching assessmentList data:', error);
+          });
+  
         } else {
           console.error('Assessment not found in Firebase');
         }
@@ -93,6 +153,8 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       });
     }
   }
+  
+  
   
   ngAfterViewInit(): void {
     if (this.isBrowser()) {

@@ -145,13 +145,10 @@ viewAssessment(row: any) {
     console.log(relatedAssessment);
   })
 }
-
 closeModal(): void {
   this.isModalVisible = false; // For the Assessment Details modal
   this.eConfirmationVisible = false; // For the Delete Confirmation modal
 }
-
-
   // Edit the selected assessment
   editAssessment(row: Assessment) {
       if (row.assessmentId) {
