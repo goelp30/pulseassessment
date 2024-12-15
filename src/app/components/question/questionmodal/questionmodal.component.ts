@@ -53,13 +53,19 @@ export class QuestionmodalComponent implements OnInit {
 
     this.assessmentForm.get('questionType')?.valueChanges.subscribe((value) => {
       this.warningMessage = '';
-      this.options.clear(); 
+      if (value === 'Descriptive') {
+        // Only clear if the question type changes to Descriptive
+        this.options.clear();
+      }
     });
+    
     
     
   }
 
   ngOnInit(): void {
+    console.log('Editing Mode:', this.editingMode);
+    console.log('Question Data:', this.question);
     const savedSubjectId = localStorage.getItem('subjectId');
     const savedSubjectName = localStorage.getItem('subjectName');
   
@@ -71,7 +77,6 @@ export class QuestionmodalComponent implements OnInit {
       this.assessmentForm.patchValue({ 
         subjectId: this.subjectId, 
         subjectName: this.subjectName 
-     
       });
     }
   
@@ -80,9 +85,8 @@ export class QuestionmodalComponent implements OnInit {
     });
   
     if (this.question) {
-      this.editingMode = true;
+      this.editingMode = true; // Set to true if editing
       this.loadFormData();
-      console.log(this.modalTitle)
     }
   }
   
@@ -235,6 +239,25 @@ validateOptions(): boolean {
 
   return true; // Validation passed
 }
+get isSaveDisabled(): boolean {
+  const questionType = this.assessmentForm.get('questionType')?.value;
+  const totalOptions = this.options.length;
+
+  if (!this.assessmentForm.valid) {
+    return true; // Form is invalid
+  }
+
+  if (questionType === 'Single' && totalOptions < 2) {
+    return true; // Single-choice must have at least 2 options
+  }
+
+  if (questionType === 'Multi' && totalOptions < 3) {
+    return true; // Multi-choice must have at least 3 options
+  }
+
+  return false; // Otherwise, enable the button
+}
+
 
 
 validateCorrectOptions(formArray: FormArray): { [key: string]: any } | null {
@@ -249,18 +272,6 @@ validateCorrectOptions(formArray: FormArray): { [key: string]: any } | null {
   
 
 async saveData() {
-  let alertShown = false; // Flag to prevent repeated alerts
-
-  if (!this.assessmentForm.valid || !this.validateOptions()) {
-    if (!alertShown) {
-      alert('Please fix validation issues before saving.');
-      alertShown = true; // Set the flag to true after showing the alert
-    }
-    return; // Exit the function early
-  }
-
-  // Reset the flag once the form is valid
-  alertShown = false;
 
   try {
     if (this.editingMode) {

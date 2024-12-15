@@ -123,14 +123,15 @@
       type="submit"
       (click)="saveData()"
       class="select-none rounded-lg border py-2 px-4"
-      [disabled]="!assessmentForm.valid || assessmentForm.get('options')?.errors?.['noCorrectOption']"
-      [class.bg-gray-400]="!assessmentForm.valid || assessmentForm.get('options')?.errors?.['noCorrectOption']"
-      [class.cursor-not-allowed]="!assessmentForm.valid || assessmentForm.get('options')?.errors?.['noCorrectOption']"
-      [class.bg-blue-500]="assessmentForm.valid && !assessmentForm.get('options')?.errors?.['noCorrectOption']"
-      [class.text-white]="assessmentForm.valid && !assessmentForm.get('options')?.errors?.['noCorrectOption']"
+      [disabled]="isSaveDisabled"
+      [class.bg-gray-400]="isSaveDisabled"
+      [class.cursor-not-allowed]="isSaveDisabled"
+      [class.bg-blue-500]="!isSaveDisabled"
+      [class.text-white]="!isSaveDisabled"
     >
       Save
     </button>
+      
     
     <p *ngIf="assessmentForm.get('options')?.errors?.['noCorrectOption']" class="text-red-500 text-sm">
       At least one correct option must be selected.
