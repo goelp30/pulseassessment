@@ -194,49 +194,48 @@ toggleCorrectOption(index: number) {
 }
 
   
-  validateOptions(): boolean {
-    const questionType = this.assessmentForm.get('questionType')?.value;
-    const totalOptions = this.options.length;
-    const correctOptionsCount = this.options.controls.filter(
-        (option) => option.get('isCorrectOption')?.value
-    ).length;
+validateOptions(): boolean {
+  const questionType = this.assessmentForm.get('questionType')?.value;
+  const totalOptions = this.options.length;
+  const correctOptionsCount = this.options.controls.filter(
+    (option) => option.get('isCorrectOption')?.value
+  ).length;
 
-    if (totalOptions > 6) {
-        this.warningMessage = "A question can have a maximum of 6 options.";
-        return false;
-    }
-
-    if (questionType === 'Single') {
-      // Single-choice validations
-      if (totalOptions !== 2) {
-          this.warningMessage = "Single-choice questions must have exactly 2 options.";
-          return false;
-      }
-      if (correctOptionsCount !== 1) {
-          this.warningMessage = "Single-choice questions must have exactly one correct option.";
-          return false;
-      }
-    } else if (questionType === 'Multi') {
-        // Multi-choice validations
-        if (totalOptions < 3) {
-            this.warningMessage = 'Multi-choice questions require at least 3 options.';
-            return false;
-        }
-        if (correctOptionsCount < 2) {
-            this.warningMessage = 'Multi-choice questions must have at least 2 correct options.';
-            return false;
-        }
-        if (correctOptionsCount === totalOptions) {
-            this.warningMessage = 'Cannot mark all options as correct in a multi-choice question.';
-            return false;
-        }
-    }
-    if (questionType === 'Descriptive') {
-      return true;
+  if (totalOptions > 6) {
+    this.warningMessage = 'A question can have a maximum of 6 options.';
+    return false;
   }
 
+  if (questionType === 'Single') {
+    if (totalOptions < 2) {
+      this.warningMessage = 'Single-choice questions must have at least 2 options.';
+      return false;
+    }
+    if (correctOptionsCount !== 1) {
+      this.warningMessage = 'Single-choice questions must have exactly one correct option.';
+      return false;
+    }
+  } else if (questionType === 'Multi') {
+    if (totalOptions < 3) {
+      this.warningMessage = 'Multi-choice questions must have at least 3 options.';
+      return false;
+    }
+    if (correctOptionsCount < 2) {
+      this.warningMessage = 'Multi-choice questions must have at least 2 correct options.';
+      return false;
+    }
+    if (correctOptionsCount === totalOptions) {
+      this.warningMessage = 'Multi-choice questions cannot have all options marked as correct.';
+      return false;
+    }
+  } else if (questionType === 'Descriptive') {
+    // Descriptive questions do not require options validation
     return true;
+  }
+
+  return true; // Validation passed
 }
+
 
 validateCorrectOptions(formArray: FormArray): { [key: string]: any } | null {
   const hasCorrectOption = formArray.controls.some(
