@@ -45,158 +45,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   ) { }
   assessmentId:string=''
   editFlag:boolean=false;
-  ngOnInit(): void {
-    this.initializeRightListForm(); 
-    if (this.isBrowser()) {
-      this.loadFromLocalStorage(); 
-      this.fetchLeftList(); // Fetch subjects from Firebase
 
-      const savedData = localStorage.getItem('savedData'); // Load saved data
-      if (savedData) {
-        this.savedFormData = JSON.parse(savedData);
-      }
-    }
-    this.subscribeToFormChanges();
-    this.router.events.subscribe((event) => {
-      if (event instanceof NavigationStart) {
-        this.clearLocalStorageOnNavigation();  // Clear local storage on route change
-      }
-    });
-    // for edit functionality
-    this.assessmentService.assessmentId$.subscribe((assessmentId) => {
-      if (assessmentId) {
-        this.assessmentId = assessmentId;
-        this.editFlag=true;
-        console.log(this.assessmentId)
-      }
-    });
-    this.getEditData(this.assessmentId,this.editFlag);
-  }
-  getEditData(assessmentId: string, isEditing: boolean): void {
-    if (this.assessmentId && this.editFlag) {
-      console.log('We are editing');
-  
-      // Use getItemsByFields to fetch the assessment data based on assessmentId
-      this.firebaseService.getItemsByFields(this.assess_table, ['assessmentId'], this.assessmentId).subscribe((assessments: any[]) => {
-        if (assessments && assessments.length > 0) {
-          const assessment = assessments[0]; // Assuming assessmentId is unique, get the first match
-          this.assessmentTitle = assessment.assessmentName; // Populate assessmentTitle
-          this.viewMode = assessment.assessmentType; // Populate viewMode
-  
-          // Fetch associated subjects and their ratings from the 'assessmentList' table
-          this.firebaseService.getItemsByFields(TableNames.AssessmentList, ['assessmentId'], this.assessmentId).subscribe((assessmentLists: any[]) => {
-            if (assessmentLists && assessmentLists.length > 0) {
-              const assessmentList = assessmentLists[0]; // Assuming assessmentId is unique, get the first match
-              const subjectsWithRatings = assessmentList.subjects; // subjects with ratings
-  
-              // Initialize two new lists to store subject IDs and subjects with ratings
-              const subjectIds: string[] = [];
-              const subjectDetailsWithRatings: any[] = [];
-  
-              // Iterate through the subjects to extract subjectId and ratings
-              for (const subjectId in subjectsWithRatings) {
-                if (subjectsWithRatings.hasOwnProperty(subjectId)) {
-                  const subject = subjectsWithRatings[subjectId];
-                  subjectIds.push(subject.subjectId); // Store subjectId
-                  subjectDetailsWithRatings.push({
-                    subjectId: subject.subjectId,
-                    subjectName: subject.subjectName,
-                    easy: subject.easy,
-                    medium: subject.medium,
-                    hard: subject.hard,
-                    descriptive: subject.descriptive
-                  }); // Store subject details with ratings
-                }
-              }
-  
-              // Log the subjectIds and subjectDetailsWithRatings
-              console.log('Subject IDs:', subjectIds);
-              console.log('Subject Details with Ratings:', subjectDetailsWithRatings);
-  
-              // Now update rightList with subject names using subjectIds
-              this.rightList = subjectIds.map((subjectId) => {
-                const subject = this.subjectList.find(sub => sub.subjectId === subjectId); 
-                return {
-                  subjectId: subject ? subject.subjectId : '',  // Get the correct subjectId
-                  subjectName: subject ? subject.subjectName : '', // Get the correct subjectName
-                };
-              });
-  
-              // Update rightListInputs with ratings data using subjectDetailsWithRatings
-              const rightListInputs = this.fb.array(
-                subjectDetailsWithRatings.map(subject => 
-                  this.fb.group({
-                    item: [subject],  
-                    easy: [subject.easy, [Validators.min(0), Validators.max(5)]],
-                    medium: [subject.medium, [Validators.min(0), Validators.max(5)]],
-                    hard: [subject.hard, [Validators.min(0), Validators.max(5)]],
-                    descriptive: [subject.descriptive, [Validators.min(0), Validators.max(5)]],
-                  })
-                )
-              );
-  
-              // Update the form control for rightListInputs
-              this.rightListForm.setControl('rightListInputs', rightListInputs);
-  
-            } else {
-              console.error('No matching assessmentList found for the given assessmentId');
-            }
-          }, (error) => {
-            console.error('Error fetching assessmentList data:', error);
-          });
-  
-        } else {
-          console.error('Assessment not found in Firebase');
-        }
-      }, (error) => {
-        console.error('Error fetching assessment data:', error);
-      });
-    }
-  }
-  
-  
-  
-  ngAfterViewInit(): void {
-    if (this.isBrowser()) {
-      const updateLists = () => {
-        const leftListDom = Array.from(
-          document.getElementById('sortable-left')!.querySelectorAll('li span:first-child')
-        ).map((el) => el.textContent || '');
-
-        const rightListDom = Array.from(
-          document.getElementById('sortable-right')!.querySelectorAll('li span:first-child')
-        ).map((el) => el.textContent || '');
-
-        this.leftList = leftListDom.map((item) => {
-          const subject = this.subjectList.find((sub) => sub.subjectName === item);
-          return {
-            subjectId: subject ? subject.subjectId : '', // Get the correct subjectId
-            subjectName: item
-          };
-        });
-        
-        this.rightList = rightListDom.map((item) => {
-          const subject = this.subjectList.find((sub) => sub.subjectName === item);
-          return {
-            subjectId: subject ? subject.subjectId : '', // Get the correct subjectId
-            subjectName: item
-          };
-        });
-        
-        this.updateRightListForm(this.rightList); 
-        this.saveToLocalStorage();
-      };
-      const options = {
-        group: 'shared',
-        animation: 150,
-        dragClass: 'bg-gray-200',
-        onEnd: updateLists, 
-      };
-
-      new Sortable(document.getElementById('sortable-left')!, options);
-      new Sortable(document.getElementById('sortable-right')!, options);
-    }
-  }
 // clear ls when moving to another route
   clearLocalStorageOnNavigation(): void {
     localStorage.removeItem('leftList');
@@ -219,21 +68,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   get rightListInputs(): FormArray {
     return this.rightListForm.get('rightListInputs') as FormArray;
   }
-  updateRightListForm(newRightList: any[]): void {
-    const updatedInputs = this.fb.array(
-      newRightList.map((subject) =>  
-        this.fb.group({
-          item: [subject],  
-          easy: [0, [Validators.min(0), Validators.max(5)]],
-          medium: [0, [Validators.min(0), Validators.max(5)]],
-          hard: [0, [Validators.min(0), Validators.max(5)]],
-          descriptive: [0, [Validators.min(0), Validators.max(5)]],
-        })
-      )
-    );
-    this.rightListForm.setControl('rightListInputs', updatedInputs);  
-    console.log("updated",updatedInputs);
-  }
+
   
   subscribeToFormChanges(): void {
     this.rightListForm.valueChanges.subscribe((values) => {
@@ -322,59 +157,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         });
     });
   }
-  saveFormData(): void {
-    const hasDescriptiveGreaterThanZero = this.rightListInputs.controls.some((group) => {
-      // Check if any subject has descriptive score greater than 0
-      return group.get('descriptive')?.value > 0;
-    });
-  
-    this.isAutoEvaluated = !hasDescriptiveGreaterThanZero;
-  
-    if (this.assessmentTitle.trim().length === 0) {
-      this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
-      return;
-    }
-  
-    this.checkAssessmentTitleUniqueness(this.assessmentTitle).then((isUnique) => {
-      if (!isUnique) {
-        this.assessmentTitleWarning = 'This assessment title already exists. Please choose a unique title.';
-        return;
-      }
-  
-      this.addAssessment().then((assessmentId: string) => {
-        if (this.rightListForm.valid) {
-          // Map the right list inputs to include subjects and their ratings
-          const subjects = this.mapRightListInputs(this.rightList);
-  
-          const assessmentList: AssessmentList = {
-            assessmentId,
-            dateCreated: Date.now(),
-            dateUpdated: Date.now(),
-            subjects: subjects,  // Store the subjects object
-          };
-  
-          // Now save the assessmentList object with subjects to Firebase
-          this.firebaseService.create('assessmentList/' + assessmentId, assessmentList)
-            .then(() => {
-              this.assessmentList.unshift(assessmentList);
-              this.fetchLeftList();  // Reload subjects
-              this.toastr.success('Assessment Created successfully', 'Created');
-              this.resetRightListAndForm();
-              this.assessmentTitle = '';
-            })
-            .catch((error) => {
-              console.error('Error saving data:', error);
-              this.toastr.error('Failed to save data. Please try again.');
-            });
-        } else {
-          this.toastr.warning('Please fill in the form correctly.');
-        }
-      }).catch((error) => {
-        this.toastr.error('Failed to create assessment. ' + error);
-      });
-    });
-  }
-  
+
   closeModal(): void {
     this.isModalVisible = false; 
     this.eConfirmationVisible = false; 
@@ -419,7 +202,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   
     // Iterate over the form inputs and the left list to map data
     this.rightListInputs.value.forEach((input: any) => {
-      // Find the corresponding subject from the left list based on subjectId
+      // Find the corresponding subject from the list (the right list) based on subjectId
       const subject = list.find((item: any) => item.subjectId === input.item.subjectId);
   
       if (subject) {
@@ -437,6 +220,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   
     return subjects; // Return the object containing subject data
   }
+  
   
   
   onAssessmentTitleChange(): void {
@@ -493,4 +277,322 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   navigateToAssessments(){
     this.router.navigate(['/assessment-list']);
   }
+
+
+  ngOnInit(): void {
+    this.initializeRightListForm(); 
+    if (this.isBrowser()) {
+      this.loadFromLocalStorage(); 
+      this.fetchLeftList(); // Fetch subjects from Firebase
+
+      const savedData = localStorage.getItem('savedData'); // Load saved data
+      if (savedData) {
+        this.savedFormData = JSON.parse(savedData);
+      }
+    }
+    this.subscribeToFormChanges();
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationStart) {
+        this.clearLocalStorageOnNavigation();  // Clear local storage on route change
+      }
+    });
+    
+    // Fetch existing assessment data when editing
+    this.assessmentService.assessmentId$.subscribe((assessmentId) => {
+      if (assessmentId) {
+        this.assessmentId = assessmentId;
+        this.editFlag = true;
+        this.getEditData(this.assessmentId, this.editFlag);
+      }
+    });
+  }
+
+getEditData(assessmentId: string, isEditing: boolean): void {
+    if (this.assessmentId && this.editFlag) {
+      console.log('We are editing');
+  
+      // Use getItemsByFields to fetch the assessment data based on assessmentId
+      this.firebaseService.getItemsByFields(this.assess_table, ['assessmentId'], this.assessmentId).subscribe((assessments: any[]) => {
+        if (assessments && assessments.length > 0) {
+          const assessment = assessments[0]; // Assuming assessmentId is unique, get the first match
+          this.assessmentTitle = assessment.assessmentName; // Populate assessmentTitle
+          this.viewMode = assessment.assessmentType; // Populate viewMode
+  
+          // Fetch associated subjects and their ratings from the 'assessmentList' table
+          this.firebaseService.getItemsByFields(TableNames.AssessmentList, ['assessmentId'], this.assessmentId).subscribe((assessmentLists: any[]) => {
+            if (assessmentLists && assessmentLists.length > 0) {
+              const assessmentList = assessmentLists[0]; // Assuming assessmentId is unique, get the first match
+              const subjectsWithRatings = assessmentList.subjects; // subjects with ratings
+  
+              // Initialize two new lists to store subject IDs and subjects with ratings
+              const subjectIds: string[] = [];
+              const subjectDetailsWithRatings: any[] = [];
+  
+              // Iterate through the subjects to extract subjectId and ratings
+              for (const subjectId in subjectsWithRatings) {
+                if (subjectsWithRatings.hasOwnProperty(subjectId)) {
+                  const subject = subjectsWithRatings[subjectId];
+                  subjectIds.push(subject.subjectId); // Store subjectId
+                  subjectDetailsWithRatings.push({
+                    subjectId: subject.subjectId,
+                    subjectName: subject.subjectName,
+                    easy: subject.easy,
+                    medium: subject.medium,
+                    hard: subject.hard,
+                    descriptive: subject.descriptive
+                  }); // Store subject details with ratings
+                }
+              }
+  
+              // Now update rightList with subject names using subjectIds
+              this.rightList = subjectIds.map((subjectId) => {
+                const subject = this.subjectList.find(sub => sub.subjectId === subjectId); 
+                return {
+                  subjectId: subject ? subject.subjectId : '',  // Get the correct subjectId
+                  subjectName: subject ? subject.subjectName : '', // Get the correct subjectName
+                };
+              });
+  
+              // Update rightListInputs with ratings data using subjectDetailsWithRatings
+              const rightListInputs = this.fb.array(
+                subjectDetailsWithRatings.map(subject => 
+                  this.fb.group({
+                    item: [subject],  
+                    easy: [subject.easy, [Validators.min(0), Validators.max(5)]],
+                    medium: [subject.medium, [Validators.min(0), Validators.max(5)]],
+                    hard: [subject.hard, [Validators.min(0), Validators.max(5)]],
+                    descriptive: [subject.descriptive, [Validators.min(0), Validators.max(5)]],
+                  })
+                )
+              );
+  
+              // Update the form control for rightListInputs
+              this.rightListForm.setControl('rightListInputs', rightListInputs);
+  
+            } else {
+              console.error('No matching assessmentList found for the given assessmentId');
+            }
+          }, (error) => {
+            console.error('Error fetching assessmentList data:', error);
+          });
+  
+        } else {
+          console.error('Assessment not found in Firebase');
+        }
+      }, (error) => {
+        console.error('Error fetching assessment data:', error);
+      });
+    }
+  }
+  
+ngAfterViewInit(): void {
+    if (this.isBrowser()) {
+      const updateLists = () => {
+        const leftListDom = Array.from(
+          document.getElementById('sortable-left')!.querySelectorAll('li span:first-child')
+        ).map((el) => el.textContent || '');
+
+        const rightListDom = Array.from(
+          document.getElementById('sortable-right')!.querySelectorAll('li span:first-child')
+        ).map((el) => el.textContent || '');
+
+        this.leftList = leftListDom.map((item) => {
+          const subject = this.subjectList.find((sub) => sub.subjectName === item);
+          return {
+            subjectId: subject ? subject.subjectId : '', // Get the correct subjectId
+            subjectName: item
+          };
+        });
+        this.rightList = rightListDom.map((item) => {
+          const subject = this.subjectList.find((sub) => sub.subjectName === item);
+          return {
+            subjectId: subject ? subject.subjectId : '', // Get the correct subjectId
+            subjectName: item
+          };
+        });
+        this.updateRightListForm(this.rightList); 
+        this.saveToLocalStorage();
+      };
+      const options = {
+        group: 'shared',
+        animation: 150,
+        dragClass: 'bg-gray-200',
+        onEnd: updateLists, 
+      };
+
+      new Sortable(document.getElementById('sortable-left')!, options);
+      new Sortable(document.getElementById('sortable-right')!, options);
+    }
+  }
+  updateRightListForm(newRightList: any[]): void {
+    const updatedInputs = this.fb.array(
+      newRightList.map((subject) => {
+        // Find the corresponding subject in rightListInputs (existing subject ratings from the form)
+        const existingSubjectInput = this.rightListInputs.controls.find((control) => {
+          const subjectControl = control.value; // Get the form control value
+          return subjectControl.item.subjectId === subject.subjectId; // Match by subjectId
+        });
+        const easy = existingSubjectInput ? existingSubjectInput.value.easy : 0;
+        const medium = existingSubjectInput ? existingSubjectInput.value.medium : 0;
+        const hard = existingSubjectInput ? existingSubjectInput.value.hard : 0;
+        const descriptive = existingSubjectInput ? existingSubjectInput.value.descriptive : 0;
+        return this.fb.group({
+          item: [subject], // The subject is passed as is.
+          easy: [easy, [Validators.min(0), Validators.max(5)]],
+          medium: [medium, [Validators.min(0), Validators.max(5)]],
+          hard: [hard, [Validators.min(0), Validators.max(5)]],
+          descriptive: [descriptive, [Validators.min(0), Validators.max(5)]],
+        });
+      })
+    );
+    this.rightListForm.setControl('rightListInputs', updatedInputs);
+  }
+  saveFormData(): void {
+    const hasDescriptiveGreaterThanZero = this.rightListInputs.controls.some((group) => {
+      return group.get('descriptive')?.value > 0;
+    });
+    this.isAutoEvaluated = !hasDescriptiveGreaterThanZero;
+    if (this.assessmentTitle.trim().length === 0) {
+      this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
+      return;
+    }
+  
+    // If editing, skip title uniqueness check and proceed directly to save/update
+    if (this.editFlag) {
+      // Update existing assessment and associated subjects
+      this.updateAssessment();
+    } else {
+      // Check if the title is unique when creating a new assessment
+      this.checkAssessmentTitleUniqueness(this.assessmentTitle).then((isUnique) => {
+        if (!isUnique) {
+          this.assessmentTitleWarning = 'This assessment title already exists. Please choose a unique title.';
+          return;
+        }
+        this.addAssessment().then((assessmentId: string) => {
+          if (this.rightListForm.valid) {
+            const subjects = this.mapRightListInputs(this.rightList);
+  
+            const updatedAssessmentList: AssessmentList = {
+              assessmentId,
+              dateCreated: Date.now(),
+              dateUpdated: Date.now(),
+              subjects: subjects,
+            };
+  
+            // Save or update assessmentList
+            this.firebaseService.create('assessmentList/' + assessmentId, updatedAssessmentList)
+              .then(() => {
+                this.assessmentList.unshift(updatedAssessmentList); // Update the list of assessments
+                this.toastr.success('Assessment Created', 'Created');
+                this.resetRightListAndForm();  // Reset the form and right list
+                this.assessmentTitle = ''; // Clear the title
+              })
+              .catch((error) => {
+                console.error('Error saving data:', error);
+                this.toastr.error('Failed to save data. Please try again.');
+              });
+          } else {
+            this.toastr.warning('Please fill in the form correctly.');
+          }
+        }).catch((error) => {
+          this.toastr.error('Failed to create assessment. ' + error);
+        });
+      });
+    }
+  }
+  
+  updateAssessment(): void {
+    // Ensure the assessmentId is available for updating
+    if (this.assessmentId) {
+      // Step 1: Map the subjects and ratings from the form (right list)
+      const subjects = this.mapRightListInputs(this.rightList);
+  
+      // Get the original assessment details (before update) to keep the dateCreated
+      const originalAssessment = this.assessmentList.find((assessment) => assessment.assessmentId === this.assessmentId);
+      const originalDateCreated = originalAssessment ? originalAssessment.dateCreated : Date.now();  // fallback to Date.now() if not found
+  
+      // Prepare the updated AssessmentList object
+      const updatedAssessmentList: AssessmentList = {
+        assessmentId: this.assessmentId,
+        dateCreated: originalDateCreated,  // Keep the original dateCreated value
+        dateUpdated: Date.now(),          // Update the dateUpdated field
+        subjects: subjects,              // Update with the new subject details
+      };
+  
+      // Prepare the updated Assessment object
+      const updatedAssessment: Assessment = {
+        assessmentId: this.assessmentId,
+        assessmentName: this.assessmentTitle,  // Update with the new title
+        assessmentType: this.viewMode,    
+        dateCreated:originalDateCreated,     // Use the same view mode
+        dateUpdated: Date.now(),               // Update the dateUpdated field
+        isDisabled: false,                     // Ensure the assessment is not disabled
+        isautoEvaluated: this.isAutoEvaluated, // Keep the same auto evaluation status
+      };
+  
+      // Step 2: Update the Assessment document
+      this.firebaseService.update('assessment/' + this.assessmentId, updatedAssessment)
+        .then(() => {
+          // Successfully updated the Assessment, now update the AssessmentList
+          this.firebaseService.update('assessmentList/' + this.assessmentId, updatedAssessmentList)
+            .then(() => {
+              // Both documents updated successfully
+              this.assessmentList = this.assessmentList.map((assessment) => {
+                if (assessment.assessmentId === this.assessmentId) {
+                  return updatedAssessmentList; // Replace the old AssessmentList with the updated one
+                }
+                return assessment;
+              });
+  
+              this.toastr.success('Assessment and Assessment List Updated successfully', 'Updated');
+              this.resetRightListAndForm();  // Reset the form and right list
+              this.assessmentTitle = '';     // Clear the title field
+              this.navigateToAssessments();  // Navigate to the assessments page
+              console.log(this.updateAssessment, updatedAssessmentList);
+            })
+            .catch((error) => {
+              console.error('Error updating AssessmentList:', error);
+              this.toastr.error('Failed to update AssessmentList. Please try again.');
+            });
+        })
+        .catch((error) => {
+          console.error('Error updating Assessment:', error);
+          this.toastr.error('Failed to update Assessment. Please try again.');
+        });
+    }
+  }
+  
+ 
+saveAssessmentAndSubjects(): void {
+// Save the assessment and subject data
+this.addAssessment().then((assessmentId: string) => {
+  if (this.rightListForm.valid) {
+    const subjects = this.mapRightListInputs(this.rightList);
+    const assessmentList: AssessmentList = {
+      assessmentId,
+      dateCreated: Date.now(),
+      dateUpdated: Date.now(),
+      subjects: subjects,
+    };
+
+    // Save the assessment list
+    this.firebaseService.create('assessmentList/' + assessmentId, assessmentList)
+      .then(() => {
+        this.assessmentList.unshift(assessmentList);
+        this.fetchLeftList();  
+        this.toastr.success('Assessment Created successfully', 'Created');
+        this.resetRightListAndForm();
+        this.assessmentTitle = '';  // Reset the title
+      })
+      .catch((error) => {
+        console.error('Error saving data:', error);
+        this.toastr.error('Failed to save data. Please try again.');
+      });
+  } else {
+    this.toastr.warning('Please fill in the form correctly.');
+  }
+}).catch((error) => {
+  this.toastr.error('Failed to create assessment. ' + error);
+});
+}
 }
