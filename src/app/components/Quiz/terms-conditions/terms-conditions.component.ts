@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { CommonModule } from '@angular/common';
 import { assessmentRecords } from '../../../models/assessmentRecords';
@@ -11,7 +11,7 @@ import { assessmentRecords } from '../../../models/assessmentRecords';
   templateUrl: './terms-conditions.component.html',
   styleUrls: ['./terms-conditions.component.css'],
 })
-export class TermsConditionsComponent {
+export class TermsConditionsComponent implements OnInit {
   userId: string = '';
   assessmentId: string = '';
   isLoading: boolean = false;
@@ -19,8 +19,21 @@ export class TermsConditionsComponent {
 
   constructor(
     private firebaseService: FireBaseService<assessmentRecords>,
-    private router: Router
+    private router: Router,
+    private activatedRoute: ActivatedRoute
   ) {}
+
+  ngOnInit(): void {
+    this.getParamsFromUrl();
+  }
+
+  // Extract parameters from the URL
+  getParamsFromUrl(): void {
+    this.activatedRoute.params.subscribe((params) => {
+      this.userId = params['userId'];
+      this.assessmentId = params['assessmentId'];
+    });
+  }
 
   onAcceptTerms(): void {
     this.isLoading = true;

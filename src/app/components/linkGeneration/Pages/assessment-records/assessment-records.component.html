@@ -135,10 +135,10 @@
           @for (assessment of filteredAssessments; track $index) {
           <tr class="hover:bg-gray-50 even:bg-gray-50">
             <td class="px-4 sm:px-6 py-3 border-b text-gray-700">
-              {{ assessment.assessmentName }}
+              {{ assessment.assessmentName | capitalize }}
             </td>
             <td class="px-4 sm:px-6 py-3 border-b text-gray-700">
-              {{ assessment.userName }}
+              {{ assessment.userName | capitalize }}
             </td>
             <td class="px-4 sm:px-6 py-3 border-b text-gray-700">
               {{ assessment.email }}
