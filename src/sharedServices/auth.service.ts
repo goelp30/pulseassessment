@@ -8,7 +8,7 @@ import { BehaviorSubject } from 'rxjs';
 })
 
 export class AuthService {
-  public isLoggedIn = new BehaviorSubject<boolean>(false);
+  public isLoggedIn = new BehaviorSubject<boolean>(sessionStorage.getItem('isLoggedIn') !== null ? true : false);
 
   constructor(private fireauth : AngularFireAuth, private router : Router) {
 
@@ -21,7 +21,8 @@ export class AuthService {
    */
   login(email : string, password : string) {
     this.fireauth.signInWithEmailAndPassword(email,password).then( res => {
-        this.isLoggedIn.next(true);
+        sessionStorage.setItem('isLoggedIn', 'true');
+        this.isLoggedIn.next(sessionStorage.getItem('isLoggedIn') !== null ? true : false);
         this.router.navigateByUrl('/subjects');
     }, err => {
         alert(err.message);
@@ -49,6 +50,7 @@ export class AuthService {
    */
   logout() {
     this.fireauth.signOut().then( () => {
+      sessionStorage.removeItem('isLoggedIn');
       this.isLoggedIn.next(false);
       this.router.navigate(['/login']);
     }, err => {
