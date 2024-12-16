@@ -10,7 +10,7 @@ import {
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { SubjectService } from '../../../../sharedServices/Subject.service';
 import { CommonModule, TitleCasePipe } from '@angular/common';
-import { Question, Option } from '../../../models/question';
+import { Question, Option} from '../../../models/question';
 import { map } from 'rxjs';
 
 @Component({
@@ -110,20 +110,24 @@ export class QuestionmodalComponent implements OnInit {
       this.firebaseService.getAllData('/options')
         .pipe(
           map((options: Option[]) => {
-            // Filter options by questionId and deduplicate by optionId
-            const filteredOptions = options.filter((option) => option.questionId === this.question?.questionId);
-            return Array.from(new Map(filteredOptions.map((opt) => [opt.optionId, opt])).values());
+            // Filter options by questionId and include only enabled options
+            return options.filter(
+              (option) =>
+                option.questionId === this.question?.questionId &&
+                !option.isOptionDisabled
+            );
           })
         )
         .subscribe({
-          next: (uniqueOptions: Option[]) => {
+          next: (filteredOptions: Option[]) => {
             this.options.clear(); // Clear existing options
-            uniqueOptions.forEach((option) => {
+            filteredOptions.forEach((option) => {
               this.options.push(
                 this.fb.group({
                   optionText: [option.optionText, Validators.required],
                   isCorrectOption: [option.isCorrectOption],
                   optionId: [option.optionId],
+                  isOptionDisabled: [option.isOptionDisabled], // Ensure this field exists
                 })
               );
             });
@@ -136,18 +140,20 @@ export class QuestionmodalComponent implements OnInit {
   }
   
   
+  
 
   get options() {
     return this.assessmentForm.get('options') as FormArray;
   }
-
   createOptionGroup(): FormGroup {
     return this.fb.group({
-      optionId: [crypto.randomUUID()], // Generate a unique ID
+      optionId: [crypto.randomUUID()],
       optionText: ['', Validators.required],
       isCorrectOption: [false],
+      isOptionDisabled: [false], // Default to false
     });
   }
+  
   
   addOption(): void {
     if (this.assessmentForm.value.questionType === 'Descriptive') {
@@ -166,12 +172,27 @@ export class QuestionmodalComponent implements OnInit {
 
   
 removeOption(index: number): void {
-  this.options.removeAt(index);
+  const option = this.options.at(index) as FormGroup;
+
+  // Mark the option as disabled
+  option.patchValue({ isOptionDisabled: true });
+
+  // Save updated option to Firebase
+  const updatedOption = option.value;
+  this.firebaseService.update(`/options/${updatedOption.optionId}`, updatedOption)
+    .then(() => {
+      console.log('Option marked as disabled in Firebase.');
+      this.options.removeAt(index); // Remove from the form after updating Firebase
+    })
+    .catch((error) => {
+      console.error('Failed to update option in Firebase:', error);
+    });
 }
 
 
+
 toggleCorrectOption(index: number) {
-  const option = this.options.at(index);
+  const option = this.options.at(index) as FormGroup;
   option.patchValue({
     isCorrectOption: !option.get('isCorrectOption')?.value,
   });
@@ -346,16 +367,11 @@ async saveData() {
   }
   
   async updateOptions(): Promise<void> {
-    // Map current options to their IDs
-    const existingOptionIds = this.options.controls
-      .map((control) => control.get('optionId')?.value)
-      .filter((id) => id); // Filter out null or undefined IDs
-  
     const optionPromises = this.options.controls.map((optionControl) => {
-      const optionId = optionControl.get('optionId')?.value; // Use the existing option ID
+      const optionId = optionControl.get('optionId')?.value;
       if (!optionId) {
-        console.warn('Option ID missing for one of the options. Skipping update.');
-        return Promise.resolve(); // Skip any option that doesn't have an ID
+        console.warn('Option ID missing during update operation. Skipping.');
+        return Promise.resolve();
       }
   
       const optionData: Option = {
@@ -364,9 +380,10 @@ async saveData() {
         subjectId: this.subjectId,
         optionText: optionControl.get('optionText')?.value,
         isCorrectOption: optionControl.get('isCorrectOption')?.value,
+        isOptionDisabled: optionControl.get('isOptionDisabled')?.value || false,
       };
   
-      return this.firebaseService.update(`/options/${optionId}`, optionData); // Only update
+      return this.firebaseService.update(`/options/${optionId}`, optionData);
     });
   
     try {
@@ -377,6 +394,7 @@ async saveData() {
       throw error;
     }
   }
+  
   
   
   
@@ -397,9 +415,10 @@ async saveData() {
         subjectId: this.subjectId,
         optionText: optionControl.get('optionText')?.value,
         isCorrectOption: optionControl.get('isCorrectOption')?.value,
+        isOptionDisabled: optionControl.get('isOptionDisabled')?.value || false,
       };
   
-      return this.firebaseService.update(`/options/${optionId}`, optionData); // Use only update
+      return this.firebaseService.update(`/options/${optionId}`, optionData);
     });
   
     try {
@@ -410,6 +429,7 @@ async saveData() {
       throw error;
     }
   }
+  
   
   
 

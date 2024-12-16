@@ -9,12 +9,6 @@ export interface Question {
     createdOn: number;
     updatedOn: number;
     isQuesDisabled?: boolean;
-    isMarkedForReview?: boolean;
-    isVisited?: boolean;
-    selectedAnswer?: string | string[];
-    descriptiveAnswer?: string;
-    options?: Option[];
-  
   }
    
   export interface Option {
@@ -23,7 +17,7 @@ export interface Question {
     subjectId: string;
     optionText: string;
     isCorrectOption: boolean;
-  
+    isOptionDisabled?:boolean
   }
   
    
