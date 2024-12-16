@@ -166,27 +166,7 @@ export class QuestionmodalComponent implements OnInit {
 
   
 removeOption(index: number): void {
-  const questionType = this.assessmentForm.get('questionType')?.value;
-
-  // Validation: At least two options for Single and Multi types
-
-  if (questionType === 'Single' && this.options.length <= 2) {
-      this.warningMessage = "Single-choice question must have at least two options.";
-      return;
-  }
-
-  // Additional validation for Multi-choice questions
-  if (questionType === 'Multi' && this.options.length <= 3) {
-      this.warningMessage = "Multi-choice questions must have at least 3 options.";
-      return;
-  }
-
   this.options.removeAt(index);
-
-  // Clear warning if options are now below the limit
-  if (this.options.length < 6) {
-      this.warningMessage = '';
-  }
 }
 
 
@@ -272,45 +252,30 @@ validateCorrectOptions(formArray: FormArray): { [key: string]: any } | null {
   
 
 async saveData() {
+    console.log('Form Validity:', this.assessmentForm.valid);
+    console.log('Form Value:', this.assessmentForm.value);
 
-  try {
-    if (this.editingMode) {
-      await this.updateQuestion();
-    } else {
-      const questionId = await this.addQuestion();
-      if (this.assessmentForm.value.questionType !== 'Descriptive') {
-        await this.storeOptions(questionId);
+    if (this.assessmentForm.valid && this.validateOptions()) {
+      try {
+        const questionId = await this.addQuestion();
+        if (this.assessmentForm.value.questionType !== 'Descriptive') {
+          await this.storeOptions(questionId);
+        }
+        
+
+        alert('Saved successfully!');
+        this.closeModal.emit();
+        
+        this.assessmentForm.reset();
+        this.options.clear();
+        this.addOption();
+      } catch (error) {
+        alert(`Error saving: ${error}`);
       }
+    } else {
+      alert('Please fill out all required fields correctly.');
     }
-
-    alert('Saved successfully!');
-    this.closeModal.emit();
- 
- 
-
-    // Reset the form but do not add a new option automatically
-    this.assessmentForm.reset({
-      subjectId: this.subjectId,
-      questionType: 'Single',
-      questionLevel: 'Easy',
-      questionWeightage: 1,
-      questionTime: 1,
-      questionMarks: 1,
-      difficulty: 'Low',
-    });
-
-    // Clear the options array entirely to start fresh
-    this.options.clear();
-
-    // Add a single initial option only if it is a new question
-    if (!this.editingMode) {
-      this.addOption();
-    }
-  } catch (error) {
-    console.error('Error saving data:', error);
-    alert(`Error: ${error}`);
   }
-}
 
 
 
