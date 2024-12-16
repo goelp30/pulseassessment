@@ -3,12 +3,11 @@ import { LoginComponent } from './components/login/login.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { RegisterComponent } from './components/register/register.component';
 import { AssessmentListComponent } from './components/assessment/assessment-list/assessment-list.component';
-import { AuthGuard } from '@angular/fire/auth-guard';
+import { authGuard } from './auth.guard';
 import { AssessmentRecordsComponent } from './components/linkGeneration/Pages/assessment-records/assessment-records.component';
 import { LinkExpiredComponent } from './components/linkGeneration/Pages/link-expired/link-expired.component';
 import { AlreadyAttendedComponent } from './components/linkGeneration/Pages/already-attended/already-attended.component';
 import { LinkGenerationComponent } from './components/linkGeneration/link-generation/link-generation.component';
-
 import { DragDropComponent } from './components/assessment/drag-drop/drag-drop.component';
 import { SubjectlistComponent } from './components/subject/subjectlist/subjectlist.component';
 import { QuestionlistComponent } from './components/question/questionlist/questionlist.component';
@@ -22,11 +21,6 @@ import { ViewAssessmentComponent } from './components/evaluation/view-assessment
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
-  {
-    path: 'dashboard',
-    component: DashboardComponent,
-    canActivate: [AuthGuard],
-  },
   { path: 'register', component: RegisterComponent },
   // Link Generation Routes
   { path: 'generatelink', component: LinkGenerationComponent },
@@ -34,30 +28,15 @@ export const routes: Routes = [
   { path: 'linkexpired', component: LinkExpiredComponent },
   { path: 'alreadyattended', component: AlreadyAttendedComponent },
   { path: 'invalid', component: InvalidComponent },
-  {
-    path: 'termsandconditions/:assessmentId/:userId',
-    component: TermsConditionsComponent,
-  },
-
-  {
-    path: 'assessment-list',
-    component: AssessmentListComponent,
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'drag-and-drop',
-    component: DragDropComponent,
-  },
-  { path: 'subjects', component: SubjectlistComponent },
-  { path: 'questions', component: QuestionlistComponent },
-  {
-    path: 'app-quiz',
-    component: QuizComponent,
-    canActivate: [AuthGuard],
-  },
+  { path: 'termsandconditions/:assessmentId/:userId', component: TermsConditionsComponent },
+  { path: 'assessment-list', component: AssessmentListComponent, canActivate: [authGuard] },
+  { path: 'drag-and-drop', component: DragDropComponent, canActivate: [authGuard] },
+  { path: 'subjects', component: SubjectlistComponent, canActivate: [authGuard] },
+  { path: 'questions', component: QuestionlistComponent, canActivate: [authGuard] },
+  { path: 'app-quiz', component: QuizComponent, canActivate: [authGuard]},
   //evaluate module routes
-  {path: 'evaluation',component:EvaluationDashboardComponent,},
-  {path: 'evaluate',component:EvaluateAssessmentComponent,},
-  {path: 'view',component:ViewAssessmentComponent,},
- { path: '**', component: DashboardComponent, canActivate: [AuthGuard] },
+  { path: 'evaluation', component: EvaluationDashboardComponent },
+  { path: 'evaluate', component: EvaluateAssessmentComponent },
+  { path: 'view', component: ViewAssessmentComponent },
+  { path: '**', component: DashboardComponent, canActivate: [authGuard] },
 ];
