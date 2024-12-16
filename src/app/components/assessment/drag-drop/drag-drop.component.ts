@@ -77,7 +77,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       console.log('We are editing');
       
       // Use getItemsByFields to fetch the assessment data based on assessmentId
-      this.firebaseService.getItemsByFields(this.assess_table, ['assessmentId'], this.assessmentId).subscribe((assessments: any[]) => {
+      this.firebaseService.listensToChangeWithFilter(this.assess_table, 'assessmentId', this.assessmentId).subscribe((assessments: any[]) => {
         if (assessments && assessments.length > 0) {
           const assessment = assessments[0]; // Assuming assessmentId is unique, get the first match
           this.assessmentTitle = assessment.assessmentName; // Populate assessmentTitle

@@ -131,13 +131,13 @@ export class QuestiontableComponent implements OnInit {
   }
   
   fetchQuestions(): void {
-    this.fireBaseService.getItemsByFields('questions', ['subjectId'], this.subjectId).subscribe(
+    this.fireBaseService. listensToChangeWithFilter('questions', 'subjectId', this.subjectId).subscribe(
       (data) => {
         console.log('Raw data:', data); // Check for any disabled questions
         this.questions = data.filter(question => !question.isQuesDisabled);
         console.log('Active questions:', this.questions);
       },
-      (error) => {
+      (error:Error) => {
         console.error('Error while loading questions:', error);
       }
     );

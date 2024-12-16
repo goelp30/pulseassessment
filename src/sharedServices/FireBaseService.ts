@@ -69,28 +69,6 @@ export class FireBaseService<T> {
     addData(tableName: string, id: string, params: T): Promise<void> {
         return this.database.object(`${tableName}/${id}`).set(params);
       }
-      getItemsByFields(
-        path: string,
-        fields: string[],
-        value: any
-      ): Observable<T[]> {
-        return this.database
-          .list<T>(path)
-          .valueChanges()
-          .pipe(
-            map((items) =>
-              items.filter((item) =>
-                fields.some((field) => (item as any)[field] === value) &&
-            !(item as any).isQuesDisabled 
-              )
-            ),
-            catchError((error) => {
-              console.error(`Error filtering items in ${path}:`, error);
-              throw error;
-            })
-          );
-      }
-
         // Get question by its ID
   getQuestionById(questionId: number): Observable<Question> {
     return this.database
