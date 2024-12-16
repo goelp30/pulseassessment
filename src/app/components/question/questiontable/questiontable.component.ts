@@ -130,18 +130,20 @@ export class QuestiontableComponent implements OnInit {
     });
   }
   
-  
   fetchQuestions(): void {
     this.fireBaseService.getItemsByFields('questions', ['subjectId'], this.subjectId).subscribe(
-        (data) => {
-          this.questions = data;
-          console.log(this.questions)
-        },
-        (error) => {
-          console.error('Error while loading questions:', error);
-        }
-      );
+      (data) => {
+        console.log('Raw data:', data); // Check for any disabled questions
+        this.questions = data.filter(question => !question.isQuesDisabled);
+        console.log('Active questions:', this.questions);
+      },
+      (error) => {
+        console.error('Error while loading questions:', error);
+      }
+    );
   }
+  
+  
   
   
   addQuestion() {
@@ -185,16 +187,18 @@ export class QuestiontableComponent implements OnInit {
     this.selectedQuestionToDelete = question;
     this.eConfirmationVisible = true;
   }
-  deleteSubject() {
+  deleteQuestion() {
     if (this.selectedQuestionToDelete) {
-      const QuestionToDelete = this.selectedQuestionToDelete;
-      QuestionToDelete.isQuesDisabled = true; // Mark as deleted (disabled)
- 
-      this.fireBaseService.update(`${this.tableName}/${QuestionToDelete.subjectId}`,QuestionToDelete)
+      const questionToDelete = this.selectedQuestionToDelete;
+      questionToDelete.isQuesDisabled = true; // Mark as deleted (disabled)
+  
+      this.fireBaseService.update(`questions/${questionToDelete.questionId}`, questionToDelete)
         .then(() => {
           this.toastr.error('Question deleted successfully', 'Deleted');
           this.eConfirmationVisible = false;
-          // this.getAssessments();
+  
+          // Remove from UI
+          this.questions = this.questions.filter(question => question.questionId !== questionToDelete.questionId);
         })
         .catch(error => {
           console.error('Error deleting question:', error);
@@ -202,6 +206,10 @@ export class QuestiontableComponent implements OnInit {
         });
     }
   }
+  
+  
+  
+  
   closeModal(): void {
     this.isModalVisible = false; 
     this.eConfirmationVisible = false;

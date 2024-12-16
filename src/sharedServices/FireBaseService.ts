@@ -80,7 +80,8 @@ export class FireBaseService<T> {
           .pipe(
             map((items) =>
               items.filter((item) =>
-                fields.some((field) => (item as any)[field] === value)
+                fields.some((field) => (item as any)[field] === value) &&
+            !(item as any).isQuesDisabled 
               )
             ),
             catchError((error) => {
