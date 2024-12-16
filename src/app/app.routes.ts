@@ -18,7 +18,7 @@ import { InvalidComponent } from './components/linkGeneration/Pages/invalid/inva
 import { EvaluationDashboardComponent } from './components/evaluation/evaluation-dashboard/evaluation-dashboard.component';
 import { EvaluateAssessmentComponent } from './components/evaluation/evaluate-assessment/evaluate-assessment.component';
 import { ViewAssessmentComponent } from './components/evaluation/view-assessment/view-assessment.component';
-import { LinkStatusGuard } from './auth/link-status.guard';
+import { LinkStatusGuard } from './components/Quiz/auth/link-status.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
