@@ -4,10 +4,11 @@ import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { SubjectService } from '../../../../sharedServices/Subject.service';
 import { HeaderComponent } from '../../common/header/header.component';
 import { TableComponent } from '../../common/table/table.component';
-import { QuestionmodalComponent } from '../../common/questionmodal/questionmodal.component';
+import { QuestionmodalComponent } from '../questionmodal/questionmodal.component';
 import { CommonModule } from '@angular/common';
 import { Option } from '../../../models/question';
 import { TableNames } from '../../../enums/TableName';
+import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';
 
 export type Question = {
   subjectId: string;
@@ -23,13 +24,13 @@ export type Question = {
 };
 
 @Component({
-  selector: 'app-mockquestion',
+  selector: 'app-questiontable',
   standalone: true,
-  templateUrl: './mockquestion.component.html',
-  styleUrls: ['./mockquestion.component.css'],
-  imports:[HeaderComponent,TableComponent,QuestionmodalComponent,CommonModule]
+  templateUrl: './questiontable.component.html',
+  styleUrls: ['./questiontable.component.css'],
+  imports:[HeaderComponent,TableComponent,QuestionmodalComponent,CommonModule,PopupModuleComponent]
 })
-export class MockquestionComponent implements OnInit {
+export class QuestiontableComponent implements OnInit {
   questions: Question[] = [];
   options: Option[] = [];
 
@@ -48,6 +49,11 @@ export class MockquestionComponent implements OnInit {
   isQuestionModalVisible: boolean = false;
 
   subjectId: string = '';
+  isquDisabled:boolean=false;
+  selectedQuestionToDelete: Question | null = null;
+  eConfirmationVisible: boolean = false;
+  QuestionToDelete:boolean=false;
+  isQuesDisabled:boolean=false;
 
   // Table Configurations
   tableColumns: (keyof Question)[] = ['questionText'];
@@ -67,7 +73,8 @@ export class MockquestionComponent implements OnInit {
     {
       label: 'Delete',
       colorClass: 'bg-red-500 py-2 px-4 text-white rounded-md',
-      action: (row: Question) => this.deleteQuestion(row),
+      action: (row: any) => this.confirmDelete(row),
+ 
     },
   ];
 
@@ -123,20 +130,20 @@ export class MockquestionComponent implements OnInit {
     });
   }
   
-  
   fetchQuestions(): void {
-    this.fireBaseService
-      .getItemsByFields('questions', ['subjectId'], this.subjectId)
-      .subscribe(
-        (data) => {
-          this.questions = data;
-          console.log(this.questions)
-        },
-        (error) => {
-          console.error('Error while loading questions:', error);
-        }
-      );
+    this.fireBaseService.listensToChangeWithFilter('questions', 'subjectId', this.subjectId).subscribe(
+      (data) => {
+        console.log('Raw data:', data); // Check for any disabled questions
+        this.questions = data.filter(question => !question.isQuesDisabled);
+        console.log('Active questions:', this.questions);
+      },
+      (error) => {
+        console.error('Error while loading questions:', error);
+      }
+    );
   }
+  
+  
   
   
   addQuestion() {
@@ -144,48 +151,72 @@ export class MockquestionComponent implements OnInit {
       subjectId: this.subjectId,
       questionId: crypto.randomUUID(),
       questionText: '',
-      questionType: '',
-      questionLevel: '',
+      questionType: 'Single',
+      questionLevel: 'Easy',
       questionWeightage: 1,
       questionTime: 1,
       createdOn: Date.now(),
       updatedOn: Date.now(),
     };
-    this.isQuestionModalVisible = true;
+    this.isQuestionModalVisible = true; // Open only for adding a new question
   }
+  
 
   saveQuestion() {
     if (this.selectedQuestion.questionText.trim() === '') {
       this.toastr.error('Question text is required.');
       return;
     }
+  
     this.fireBaseService
       .addData(`questions/${this.subjectId}`, this.selectedQuestion.questionId, this.selectedQuestion)
       .then(() => {
         this.questions.push({ ...this.selectedQuestion });
         this.toastr.success('Question added successfully!');
-        this.isQuestionModalVisible = false;
+        this.isQuestionModalVisible = false; // Only close here
       })
       .catch((error: Error) => {
         console.error('Error adding question:', error);
         this.toastr.error('Error adding question');
       });
   }
+  
 
-  deleteQuestion(row: Question): void {
-    const index = this.questions.findIndex((q) => q.questionId === row.questionId);
-    if (index !== -1) {
-      this.questions.splice(index, 1);
-      this.toastr.success('Deleted successfully');
-    } else {
-      this.toastr.error('Failed to delete the question');
+// Delete subject
+  confirmDelete(question:Question) {
+    this.selectedQuestionToDelete = question;
+    this.eConfirmationVisible = true;
+  }
+  deleteQuestion() {
+    if (this.selectedQuestionToDelete) {
+      const questionToDelete = this.selectedQuestionToDelete;
+      questionToDelete.isQuesDisabled = true; // Mark as deleted (disabled)
+  
+      this.fireBaseService.update(`questions/${questionToDelete.questionId}`, questionToDelete)
+        .then(() => {
+          this.toastr.error('Question deleted successfully', 'Deleted');
+          this.eConfirmationVisible = false;
+  
+          // Remove from UI
+          this.questions = this.questions.filter(question => question.questionId !== questionToDelete.questionId);
+        })
+        .catch(error => {
+          console.error('Error deleting question:', error);
+          this.toastr.error('Failed to delete question', 'Error');
+        });
     }
   }
-
+  
+  
+  
+  
+  closeModal(): void {
+    this.isModalVisible = false; 
+    this.eConfirmationVisible = false;
+  }
   editQuestion(row: Question): void {
     this.selectedQuestion = { ...row };
     this.isQuestionModalVisible = true;
-    this.toastr.info('Edit mode activated');
   }
   closeQuestionModal() {
     this.isQuestionModalVisible = false;

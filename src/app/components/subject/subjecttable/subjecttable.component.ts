@@ -43,6 +43,12 @@ export class SubjectTableComponent {
   isAddModal: boolean = false;
   selectedSubject: Subject | null = null;
   searchPlaceholder:string='Search Subjects'
+  isDisabled:boolean=false;
+  selectedSubjectToDelete: Subject | null = null;
+  eConfirmationVisible: boolean = false;
+  SubjectToDelete:boolean=false;
+ 
+ 
 
   // Action buttons for table
   buttons = [
@@ -59,7 +65,8 @@ export class SubjectTableComponent {
     {
       label: 'Delete',
       colorClass: 'bg-red-500 py-2 px-4 text-white rounded-md',
-      action: (row: any) => this.deleteSubject(row),
+      action: (row: any) => this.confirmDelete(row),
+ 
     },
   ];
 
@@ -105,7 +112,7 @@ export class SubjectTableComponent {
     }
 
     // Check if the subject already exists
-    this.fireBaseService.getAllData(this.tableName).subscribe(subjects => {
+    this.fireBaseService.getAllDataByFilter(this.tableName, 'isDisabled', false).subscribe(subjects => {
       const isDuplicate = subjects.some(subject =>
         subject.subjectName.trim().toLowerCase() === this.selectedSubject?.subjectName.trim().toLowerCase()
       );
@@ -144,7 +151,8 @@ export class SubjectTableComponent {
     }
 
     // Check if the subject already exists (excluding the current subject being updated)
-    this.fireBaseService.getAllData(this.tableName).subscribe(subjects => {
+    this.fireBaseService.getAllDataByFilter(this.tableName, 'isDisabled', false)
+    .subscribe(subjects => {
       const isDuplicate = subjects.some(subject =>
         subject.subjectId !== this.selectedSubject?.subjectId &&
         subject.subjectName.trim().toLowerCase() === this.selectedSubject?.subjectName.trim().toLowerCase()
@@ -171,10 +179,31 @@ export class SubjectTableComponent {
   }
 
   // Delete subject
-  deleteSubject(row: Subject) {
-    this.toastr.error('Subject deleted');
+  confirmDelete(subject: Subject) {
+    this.selectedSubjectToDelete = subject;
+    this.eConfirmationVisible = true;
   }
-
+  deleteSubject() {
+    if (this.selectedSubjectToDelete) {
+      const SubjectToDelete = this.selectedSubjectToDelete;
+      SubjectToDelete.isDisabled = true; // Mark as deleted (disabled)
+ 
+      this.fireBaseService.update(`${this.tableName}/${SubjectToDelete.subjectId}`,SubjectToDelete)
+        .then(() => {
+          this.toastr.error('Subject deleted successfully', 'Deleted');
+          this.eConfirmationVisible = false;
+          // this.getAssessments();
+        })
+        .catch(error => {
+          console.error('Error deleting subject:', error);
+          this.toastr.error('Failed to delete subject', 'Error');
+        });
+    }
+  }
+  closeModal(): void {
+    this.isModalVisible = false; // For the Assessment Details modal
+    this.eConfirmationVisible = false; // For the Delete Confirmation modal
+  }
   manageSubject(row: Subject) {
     if (row.subjectId && row.subjectName) {
       this.subjectService.setSubjectId(row.subjectId); // Store subjectId

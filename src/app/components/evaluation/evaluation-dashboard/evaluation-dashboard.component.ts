@@ -1,66 +1,162 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TableComponent } from '../../common/table/table.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import evaluationList from '../assets/Evaluation_list_mock.json';  
 import { EvaluationService } from '../service/evaluation.service';
 import { HeaderComponent } from '../../common/header/header.component';
+import { FireBaseService } from '../../../../sharedServices/FireBaseService';
+import { EvaluationAssessmentData } from '../../../models/EvaluationAssessmentData';
+import { Candidate } from '../../../models/candidate'; 
+import { Employee } from '../../../models/employee'; 
 
 @Component({
   selector: 'app-evaluation-dashboard',
-  standalone: true,
-  imports: [TableComponent, CommonModule, FormsModule,HeaderComponent],
+  standalone: true, 
+  imports: [TableComponent, CommonModule, FormsModule, HeaderComponent],
   templateUrl: './evaluation-dashboard.component.html',
   styleUrls: ['./evaluation-dashboard.component.css']
 })
 
 export class EvaluationDashboardComponent implements OnInit {
-  evaluationList: any[] = [];  // List of all evaluations
-  filteredEvaluationList: any[] = [];  // List of evaluations after filtering
-  searchQuery: string = ''; // Search query input from the user
-  activeTab: string = 'all'; // Default active tab
-  tabs: string[] = ['all', 'Complete', 'Pending']; // Example tabs for filtering
-  
-  filterKey = 'status'; // Filter by 'status' field (Complete or Pending)
-  tableName:string='List of Evaluations';
+  evaluationList: any[] = [];  
+  filteredEvaluationList: any[] = [];  
+  searchQuery: string = ''; 
+  activeTab: string = 'all'; 
+  tabs: string[] = ['all', 'Completed', 'Pending'];
+  currentButtonLabel: string = 'Evaluate';
+  filterKey = 'status';
+  tableName: string = 'List of Evaluations';
   
   columnAliases = {
-    'assessmentId': ['Assessment ID'],
+    'userName': ['User Name'],
+    'userEmail': ['User Email'], 
+    'quizId': ['Quiz Id'],
     'status': ['Status'],
   };
-
   buttons = [
-    { label: 'Evaluate', colorClass: 'bg-blue-500 py-2 px-4 text-white rounded-md', action: (row: any) => this.navigateToEvaluate(row) },
+    { label: this.currentButtonLabel, colorClass: 'bg-blue-500 py-2 px-4 text-white rounded-md', action: (row: any) => this.handleButtonClick(row) },
   ];
-
-  searchPlaceholder = 'Search By Assessment ID';
-
-  constructor(
+  searchPlaceholder = 'Search here....';
+  // Add properties to store user data
+  candidates: Candidate[] = []; 
+  employees: Employee[] = []; 
+  
+ constructor(
     private router: Router,
     private evaluationService: EvaluationService,
-    
+    private firebaseservice: FireBaseService<EvaluationAssessmentData>
   ) {}
 
   ngOnInit(): void {
-    this.evaluationList = evaluationList; // Load mock data
-    this.filteredEvaluationList = [...this.evaluationList]; // Initialize filtered list with all evaluations
-   }
- onSearchQueryChange(newQuery: string): void {
-   this.searchQuery = newQuery;
-    ;  
+    this.getAssessmentForEvaluation();
+    this.getCandidatesAndEmployees();
   }
-  getButtonLabel(row: any): string {
+
+
+  getCandidatesAndEmployees(): void { 
+    // Fetch candidates and employees data
+    this.firebaseservice.getAllData('candidates').subscribe(
+      (data) => {
+        this.candidates = data;
+      },
+      (error) => {
+        console.error('Error fetching candidates:', error);
+      }
+    );
+    this.firebaseservice.getAllData('employees').subscribe(
+      (data) => {
+        this.employees = data;
+      },
+      (error) => {
+        console.error('Error fetching employees:', error);
+      }
+    );
+  }
+
+  // Whenever the search query changes, update the data in the table
+  onSearchQueryChange(newQuery: string): void {
+    this.searchQuery = newQuery;
+  
+  }
+
+  handleButtonClick(row: any): void {
+    if (row.isAutoEvaluated ) {
+      this.router.navigate([`/view`]);
+      this.currentButtonLabel = 'View';  // Update the label dynamically
+    } else {
+      this.router.navigate([`/evaluate`]);
+      this.currentButtonLabel = 'Evaluate';  // Update the label dynamically
+    }
+  }
+  
+
+ getButtonLabel(row: any): string {
     return row.status === 'Complete' ? 'View Complete' : 'View Pending';
   }
 
- navigateToEvaluate(evalList: any): void {
-    this.evaluationService.setData(evalList);
-  if (!evalList.isEvaluation || !evalList.isAutoEvaluate) {
-      this.router.navigate(['/evaluate']);
-    } else if (evalList.isEvaluation || evalList.isAutoEvaluate) {
-      this.router.navigate(['/view']);
+getAssessmentForEvaluation(): void {
+  this.getCandidatesAndEmployees();
+  this.firebaseservice.getAllData('EvaluationAssessmentData').subscribe(
+    (data) => {
+      this.evaluationList = data;
+      this.filteredEvaluationList = [...this.evaluationList];
+
+      // Add the userName and userEmail to each row
+      this.filteredEvaluationList = this.filteredEvaluationList.map((row) => {
+        const userId = row.userId;
+        let user: Candidate | Employee | undefined;
+
+        // Check if the user is a candidate or employee
+        user = this.candidates.find(candidate => candidate.candidateId === userId) ||
+               this.employees.find(employee => employee.employeeId === userId);
+
+        const updatedRow = {
+          ...row,
+          userName: user ? this.getUserName(user) : '',
+          userEmail: user ? this.getUserEmail(user) : ''
+        };
+        return updatedRow;
+      });
+    },
+    (error) => {
+      console.error('Error fetching assessments:', error);
     }
-  }
+  );
+  
 }
 
+
+// Type guard for Candidate
+isCandidate(user: Candidate | Employee): user is Candidate {
+  return (user as Candidate).candidateId !== undefined;
+}
+
+// Type guard for Employee
+isEmployee(user: Candidate | Employee): user is Employee {
+  return (user as Employee).employeeId !== undefined;
+}
+
+// Function to get the user name
+getUserName(user: Candidate | Employee): string {
+  if (this.isCandidate(user)) {
+    return user.candidateName || ''; 
+  }
+  if (this.isEmployee(user)) {
+    return user.employeeName || ''; 
+  }
+  return ''; 
+}
+
+// Function to get the user email
+getUserEmail(user: Candidate | Employee): string {
+  if (this.isCandidate(user)) {
+    return user.candidateEmail || ''; 
+   
+  }
+  if (this.isEmployee(user)) {
+    return user.employeeEmail || ''; 
+  }
+  return ''; 
+}
+}
