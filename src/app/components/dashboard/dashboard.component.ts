@@ -19,6 +19,7 @@ export class DashboardComponent {
   navItems = [
     { label: 'Manage Subjects', route: '/subjects', icon: 'fas fa-plus' },
     { label: 'Generate Link', route: '/generatelink', icon: 'fas fa-question-circle' },
+    { label: 'Manage Assessment', route: '/assessment-list', icon: 'fas fa-question-circle' },
   ];
 
   constructor(
