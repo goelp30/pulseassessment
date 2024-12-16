@@ -47,14 +47,55 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   editFlag:boolean=false;
 
 // clear ls when moving to another route
-  clearLocalStorageOnNavigation(): void {
-    localStorage.removeItem('leftList');
-    localStorage.removeItem('rightList');
-    localStorage.removeItem('rightListInputs');
-    localStorage.removeItem('createdOn');
-    localStorage.removeItem('inputText');
-    localStorage.removeItem('savedData');
+ngOnInit(): void {
+  this.initializeRightListForm();
+  if (this.isBrowser()) {
+    this.loadFromLocalStorage();
+    this.fetchLeftList();
+
+    const savedData = localStorage.getItem('savedData');
+    if (savedData) {
+      this.savedFormData = JSON.parse(savedData);
+    }
   }
+  this.subscribeToFormChanges();
+  this.router.events.subscribe((event) => {
+    if (event instanceof NavigationStart) {
+      this.clearLocalStorageOnNavigation();
+    }
+  });
+
+  // Clear local storage and cache when the user leaves the page
+  window.addEventListener('beforeunload', this.clearLocalStorage);
+
+  this.assessmentService.assessmentId$.subscribe((assessmentId) => {
+    if (assessmentId) {
+      this.assessmentId = assessmentId;
+      this.editFlag = true;
+      this.getEditData(this.assessmentId, this.editFlag);
+    }
+  });
+}
+
+ngOnDestroy(): void {
+  // Remove the event listener when the component is destroyed
+  window.removeEventListener('beforeunload', this.clearLocalStorage);
+}
+
+clearLocalStorage(): void {
+  localStorage.removeItem('leftList');
+  localStorage.removeItem('rightList');
+  localStorage.removeItem('rightListInputs');
+  localStorage.removeItem('createdOn');
+  localStorage.removeItem('inputText');
+  localStorage.removeItem('savedData');
+}
+
+clearLocalStorageOnNavigation(): void {
+  console.log('cleared');
+  
+  this.clearLocalStorage();
+}
   toggleViewMode(mode: 'internal' | 'external'): void {
     this.viewMode = mode; 
   }
@@ -276,37 +317,8 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   }
   navigateToAssessments(){
     this.router.navigate(['/assessment-list']);
+    this.clearLocalStorage();
   }
-
-
-  ngOnInit(): void {
-    this.initializeRightListForm(); 
-    if (this.isBrowser()) {
-      this.loadFromLocalStorage(); 
-      this.fetchLeftList(); // Fetch subjects from Firebase
-
-      const savedData = localStorage.getItem('savedData'); // Load saved data
-      if (savedData) {
-        this.savedFormData = JSON.parse(savedData);
-      }
-    }
-    this.subscribeToFormChanges();
-    this.router.events.subscribe((event) => {
-      if (event instanceof NavigationStart) {
-        this.clearLocalStorageOnNavigation();  // Clear local storage on route change
-      }
-    });
-    
-    // Fetch existing assessment data when editing
-    this.assessmentService.assessmentId$.subscribe((assessmentId) => {
-      if (assessmentId) {
-        this.assessmentId = assessmentId;
-        this.editFlag = true;
-        this.getEditData(this.assessmentId, this.editFlag);
-      }
-    });
-  }
-
 getEditData(assessmentId: string, isEditing: boolean): void {
     if (this.assessmentId && this.editFlag) {
       console.log('We are editing');
