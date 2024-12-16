@@ -252,30 +252,36 @@ validateCorrectOptions(formArray: FormArray): { [key: string]: any } | null {
   
 
 async saveData() {
-    console.log('Form Validity:', this.assessmentForm.valid);
-    console.log('Form Value:', this.assessmentForm.value);
+  console.log('Form Validity:', this.assessmentForm.valid);
+  console.log('Form Value:', this.assessmentForm.value);
 
-    if (this.assessmentForm.valid && this.validateOptions()) {
-      try {
+  if (this.assessmentForm.valid && this.validateOptions()) {
+    try {
+      if (this.editingMode && this.question?.questionId) {
+        // Call updateQuestion if editing mode is enabled
+        await this.updateQuestion();
+        alert('saved successfully!'); // Alert for updates
+      } else {
+        // Call addQuestion if creating a new question
         const questionId = await this.addQuestion();
         if (this.assessmentForm.value.questionType !== 'Descriptive') {
           await this.storeOptions(questionId);
         }
-        
-
-        alert('Saved successfully!');
-        this.closeModal.emit();
-        
-        this.assessmentForm.reset();
-        this.options.clear();
-        this.addOption();
-      } catch (error) {
-        alert(`Error saving: ${error}`);
+        alert('saved successfully!'); // Alert for adding
       }
-    } else {
-      alert('Please fill out all required fields correctly.');
+
+      this.closeModal.emit(); // Notify parent to close modal
+      this.assessmentForm.reset();
+      this.options.clear();
+      this.addOption(); // Add a default option for new questions
+    } catch (error) {
+      alert(`Error saving data: ${error}`);
     }
+  } else {
+    alert('Please fill out all required fields correctly.');
   }
+}
+
 
 
 
@@ -309,23 +315,36 @@ async saveData() {
   
 
   async updateQuestion() {
+    if (!this.question?.questionId) {
+      console.error('Question ID is missing. Cannot perform update.');
+      return;
+    }
+  
     const updatedData: Question = {
       subjectId: this.assessmentForm.value.subjectId,
-      questionId: this.question!.questionId,
+      questionId: this.question.questionId, // Use the existing question ID
       questionText: this.assessmentForm.value.questionText,
       questionType: this.assessmentForm.value.questionType,
       questionLevel: this.assessmentForm.value.questionLevel,
       questionWeightage: this.assessmentForm.value.questionWeightage,
       questionTime: this.assessmentForm.value.questionTime,
-      createdOn: this.question?.createdOn || Date.now(),
-      updatedOn: Date.now(),
+      createdOn: this.question.createdOn, // Retain the original creation date
+      updatedOn: Date.now(), // Update the last modified timestamp
       isQuesDisabled: false,
     };
-
-    await this.firebaseService.update(`/questions/${this.question!.questionId}`, updatedData);
-    await this.updateOptions();
-   console.log(this.options)
+  
+    try {
+      // Update the question data in Firebase
+      await this.firebaseService.update(`/questions/${this.question.questionId}`, updatedData);
+      // Update options associated with this question
+      await this.updateOptions();
+      console.log('Question and options updated successfully');
+    } catch (error) {
+      console.error('Failed to update question:', error);
+      throw error;
+    }
   }
+  
   async updateOptions(): Promise<void> {
     // Map current options to their IDs
     const existingOptionIds = this.options.controls
