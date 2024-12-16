@@ -53,6 +53,7 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
         this.activeTab = this.tabs[0];
       }
     }
+   
 
     ngOnChanges(changes: SimpleChanges): void {
       if (changes['searchQuery']) {

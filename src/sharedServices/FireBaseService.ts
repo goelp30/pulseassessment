@@ -32,7 +32,7 @@ export class FireBaseService<T> {
      * Update new
      */
     update(tableName: string, params: Partial<T>) {
-        return this.database.object(tableName).update(params);
+      return this.database.object(tableName).update(params);
     }
 
     /***
@@ -97,14 +97,54 @@ export class FireBaseService<T> {
       .snapshotChanges()
       .pipe(map(this.documentToDomainObject));
   }
-
-  // Get options for a specific question
+ // Get options for a specific question
   getOptionsByQuestionId(questionId: number): Observable<Options[]> {
     return this.database
       .list('options', ref => ref.orderByChild('questionId').equalTo(questionId))
       .snapshotChanges()
       .pipe(map(actions => actions.map(this.documentToDomainObject)));
   }
-      
+  getItemsByQuizId(path: string, quizId: string): Observable<any[]> {
+    return this.database
+      .list(`${path}/${quizId}`)  // Access the nested structure by quizId
+      .snapshotChanges()  // Get the snapshot of the data
+      .pipe(
+        map(actions => actions.map(action => {
+          const data = action.payload.val();  // Get the data from the snapshot
+          return data;
+        })),
+        catchError((error) => {
+          console.error('Error fetching items by quizId:', error);
+          throw error;  // Handle errors appropriately
+        })
+      );
+  }
+  getQuestionsByIds(questionIds: string[]): Observable<any[]> {
+    return this.database
+      .list('EvaluationQuestionData', ref => ref.orderByKey())  // Query all questions
+      .snapshotChanges()
+      .pipe(
+        map(actions => {
+          const filteredActions = actions.filter(action => questionIds.includes(action.key!));
+          return filteredActions.map(action => {
+            const data = this.documentToDomainObject(action);  // Convert snapshot to data
+            return {
+              questionId: action.key,  // Include the questionId
+              questionText: data?.questionText,
+              questionWeitage: data?.questionWeitage,
+              questionType: data?.questionType,  // Add questionType here
+            };
+          });
+        })
+      );
+  }
+  // Get options for multiple questionIds
+// Fetch all options for all questions
+getAllOptions(): Observable<any[]> {
+  return this.database
+    .list('EvaluationOptionData')
+    .snapshotChanges()
+    .pipe(map(actions => actions.map(this.documentToDomainObject)));
+}
 }
 

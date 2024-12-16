@@ -1,12 +1,12 @@
 <app-header
   [title]="'List of Evaluations'"
   [subtitle]="'Evaluation details displayed below'"
-  [buttonLabel]="''" >
+  [buttonLabel]="''">
 </app-header>
-<app-table 
-  [tableName]="tableName"
+<app-table
+  [tableName]="'EvaluationAssessmentData'"
   [tableData]="filteredEvaluationList"  
-  [tableColumns]="['assessmentId', 'status']"
+  [tableColumns]="['userName', 'userEmail','quizId', 'status']" 
   [columnAliases]="columnAliases"
   [buttons]="buttons"
   [searchQuery]="searchQuery"
