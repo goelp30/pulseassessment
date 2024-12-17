@@ -9,6 +9,8 @@ import { CommonModule } from '@angular/common';
 import { Option } from '../../../models/question';
 import { TableNames } from '../../../enums/TableName';
 import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';
+import { ButtonComponent } from '../../common/button/button.component';
+import { Router, RouterModule } from '@angular/router';
 
 export type Question = {
   subjectId: string;
@@ -28,9 +30,10 @@ export type Question = {
   standalone: true,
   templateUrl: './questiontable.component.html',
   styleUrls: ['./questiontable.component.css'],
-  imports:[HeaderComponent,TableComponent,QuestionmodalComponent,CommonModule,PopupModuleComponent]
+  imports:[HeaderComponent,TableComponent,QuestionmodalComponent,CommonModule,PopupModuleComponent,ButtonComponent,RouterModule]
 })
 export class QuestiontableComponent implements OnInit {
+
   questions: Question[] = [];
   options: Option[] = [];
 
@@ -80,17 +83,21 @@ export class QuestiontableComponent implements OnInit {
 
  
   searchPlaceholder: string = 'Search Questions';
-  tableName: string = TableNames.Question;
   searchQuery: string = '';
   isModalVisible: boolean = false;
   isAddModal: boolean = false;
   subjectName: string='';
+backbutton={
+  label:"back to subject",
+  colorClass:"bg-blue-500 py-2 px-4 text-white rounded-md ml-6",
+};
 
 
   constructor(
     private toastr: ToastrService,
     private subjectService: SubjectService,
-    private fireBaseService: FireBaseService<Question>
+    private fireBaseService: FireBaseService<Question>,
+    private router:Router
   ) {}
 
   ngOnInit(): void {
@@ -128,6 +135,11 @@ export class QuestiontableComponent implements OnInit {
         localStorage.setItem('subjectName', subjectName);
       }
     });
+  }
+
+  navigatetosubject() {
+    this.router.navigate(['/subjects']);
+
   }
   
   fetchQuestions(): void {

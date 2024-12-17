@@ -10,7 +10,8 @@ import {
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { SubjectService } from '../../../../sharedServices/Subject.service';
 import { CommonModule, TitleCasePipe } from '@angular/common';
-import { Question, Option} from '../../../models/question';
+import { Question} from '../../../models/question';
+import { Option } from '../../../models/question';
 import { map } from 'rxjs';
 
 @Component({
@@ -104,7 +105,6 @@ export class QuestionmodalComponent implements OnInit {
       this.loadOptions();
     }
   }
-
   loadOptions(): void {
     if (this.question?.questionId) {
       this.firebaseService.getAllData('/options')
@@ -145,6 +145,7 @@ export class QuestionmodalComponent implements OnInit {
   get options() {
     return this.assessmentForm.get('options') as FormArray;
   }
+
   createOptionGroup(): FormGroup {
     return this.fb.group({
       optionId: [crypto.randomUUID()],
@@ -157,20 +158,20 @@ export class QuestionmodalComponent implements OnInit {
   
   addOption(): void {
     if (this.assessmentForm.value.questionType === 'Descriptive') {
-        return; // Do nothing for Descriptive questions
+      return; // No options allowed for Descriptive questions
     }
-
-    if (this.options.length < 6) {
-        this.options.push(this.createOptionGroup());
-        this.warningMessage = '';
-    } else {
-        this.warningMessage = 'Cannot add more than 6 options.';  
-    }
-}
-
-
-
   
+    if (this.options.length < 6) {
+      this.options.push(this.createOptionGroup());
+      this.warningMessage = '';
+    } else {
+      this.warningMessage = 'Cannot add more than 6 options.';
+    }
+  }
+  
+
+
+
 removeOption(index: number): void {
   const option = this.options.at(index) as FormGroup;
 
@@ -192,7 +193,7 @@ removeOption(index: number): void {
 
 
 toggleCorrectOption(index: number) {
-  const option = this.options.at(index) as FormGroup;
+  const option = this.options.at(index);
   option.patchValue({
     isCorrectOption: !option.get('isCorrectOption')?.value,
   });
@@ -281,14 +282,12 @@ async saveData() {
       if (this.editingMode && this.question?.questionId) {
         // Call updateQuestion if editing mode is enabled
         await this.updateQuestion();
-        alert('saved successfully!'); // Alert for updates
       } else {
         // Call addQuestion if creating a new question
         const questionId = await this.addQuestion();
         if (this.assessmentForm.value.questionType !== 'Descriptive') {
           await this.storeOptions(questionId);
         }
-        alert('saved successfully!'); // Alert for adding
       }
 
       this.closeModal.emit(); // Notify parent to close modal
@@ -438,3 +437,4 @@ async saveData() {
     this.assessmentForm.patchValue({ questionTime: time });
   }
 }
+
