@@ -1,15 +1,20 @@
 export interface Question {
-    questionId: string;
-    subjectId: string;
-    questionText: string;
-    questionType: string;
-    questionLevel: string;
-    questionWeightage: number;
-    questionTime: number;
-    createdOn: number;
-    updatedOn: number;
-    isQuesDisabled?: boolean;
-  }
+  questionId: string;
+  subjectId: string;
+  questionText: string;
+  questionType: string;
+  questionLevel: string;
+  questionWeightage: number;
+  questionTime: number;
+  createdOn: number;
+  updatedOn: number;
+  isQuesDisabled?: boolean;
+  isMarkedForReview?: boolean;
+  isVisited?: boolean;
+  selectedAnswer?: string | string[];
+  descriptiveAnswer?: string;
+  options?: Option[];
+}
    
   export interface Option {
     optionId: string;
