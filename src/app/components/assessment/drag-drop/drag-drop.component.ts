@@ -611,6 +611,7 @@ this.addAssessment().then((assessmentId: string) => {
   this.toastr.error('Failed to create assessment. ' + error);
 });
 }
+// listen to changes added
 calculateQuestionCounts(subjectId: string): void {
   // Assuming `questions` is the array of question objects
   this.firebaseService.listensToChangeWithFilter('questions', 'subjectId', subjectId).subscribe((questions: any[]) => {
