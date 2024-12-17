@@ -3,6 +3,6 @@ export type Subject = {
     subjectName : string
     createdOn:number,
     UpdatedOn:number,
-    isDisabled?: boolean;
+    isDisabled: boolean;
 }
 
