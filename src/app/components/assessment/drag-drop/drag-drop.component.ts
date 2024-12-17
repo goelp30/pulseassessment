@@ -60,12 +60,10 @@ ngOnInit(): void {
       this.savedFormData = JSON.parse(savedData);
     }
   }
-
   this.subscribeToFormChanges();
   this.router.events.subscribe((event) => {
     if (event instanceof NavigationStart) {
       this.clearLocalStorageOnNavigation();
-
     }
   });
 
@@ -335,7 +333,7 @@ getEditData(assessmentId: string, isEditing: boolean): void {
           this.viewMode = assessment.assessmentType; // Populate viewMode
   
           // Fetch associated subjects and their ratings from the 'assessmentList' table
-          this.firebaseService.getItemsByFields(TableNames.AssessmentList, ['assessmentId'], this.assessmentId).subscribe((assessmentLists: any[]) => {
+          this.firebaseService.listensToChangeWithFilter(TableNames.AssessmentList, 'assessmentId', this.assessmentId).subscribe((assessmentLists: any[]) => {
             if (assessmentLists && assessmentLists.length > 0) {
               const assessmentList = assessmentLists[0]; // Assuming assessmentId is unique, get the first match
               const subjectsWithRatings = assessmentList.subjects; // subjects with ratings
