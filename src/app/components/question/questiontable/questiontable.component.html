@@ -1,10 +1,15 @@
-<app-header
-  [title]="'List of Questions'"
+<app-button 
+[label]="backbutton.label" 
+[colorClass]="backbutton.colorClass"
+(action)="navigatetosubject()"
+>
+</app-button>
+<app-header 
+  [title]="'List of Questions'" 
   [subtitle]="'Manage your questions here'"
   [buttonLabel]="'Add Question'"
   [buttonClasses]="'bg-blue-500 text-white rounded-md px-4 py-2'"
-  (click)="addQuestion()"
-  >
+  (addSubjectEvent)="addQuestion()">
 </app-header>
 
 <app-table
