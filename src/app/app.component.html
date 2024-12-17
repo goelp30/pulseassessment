@@ -1,2 +1,5 @@
-<router-outlet></router-outlet>
-
+@if(isLoggedIn){
+    <app-dashboard></app-dashboard>
+} @else {
+    <router-outlet></router-outlet>
+}

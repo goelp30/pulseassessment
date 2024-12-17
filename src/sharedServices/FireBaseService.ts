@@ -9,7 +9,7 @@ import { Options, Question } from '../app/models/question.model';
 
 export class FireBaseService<T> {
     getData(arg0: string) {
-      throw new Error('Method not implemented.');
+        throw new Error('Method not implemented.');
     }
 
     documentToDomainObject = (_: any) => {
@@ -25,8 +25,8 @@ export class FireBaseService<T> {
      */
     create<T>(tableName: string, params: T): Promise<void> {
         return this.database.object(tableName).set(params);
-      }
-      
+    }
+
 
     /***
      * Update new
@@ -49,10 +49,10 @@ export class FireBaseService<T> {
         return this.database.list(tableName).snapshotChanges().pipe(map(actions => actions.map(this.documentToDomainObject)));
     }
 
-     /***
-     * listens changes with filter
-     */
-     listensToChangeWithFilter(tableName: string, searchField: string, searchValue: string | number | boolean): Observable<T[]> {
+    /***
+    * listens changes with filter
+    */
+    listensToChangeWithFilter(tableName: string, searchField: string, searchValue: string | number | boolean): Observable<T[]> {
         return this.database.list(tableName, (res) => res.orderByChild(searchField).equalTo(searchValue)).valueChanges() as Observable<T[]>;
     }
 
@@ -68,43 +68,23 @@ export class FireBaseService<T> {
      */
     addData(tableName: string, id: string, params: T): Promise<void> {
         return this.database.object(`${tableName}/${id}`).set(params);
-      }
-      getItemsByFields(
-        path: string,
-        fields: string[],
-        value: any
-      ): Observable<T[]> {
+    }
+
+    // Get question by its ID
+    getQuestionById(questionId: number): Observable<Question> {
         return this.database
-          .list<T>(path)
-          .valueChanges()
-          .pipe(
-            map((items) =>
-              items.filter((item) =>
-                fields.some((field) => (item as any)[field] === value)
-              )
-            ),
-            catchError((error) => {
-              console.error(`Error filtering items in ${path}:`, error);
-              throw error;
-            })
-          );
-      }
+            .object(`questions/${questionId}`)
+            .snapshotChanges()
+            .pipe(map(this.documentToDomainObject));
+    }
 
-        // Get question by its ID
-  getQuestionById(questionId: number): Observable<Question> {
-    return this.database
-      .object(`questions/${questionId}`)
-      .snapshotChanges()
-      .pipe(map(this.documentToDomainObject));
-  }
+    // Get options for a specific question
+    getOptionsByQuestionId(questionId: number): Observable<Options[]> {
+        return this.database
+            .list('options', ref => ref.orderByChild('questionId').equalTo(questionId))
+            .snapshotChanges()
+            .pipe(map(actions => actions.map(this.documentToDomainObject)));
+    }
 
-  // Get options for a specific question
-  getOptionsByQuestionId(questionId: number): Observable<Options[]> {
-    return this.database
-      .list('options', ref => ref.orderByChild('questionId').equalTo(questionId))
-      .snapshotChanges()
-      .pipe(map(actions => actions.map(this.documentToDomainObject)));
-  }
-      
 }
 
