@@ -78,21 +78,35 @@
           class="flex-1 border rounded-md px-3 py-2 "
         />
     
-        <!-- Toggle Button -->
-        <div class="relative w-12 h-6">
-          <div
-            (click)="toggleCorrectOption(i)"
-            [class.bg-gray-300]="!option.get('isCorrectOption')?.value"
-            [class.bg-blue-500]="option.get('isCorrectOption')?.value"
-            class="w-full h-full rounded-full transition-all duration-300 cursor-pointer"
-          >
-            <div
-              [class.translate-x-0]="!option.get('isCorrectOption')?.value"
-              [class.translate-x-6]="option.get('isCorrectOption')?.value"
-              class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-300"
-            ></div>
-          </div>
-        </div>
+      <!-- Toggle Button -->
+<!-- Toggle Button -->
+<div class="relative w-32 h-10 p-2">
+  <div
+    (click)="toggleCorrectOption(i)"
+    [class.bg-gray-300]="!option.get('isCorrectOption')?.value"
+    [class.bg-blue-500]="option.get('isCorrectOption')?.value"
+    class="w-full h-full rounded-full transition-all duration-300 cursor-pointer flex items-center relative"
+  >
+    <!-- Text: Left when Correct, Right when Incorrect -->
+    <span
+      class="absolute top-1/2 -translate-y-1/2 text-sm text-white font-medium transition-all duration-300"
+      [class.left-3]="option.get('isCorrectOption')?.value"
+      [class.right-3]="!option.get('isCorrectOption')?.value"
+    >
+      {{ option.get('isCorrectOption')?.value ? 'Correct' : 'Incorrect' }}
+    </span>
+
+    <!-- Toggle Slider (White Ball) -->
+    <div
+      [class.translate-x-20]="option.get('isCorrectOption')?.value"
+      [class.translate-x-0]="!option.get('isCorrectOption')?.value"
+      class="absolute left-1 w-8 h-8 bg-white rounded-full shadow-md transition-transform duration-300"
+    ></div>
+  </div>
+</div>
+
+
+
     
         <!-- Delete Button -->
         <button
