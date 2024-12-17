@@ -1,15 +1,16 @@
-<div class="container mx-auto p-6 bg-white rounded-lg w-[500px] mt-2">
-  <h4 class="text-center mb-4 text-2xl">{{ subjectName | titlecase }}</h4>
+<div class="container mx-auto p-6 bg-white rounded-lg w-[500px] w-full mt-2 max-h-[50vh]">
+  <h4 class="text-center  mb-4 text-2xl">{{subjectName |titlecase }}</h4>
   <form [formGroup]="assessmentForm" class="space-y-6">
 
     <!-- Question Type and Level -->
     <div class="flex space-x-4">
+   
       <div class="w-1/2">
         <label for="questionType" class="block text-sm font-medium text-gray-700">Question Type</label>
         <select
- id="questionType"
+          id="questionType"
           formControlName="questionType"
-          class="mt-2 block w-full border rounded-md px-3 py-2"
+          class="mt-2 block w-full border rounded-md px-3 py-2 "
         >
           <option *ngFor="let type of questionTypes" [value]="type">{{ type }}</option>
         </select>
@@ -20,7 +21,7 @@
         <select
           id="questionLevel"
           formControlName="questionLevel"
-          class="mt-2 block w-full border rounded-md px-3 py-2"
+          class="mt-2 block w-full border rounded-md px-3 py-2 "
         >
           <option *ngFor="let level of questionLevels" [value]="level">{{ level }}</option>
         </select>
@@ -35,7 +36,7 @@
           type="text"
           formControlName="questionText"
           placeholder="Enter the question here"
-          class="mt-2 block w-full border rounded-md px-3 py-2"
+          class="mt-2 block w-full border rounded-md px-3 py-2 "
         />
       </div>
     </div>
@@ -57,7 +58,7 @@
         <input
           type="number"
           formControlName="questionTime"
-          class="mt-2 block w-full border rounded-md px-3 py-2"
+          class="mt-2 block w-full border rounded-md px-3 py-2 "
           min="1"
           max="10"
         />
@@ -67,31 +68,33 @@
     <!-- Options Section -->
     <div *ngIf="assessmentForm.get('questionType')?.value !== 'Descriptive'" formArrayName="options">
       <h3 class="text-lg font-medium text-gray-700 mb-3">Options</h3>
-
+    
       <div *ngFor="let option of options.controls; let i = index" [formGroupName]="i" class="flex items-center space-x-3 mb-3">
+        <!-- Option Input -->
         <input
           type="text"
           formControlName="optionText"
           placeholder="Option text"
-          class="flex-1 border rounded-md px-3 py-2"
+          class="flex-1 border rounded-md px-3 py-2 "
         />
-        <button
-          type="button"
-          class="focus:outline-none text-2xl"
-          (click)="toggleCorrectOption(i)"
-        >
-          <i
-            class="fa fa-check-square"
-            *ngIf="!option.get('isCorrectOption')?.value"
-            [ngStyle]="{ color: 'gray' }"
-          ></i>
-          <i
-            class="fa fa-check-square"
-            *ngIf="option.get('isCorrectOption')?.value"
-            [ngStyle]="{ color: '#1976d2' }"
-          ></i>
-        </button>
-
+    
+        <!-- Toggle Button -->
+        <div class="relative w-12 h-6">
+          <div
+            (click)="toggleCorrectOption(i)"
+            [class.bg-gray-300]="!option.get('isCorrectOption')?.value"
+            [class.bg-blue-500]="option.get('isCorrectOption')?.value"
+            class="w-full h-full rounded-full transition-all duration-300 cursor-pointer"
+          >
+            <div
+              [class.translate-x-0]="!option.get('isCorrectOption')?.value"
+              [class.translate-x-6]="option.get('isCorrectOption')?.value"
+              class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-300"
+            ></div>
+          </div>
+        </div>
+    
+        <!-- Delete Button -->
         <button
           type="button"
           class="text-red-500 focus:outline-none text-2xl"
@@ -101,7 +104,11 @@
           <i class="fa fa-trash"></i>
         </button>
       </div>
+    
+      <!-- Warning Message -->
       <p *ngIf="warningMessage" class="text-red-500 text-sm mb-2">{{ warningMessage }}</p>
+      
+      <!-- Add Option Button -->
       <button
         type="button"
         (click)="addOption()"
@@ -110,25 +117,27 @@
         Add Option
       </button>
     </div>
+    
 
     <!-- Submit Button -->
     <div class="text-right px-2">
       <button
-        type="submit"
-        (click)="saveData()"
-        class="select-none rounded-lg border py-2 px-4"
-        [disabled]="isSaveDisabled"
-        [class.bg-gray-400]="isSaveDisabled"
-        [class.cursor-not-allowed]="isSaveDisabled"
-        [class.bg-blue-500]="!isSaveDisabled"
-        [class.text-white]="!isSaveDisabled"
-      >
-        Save
-      </button>
-
-      <p *ngIf="assessmentForm.get('options')?.errors?. ['noCorrectOption']" class="text-red-500 text-sm">
-        At least one correct option must be selected.
-      </p>
+      type="submit"
+      (click)="saveData()"
+      class="select-none rounded-lg border py-2 px-4"
+      [disabled]="isSaveDisabled"
+      [class.bg-gray-400]="isSaveDisabled"
+      [class.cursor-not-allowed]="isSaveDisabled"
+      [class.bg-blue-500]="!isSaveDisabled"
+      [class.text-white]="!isSaveDisabled"
+    >
+    Save
+    </button>
+      
+    
+    <p *ngIf="assessmentForm.get('options')?.errors?.['noCorrectOption']" class="text-red-500 text-sm">
+      At least one correct option must be selected.
+    </p>    
     </div>
   </form>
 </div>
