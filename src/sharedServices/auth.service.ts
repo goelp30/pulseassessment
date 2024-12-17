@@ -1,15 +1,18 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Router } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 
 export class AuthService {
-  loggedIn: boolean = false;
+  public isLoggedIn = new BehaviorSubject<boolean>(sessionStorage.getItem('isLoggedIn') !== null ? true : false);
 
-  constructor(private fireauth : AngularFireAuth, private router : Router) { }
+  constructor(private fireauth : AngularFireAuth, private router : Router) {
+
+  }
 
   /**
    * 
@@ -18,20 +21,13 @@ export class AuthService {
    */
   login(email : string, password : string) {
     this.fireauth.signInWithEmailAndPassword(email,password).then( res => {
-        this.loggedIn = true;
-        this.router.navigate(['/dashboard']);
+        sessionStorage.setItem('isLoggedIn', 'true');
+        this.isLoggedIn.next(sessionStorage.getItem('isLoggedIn') !== null ? true : false);
+        this.router.navigateByUrl('/subjects');
     }, err => {
         alert(err.message);
         this.router.navigate(['/login']);
     })
-  }
-
-  /**
-   * 
-   * @returns Check is user logged in
-   */
-  isLoggedIn() {
-    return this.loggedIn;
   }
 
   /**
@@ -54,7 +50,8 @@ export class AuthService {
    */
   logout() {
     this.fireauth.signOut().then( () => {
-      this.loggedIn = false;
+      sessionStorage.removeItem('isLoggedIn');
+      this.isLoggedIn.next(false);
       this.router.navigate(['/login']);
     }, err => {
       alert(err.message);
