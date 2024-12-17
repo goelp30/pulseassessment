@@ -1,3 +1,4 @@
+//loging correct in console
 import { CommonModule } from '@angular/common';
 import { AssessmentList, SubjectCounts } from '../../../models/newassessment';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -17,6 +18,7 @@ import { AssessmentService } from '../services/assessmentServices/assessment.ser
   styleUrls: ['./drag-drop.component.css'],
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
 })
+
 export class DragDropComponent implements AfterViewInit, OnInit {
   leftList: { subjectId: string, subjectName: string }[] = [];
   rightList: { subjectId: string, subjectName: string }[] = [];
@@ -460,6 +462,7 @@ ngAfterViewInit(): void {
     this.rightListForm.setControl('rightListInputs', updatedInputs);
   }
   saveFormData(): void {
+    this.fetchQuestionCountsForRightList();
     const hasDescriptiveGreaterThanZero = this.rightListInputs.controls.some((group) => {
       return group.get('descriptive')?.value > 0;
     });
@@ -498,6 +501,7 @@ ngAfterViewInit(): void {
                 this.toastr.success('Assessment Created', 'Created');
                 this.resetRightListAndForm();  // Reset the form and right list
                 this.assessmentTitle = ''; // Clear the title
+                
               })
               .catch((error) => {
                 console.error('Error saving data:', error);
@@ -606,5 +610,45 @@ this.addAssessment().then((assessmentId: string) => {
 }).catch((error) => {
   this.toastr.error('Failed to create assessment. ' + error);
 });
+}
+calculateQuestionCounts(subjectId: string): void {
+  // Assuming `questions` is the array of question objects
+  this.firebaseService.listensToChangeWithFilter('questions', 'subjectId', subjectId).subscribe((questions: any[]) => {
+    // Initialize counters
+    let easyCount = 0;
+    let mediumCount = 0;
+    let hardCount = 0;
+    let descriptiveCount = 0;
+
+    // Iterate through all the questions for this subject
+    questions.forEach((question: any) => {
+      // Check the question level and increment the appropriate counter
+      if (question.questionLevel === 'Easy') {
+        easyCount++;
+      } else if (question.questionLevel === 'Medium') {
+        mediumCount++;
+      } else if (question.questionLevel === 'Hard') {
+        hardCount++;
+      }
+
+      // Check if the question type is descriptive
+      if (question.questionType === 'Descriptive') {
+        descriptiveCount++;
+      }
+    });
+
+    // Log the counts to the console
+    console.log(`Subject ID: ${subjectId}`);
+    console.log(`Easy Questions: ${easyCount}`);
+    console.log(`Medium Questions: ${mediumCount}`);
+    console.log(`Hard Questions: ${hardCount}`);
+    console.log(`Descriptive Questions: ${descriptiveCount}`);
+  });
+}
+fetchQuestionCountsForRightList(): void {
+  this.rightList.forEach(subject => {
+    // Call the method to calculate counts for each subject in the rightList
+    this.calculateQuestionCounts(subject.subjectId);
+  });
 }
 }
