@@ -58,4 +58,12 @@
       </app-question-navigator>
     </div>
   </div>
+
+   <!-- Submission Modal -->
+   <app-submission-modal 
+   [show]="showModal" 
+   [questions]="questions"
+   (onConfirm)="submitFinalQuiz()"
+   (onCancel)="showModal = false">
+ </app-submission-modal>
 </div>
