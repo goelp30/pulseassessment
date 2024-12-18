@@ -51,9 +51,9 @@ export class EvaluateAssessmentComponent implements OnInit {
       .pipe(
         mergeMap((evaluationData: any[]) => {
           const questionIds = evaluationData.map((item) => item.questionId);
-          return this.firebaseservice.getQuestionsFromIds('EvaluationQuestionData', questionIds).pipe(
+          return this.firebaseservice.getQuestionsFromIds('questions', questionIds).pipe(
             mergeMap((questionData: any[]) => {
-              return this.firebaseservice.getAllOptions('EvaluationOptionData').pipe(
+              return this.firebaseservice.getAllOptions('options').pipe(
                 map((optionData: any[]) => {
                   const optionsMap = optionData.reduce((acc, option) => {
                     if (!acc[option.questionId]) {
@@ -69,7 +69,7 @@ export class EvaluateAssessmentComponent implements OnInit {
                     return {
                       ...item,
                       questionText: question?.questionText,
-                      questionWeitage: question?.questionWeitage,
+                      questionWeitage: question?.questionWeightage,
                       questionType: question?.questionType,
                       options: options,
                     };
@@ -111,7 +111,7 @@ export class EvaluateAssessmentComponent implements OnInit {
       if (question.questionType === 'Single') {
         const selectedOption = question.options.find((option: { optionId: any }) => option.optionId === question.userAnswer);
         question.marks = selectedOption?.isCorrectOption ? question.questionWeitage : 0;
-      } else if (question.questionType === 'Multiple Choice') {
+      } else if (question.questionType === 'Multi') {
         const correctOptions = question.options
           .filter((option: { isCorrectOption: any }) => option.isCorrectOption)
           .map((option: { optionId: any }) => option.optionId);
