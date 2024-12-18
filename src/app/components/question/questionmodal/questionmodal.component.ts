@@ -182,7 +182,42 @@ export class QuestionmodalComponent implements OnInit {
   
 
 
+  // removeOption(index: number): void {
+  //   const option = this.options.at(index) as FormGroup;
+  
+  //   // Mark the option as disabled
+  //   option.patchValue({ isOptionDisabled: true });
+  
+  //   // Perform the Firebase update
+  //   const updatedOption = option.value;
+  //   this.firebaseService.update(`/options/${updatedOption.optionId}`, updatedOption)
+  //     .then(() => {
+  //       console.log('Option marked as disabled in Firebase.');
+  //       this.options.removeAt(index); // Remove from form array only after successful Firebase update
+  //     })
+  //     .catch((error) => {
+  //       console.error('Failed to disable the option in Firebase:', error);
+  //     });
+  // }
+  
+  
   removeOption(index: number): void {
+    const questionType = this.assessmentForm.get('questionType')?.value; // Get the question type
+    const currentOptionsCount = this.options.length;
+  
+    if (questionType === 'Single' && currentOptionsCount <= 2) {
+      this.warningMessage = 'A single-choice question must have at least 2 options.';
+      return;
+    }
+  
+    if (questionType === 'Multi' && currentOptionsCount <= 3) {
+      this.warningMessage = 'A multi-choice question must have at least 3 options.';
+      return;
+    }
+  
+    // Clear warning if all checks are passed
+    this.warningMessage = '';
+  
     const option = this.options.at(index) as FormGroup;
   
     // Mark the option as disabled
@@ -200,8 +235,6 @@ export class QuestionmodalComponent implements OnInit {
       });
   }
   
-  
-
 
 
 toggleCorrectOption(index: number) {
