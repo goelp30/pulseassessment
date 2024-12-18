@@ -7,10 +7,11 @@ import { CommonModule } from '@angular/common';
 import { QuestionDisplayComponent } from '../question-display/question-display.component';
 import { QuestionNavigatorComponent } from '../question-navigator/question-navigator.component';
 import { QuizTimerComponent } from '../quiz-timer/quiz-timer.component';
+import { SubmissionModalComponent } from '../submission-modal/submission-modal.component';
 
 @Component({
   standalone:true,
-  imports: [CommonModule, QuestionDisplayComponent, QuestionNavigatorComponent, QuizTimerComponent],
+  imports: [CommonModule, QuestionDisplayComponent, QuestionNavigatorComponent, QuizTimerComponent, SubmissionModalComponent],
   selector: 'app-quiz',
   templateUrl: './quiz.component.html',
 })
@@ -22,6 +23,7 @@ export class QuizComponent implements OnInit, OnDestroy {
   userId: string = '';
   assessmentId: string = '';
   totalSeconds = 2400; 
+  showModal = false; 
 
   constructor(
     private route: ActivatedRoute,
@@ -110,7 +112,16 @@ export class QuizComponent implements OnInit, OnDestroy {
   submitQuiz() {
     console.log('Quiz submitted:', this.questions);
     console.log('User ID:', this.userId);
-    // Handle quiz submission logic here
+    this.showModal = true;
+  }
+
+  submitFinalQuiz() {
+    console.log('Quiz submitted:', this.questions);
+    // Logic to handle the actual submission here
+    // You can call your backend service or whatever is needed for final submission
+  
+    // Close the modal after submission
+    this.showModal = false;
   }
 
   handleTimeUp() {
