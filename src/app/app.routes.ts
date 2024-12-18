@@ -34,7 +34,7 @@ export const routes: Routes = [
   { path: 'drag-and-drop', component: DragDropComponent, canActivate: [authGuard] },
   { path: 'subjects', component: SubjectlistComponent, canActivate: [authGuard] },
   { path: 'questions', component: QuestionlistComponent, canActivate: [authGuard] },
-  { path: 'app-quiz', component: QuizComponent, canActivate: [authGuard]},
+  { path: 'app-quiz', component: QuizComponent},
   //evaluate module routes
   { path: 'evaluation', component: EvaluationDashboardComponent },
   { path: 'evaluate', component: EvaluateAssessmentComponent },
