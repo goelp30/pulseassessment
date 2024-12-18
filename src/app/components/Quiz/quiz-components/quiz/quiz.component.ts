@@ -1,13 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Question, Option } from '../../../../models/question';
-import { AssessmentList } from '../../../../models/newassessment';
 import { QuizService } from '../../services/quiz.service';
 import { CommonModule } from '@angular/common';
 import { QuestionDisplayComponent } from '../question-display/question-display.component';
 import { QuestionNavigatorComponent } from '../question-navigator/question-navigator.component';
 import { QuizTimerComponent } from '../quiz-timer/quiz-timer.component';
 import { SubmissionModalComponent } from '../submission-modal/submission-modal.component';
+import { QuizAnswerService } from '../../services/quiz-answer.service';
 
 @Component({
   standalone:true,
@@ -27,17 +27,23 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private quizService: QuizService
+    private quizService: QuizService,
+    private quizAnswerService: QuizAnswerService //---------
   ) {}
 
   ngOnInit(): void {
     const state = window.history.state;
     if (state?.assessmentId) {
       this.assessmentId = state.assessmentId;
+      this.quizAnswerService.setAssessmentId(this.assessmentId);  // Set userId in the service
       console.log('Assessment ID from state:', this.assessmentId);
     } else {
       console.error('Assessment ID not found in router state');
       return;
+    }
+    if (state?.userId) { //--------
+      this.userId = state.userId;
+      this.quizAnswerService.setUserId(this.userId);  // Set userId in the service  
     }
 
     this.loadAssessmentData();
@@ -78,8 +84,15 @@ export class QuizComponent implements OnInit, OnDestroy {
     return this.options[this.currentQuestionData?.questionId.toString()] || [];
   }
 
-  onAnswerSelect(optionId: number) {
-    this.questions[this.currentQuestion].selectedAnswer = optionId;
+  onAnswerSelect(optionId: string) {
+    // this.quizAnswerService.storeAnswer(this.currentQuestionData.questionId, false, [optionId]); //-----
+    const isDescriptive = this.currentQuestionData.questionType === 'Descriptive';
+    this.quizAnswerService.storeAnswer(this.currentQuestionData.questionId, isDescriptive, [optionId]);
+
+  }
+
+  onDescriptiveAnswerSelect(answer: string) {
+    this.quizAnswerService.storeAnswer(this.currentQuestionData.questionId, true, answer); // Store answer for descriptive question
   }
 
   toggleReview() {
@@ -112,15 +125,13 @@ export class QuizComponent implements OnInit, OnDestroy {
   submitQuiz() {
     console.log('Quiz submitted:', this.questions);
     console.log('User ID:', this.userId);
+    this.quizAnswerService.submitQuiz(this.questions);  
     this.showModal = true;
+
   }
 
   submitFinalQuiz() {
     console.log('Quiz submitted:', this.questions);
-    // Logic to handle the actual submission here
-    // You can call your backend service or whatever is needed for final submission
-  
-    // Close the modal after submission
     this.showModal = false;
   }
 
