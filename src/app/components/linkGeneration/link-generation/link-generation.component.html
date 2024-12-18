@@ -1,11 +1,13 @@
-<div class="mb-2 mx-auto px-6 max-w-lg mt-4">
-    <p class="text-center text-3xl font-semibold text-blue-700 mb-4"> Assessment List</p>
-  </div>
+<app-header
+  [title]="'List of Assessments'"
+  [subtitle]="'Assessments details displayed below'"
+  [buttonLabel]="''" >
+</app-header>
   <!-- Common Table component  -->
   <app-table
   [tableName]="tableName"
-  [tableColumns]="tableColumns"
   [tableData]="filteredAssessments"
+  [tableColumns]="tableColumns"
   [columnAliases]="columnAliases"
   [searchQuery]="searchQuery"
   [searchPlaceholder]="searchPlaceholder"
