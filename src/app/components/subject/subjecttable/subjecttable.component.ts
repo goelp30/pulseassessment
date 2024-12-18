@@ -12,6 +12,7 @@ import { HeaderComponent } from '../../common/header/header.component';
 import { ButtonComponent } from '../../common/button/button.component';
 import { SubjectService } from '../../../../sharedServices/Subject.service';
 import { Router } from '@angular/router';
+import { Question } from '../../../models/question';
 
 @Component({
   selector: 'app-subjecttable',
@@ -183,23 +184,60 @@ export class SubjectTableComponent {
     this.selectedSubjectToDelete = subject;
     this.eConfirmationVisible = true;
   }
+  // deleteSubject() {
+  //   if (this.selectedSubjectToDelete) {
+  //     const SubjectToDelete = this.selectedSubjectToDelete;
+  //     SubjectToDelete.isDisabled = true; // Mark as deleted (disabled)
+ 
+  //     this.fireBaseService.update(`${this.tableName}/${SubjectToDelete.subjectId}`,SubjectToDelete)
+  //       .then(() => {
+  //         this.toastr.error('Subject deleted successfully', 'Deleted');
+  //         this.eConfirmationVisible = false;
+  //         // this.getAssessments();
+  //       })
+  //       .catch(error => {
+  //         console.error('Error deleting subject:', error);
+  //         this.toastr.error('Failed to delete subject', 'Error');
+  //       });
+  //   }
+  // }
   deleteSubject() {
     if (this.selectedSubjectToDelete) {
-      const SubjectToDelete = this.selectedSubjectToDelete;
-      SubjectToDelete.isDisabled = true; // Mark as deleted (disabled)
- 
-      this.fireBaseService.update(`${this.tableName}/${SubjectToDelete.subjectId}`,SubjectToDelete)
+      const subjectToDelete = this.selectedSubjectToDelete;
+      subjectToDelete.isDisabled = true; // Mark the subject as disabled
+  
+      // First, update the subject to mark it as disabled
+      this.fireBaseService.update(`${this.tableName}/${subjectToDelete.subjectId}`, subjectToDelete)
         .then(() => {
-          this.toastr.error('Subject deleted successfully', 'Deleted');
-          this.eConfirmationVisible = false;
-          // this.getAssessments();
+          // Once the subject is marked as disabled, fetch all questions associated with the subject
+          this.fireBaseService.getAllDataByFilter('questions', 'isQuesDisabled', false).subscribe((questionsList: Question[]) => {
+            const questionsToUpdate = questionsList.filter((question) => question.subjectId === subjectToDelete.subjectId);
+  
+            // Disable all questions associated with this subject
+            const updatePromises = questionsToUpdate.map((question) => {
+              question.isQuesDisabled = true;
+              return this.fireBaseService.update(`questions/${question.questionId}`, question);
+            });
+  
+            // Wait for all updates to complete
+            Promise.all(updatePromises)
+              .then(() => {
+                this.toastr.success('Subject and related questions disabled successfully', 'Deleted');
+                this.eConfirmationVisible = false;
+              })
+              .catch((error) => {
+                console.error('Error updating related questions:', error);
+                this.toastr.error('Failed to update related questions', 'Error');
+              });
+          });
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Error deleting subject:', error);
           this.toastr.error('Failed to delete subject', 'Error');
         });
     }
   }
+  
   closeModal(): void {
     this.isModalVisible = false; // For the Assessment Details modal
     this.eConfirmationVisible = false; // For the Delete Confirmation modal
