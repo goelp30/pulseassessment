@@ -1,7 +1,7 @@
 import { Injectable, Type } from '@angular/core';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { catchError, map, Observable } from 'rxjs';
-import { Options, Question } from '../app/models/question.model';
+import { Option, Question } from '../app/models/question';
 
 @Injectable({
     providedIn: 'root'
@@ -79,7 +79,7 @@ export class FireBaseService<T> {
     }
 
     // Get options for a specific question
-    getOptionsByQuestionId(questionId: number): Observable<Options[]> {
+    getOptionsByQuestionId(questionId: number): Observable<Option[]> {
         return this.database
             .list('options', ref => ref.orderByChild('questionId').equalTo(questionId))
             .snapshotChanges()
