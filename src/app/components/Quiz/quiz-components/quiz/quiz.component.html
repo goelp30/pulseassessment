@@ -47,9 +47,9 @@
     <!-- Timer and Question Navigator -->
     <div class="w-full lg:w-64 space-y-4">
       <app-quiz-timer
-        [totalSeconds]="totalSeconds"
-        (timeUp)="handleTimeUp()">
-      </app-quiz-timer>
+  [totalTime]="totalQuestionTime"
+  (timeUp)="handleTimeUp()">
+</app-quiz-timer>
 
       <app-question-navigator
         [questions]="questions"

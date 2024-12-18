@@ -22,8 +22,8 @@ export class QuizComponent implements OnInit, OnDestroy {
   loading = true;
   userId: string = '';
   assessmentId: string = '';
-  totalSeconds = 2400; 
   showModal = false; 
+  totalQuestionTime: number = 0; // New property to store total question time
 
   constructor(
     private route: ActivatedRoute,
@@ -55,6 +55,9 @@ export class QuizComponent implements OnInit, OnDestroy {
               questions,
               assessment
             );
+
+            // Calculate total question time
+            this.totalQuestionTime = this.questions.reduce((total, question) => total + question.questionTime, 0);
 
             const questionIds = this.questions.map((q) => q.questionId);
             this.quizService.getOptionsForQuestions(questionIds).subscribe((options) => {
@@ -119,7 +122,6 @@ export class QuizComponent implements OnInit, OnDestroy {
     console.log('Quiz submitted:', this.questions);
     // Logic to handle the actual submission here
     // You can call your backend service or whatever is needed for final submission
-  
     // Close the modal after submission
     this.showModal = false;
   }

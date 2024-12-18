@@ -13,17 +13,23 @@ import { CommonModule } from '@angular/common';
   `
 })
 export class QuizTimerComponent implements OnInit, OnDestroy {
-  @Input() totalSeconds = 0;
+  @Input() totalTime: number = 0;
   @Output() timeUp = new EventEmitter<void>();
  
   private timer?: any;
+  totalSeconds = 0;
  
   ngOnInit() {
-    this.startTimer();
+    this.calculateTotalTime();
   }
  
   ngOnDestroy() {
     this.clearTimer();
+  }
+ 
+  private calculateTotalTime() {
+    this.totalSeconds = this.totalTime * 60; // Convert minutes to seconds
+    this.startTimer();
   }
  
   private startTimer() {
@@ -44,9 +50,9 @@ export class QuizTimerComponent implements OnInit, OnDestroy {
   }
  
   get formattedTime(): string {
-    const minutes = Math.floor(this.totalSeconds / 60);
+    const hours = Math.floor(this.totalSeconds / 3600);
+    const minutes = Math.floor((this.totalSeconds % 3600) / 60);
     const seconds = this.totalSeconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 }
- 
