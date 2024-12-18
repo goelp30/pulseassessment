@@ -15,11 +15,14 @@ export interface Question {
     descriptiveAnswer?: string;
     options?: Option[];
   }
-   
+
   export interface Option {
     optionId: string;
     questionId: string;
     subjectId: string;
     optionText: string;
     isCorrectOption: boolean;
+
+    isOptionDisabled?:boolean
   }
+

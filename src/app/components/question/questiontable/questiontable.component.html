@@ -1,10 +1,15 @@
-<app-header
-  [title]="'List of Questions'"
+<app-button 
+[label]="backbutton.label" 
+[colorClass]="backbutton.colorClass"
+(action)="navigatetosubject()"
+>
+</app-button>
+<app-header 
+  [title]="'List of Questions'" 
   [subtitle]="'Manage your questions here'"
   [buttonLabel]="'Add Question'"
   [buttonClasses]="'bg-blue-500 text-white rounded-md px-4 py-2'"
-  (click)="addQuestion()"
-  >
+  (addSubjectEvent)="addQuestion()">
 </app-header>
 
 <app-table
@@ -21,20 +26,19 @@
   <!-- Modal Box with internal scroll -->
   <div class="relative bg-white rounded-lg shadow-lg w-auto h-auto mt-4 mb-4 overflow-hidden">
     <!-- Scrollable Content Area -->
-    <div class="p-4 h-[calc(100vh-8rem)] overflow-y-auto">
+    <div class="p-4 max-h-[90vh] overflow-y-auto">
       <app-questionmodal
-        [question]="selectedQuestion"
-        (closeModal)="closeQuestionModal()">
-      </app-questionmodal>
+      [question]="selectedQuestion"
+      [buttonLabel]="isAddModal ? 'Add' : 'Update'"
+      [isAddModal]="isAddModal"
+      (closeModal)="handleCloseModal()">
+    </app-questionmodal>
     </div>
 
     <!-- Close Button -->
-    <button
-  (click)="closeQuestionModal()"
-  class="absolute top-4 right-4 text-red-600 text-3xl p-2"
->
-  <i class="fa fa-times"></i>
-</button>
+    <button type="button" class=" absolute top-1 right-2 p-2 text-gray-400 hover:text-gray-700 text-4xl leading-none focus:outline-none" (click)="handleCloseModal()">
+      &times;
+    </button>
 
   </div>
 </div>
@@ -55,6 +59,3 @@
     </div>
   </div>
 </app-popup-module>
-  
-
-
