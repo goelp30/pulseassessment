@@ -1,81 +1,80 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
-import { Options, Question } from '../../../../models/question.model';
+import { Question, Option } from '../../../../models/question';
+import { AssessmentList } from '../../../../models/newassessment';
+import { QuizService } from '../../services/quiz.service';
 import { CommonModule } from '@angular/common';
 import { QuestionDisplayComponent } from '../question-display/question-display.component';
 import { QuestionNavigatorComponent } from '../question-navigator/question-navigator.component';
 import { QuizTimerComponent } from '../quiz-timer/quiz-timer.component';
+import { SubmissionModalComponent } from '../submission-modal/submission-modal.component';
 
 @Component({
+  standalone:true,
+  imports: [CommonModule, QuestionDisplayComponent, QuestionNavigatorComponent, QuizTimerComponent, SubmissionModalComponent],
   selector: 'app-quiz',
-  standalone: true,
-  imports: [CommonModule, QuestionDisplayComponent, QuestionNavigatorComponent, QuizTimerComponent],
-  templateUrl: './quiz.component.html'
+  templateUrl: './quiz.component.html',
 })
 export class QuizComponent implements OnInit, OnDestroy {
   questions: Question[] = [];
-  options: { [key: string]: Options[] } = {};
+  options: { [key: string]: Option[] } = {};
   currentQuestion = 0;
-  totalSeconds = 2400; // 40 minutes
   loading = true;
-  userId: string = '';  // Declare userId variable
+  userId: string = '';
+  assessmentId: string = '';
+  totalSeconds = 2400; 
+  showModal = false; 
 
   constructor(
     private route: ActivatedRoute,
-    private firebaseService: FireBaseService<Question | Options>
+    private quizService: QuizService
   ) {}
 
   ngOnInit(): void {
-    // Access userId from Router state
     const state = window.history.state;
-    if (state?.userId) {
-      this.userId = state.userId;  // Get userId from router state
-      console.log('User ID from state:', this.userId);
+    if (state?.assessmentId) {
+      this.assessmentId = state.assessmentId;
+      console.log('Assessment ID from state:', this.assessmentId);
     } else {
-      console.error('User ID not found in router state');
+      console.error('Assessment ID not found in router state');
+      return;
     }
 
-    // Load the questions and options
-    this.loadNextQuestion();
+    this.loadAssessmentData();
   }
 
-  // Function to load the next question dynamically based on currentQuestionId
-  private loadNextQuestion() {
+  private loadAssessmentData(): void {
     this.loading = true;
 
-    // Load all questions
-    this.firebaseService.getAllData('questions').subscribe(
-      (questions: Question[]) => {
-        this.questions = questions.map(q => ({
-          ...q,
-          isMarkedForReview: false,
-          isVisited: true
-        }));
+    this.quizService.getAssessmentById(this.assessmentId).subscribe((assessment) => {
+      if (assessment) {
+        console.log('Found assessment:', assessment);
+        this.quizService.getQuestionsBySubjects(Object.keys(assessment.subjects)).subscribe(
+          (questions) => {
+            this.questions = this.quizService.filterQuestionsByDifficulty(
+              questions,
+              assessment
+            );
 
-        // Load options related to this question
-        this.firebaseService.getAllData('options').subscribe(
-          (options: Options[]) => {
-            options.forEach(option => {
-              if (!this.options[option.questionId]) {
-                this.options[option.questionId] = [];
-              }
-              this.options[option.questionId].push(option);
+            const questionIds = this.questions.map((q) => q.questionId);
+            this.quizService.getOptionsForQuestions(questionIds).subscribe((options) => {
+              this.options = options;
+              this.loading = false;
             });
-
-            // Once data is loaded, set loading to false
-            this.loading = false;
           }
         );
+      } else {
+        console.error('Assessment not found!');
+        this.loading = false;
       }
-    );
+    });
   }
 
   get currentQuestionData(): Question {
     return this.questions[this.currentQuestion];
   }
 
-  get currentQuestionOptions(): Options[] {
+  get currentQuestionOptions(): Option[] {
     return this.options[this.currentQuestionData?.questionId.toString()] || [];
   }
 
@@ -113,7 +112,16 @@ export class QuizComponent implements OnInit, OnDestroy {
   submitQuiz() {
     console.log('Quiz submitted:', this.questions);
     console.log('User ID:', this.userId);
-    // Handle quiz submission logic here
+    this.showModal = true;
+  }
+
+  submitFinalQuiz() {
+    console.log('Quiz submitted:', this.questions);
+    // Logic to handle the actual submission here
+    // You can call your backend service or whatever is needed for final submission
+  
+    // Close the modal after submission
+    this.showModal = false;
   }
 
   handleTimeUp() {

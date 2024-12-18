@@ -91,7 +91,7 @@
                 <ul formArrayName="rightListInputs">
                     <li *ngFor="let group of rightListInputs.controls; let i = index" class="py-2 border-b">
                         <div class="flex flex-col gap-2">
-                            <span class="font-bold text-xl">{{ group.value.item.subjectName | titlecase }}</span>
+                            <span class="font-bold text-xl">{{ group.value.item.subjectName | titlecase }} - {{group.value.item.subjectId}}</span>
                             <div [formGroupName]="i" class="grid grid-cols-2 gap-3">
                                 <!-- Easy Input -->
                                 <div class="flex items-center">

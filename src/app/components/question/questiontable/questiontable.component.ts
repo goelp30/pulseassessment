@@ -143,7 +143,7 @@ backbutton={
   }
   
   fetchQuestions(): void {
-    this.fireBaseService. listensToChangeWithFilter('questions', 'subjectId', this.subjectId).subscribe(
+    this.fireBaseService.listensToChangeWithFilter('questions', 'subjectId', this.subjectId).subscribe(
       (data) => {
         console.log('Raw data:', data); // Check for any disabled questions
         this.questions = data.filter(question => !question.isQuesDisabled);

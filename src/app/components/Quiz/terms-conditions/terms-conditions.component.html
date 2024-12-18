@@ -1,55 +1,50 @@
 @if (isLoading) {
   <div class="flex justify-center items-center min-h-screen bg-gray-100">
-      <div class="loader"></div>
-    </div>
-  }
-@if(!isLoading){
-<div
-  class="max-w-4xl mx-auto mt-12 p-8 bg-white rounded-lg shadow-xl border border-gray-200"
->
-  <h1 class="text-4xl font-extrabold text-center text-blue-700">
-    Terms and Conditions
-  </h1>
+    <div class="loader"></div>
+  </div>
+}
+@if (!isLoading) {
+  <div
+    class="max-w-4xl mx-auto mt-12 p-8 bg-white rounded-lg shadow-xl border border-gray-200"
+  >
+    <h1 class="text-4xl font-extrabold text-center text-blue-700">
+      Terms and Conditions
+    </h1>
 
-  <p class="mt-6 text-gray-700 text-lg text-center">
-    Please read these Terms and Conditions carefully before using our
-    application or website.
-  </p>
+    <p class="mt-6 text-gray-700 text-lg text-center">
+      Please read these Terms and Conditions carefully before using our
+      application or website.
+    </p>
 
-  <ul class="mt-8 space-y-4 text-lg list-disc list-inside text-gray-600">
-    <li>You agree to comply with all rules and regulations.</li>
-    <li>The content provided is for informational purposes only.</li>
-    <li>We reserve the right to update these terms at any time.</li>
-    <li>Your use of the application signifies acceptance of these terms.</li>
-    <li>Unauthorized use of the application is strictly prohibited.</li>
-    <li>
-      All user data will be handled in compliance with our privacy policy.
-    </li>
-  </ul>
+    <ul class="mt-8 space-y-4 text-lg list-disc list-inside text-gray-600">
+      <li>You agree to comply with all rules and regulations.</li>
+      <li>The content provided is for informational purposes only.</li>
+      <li>We reserve the right to update these terms at any time.</li>
+      <li>
+        Your use of the application signifies acceptance of these terms.
+      </li>
+      <li>Unauthorized use of the application is strictly prohibited.</li>
+      <li>
+        All user data will be handled in compliance with our privacy policy.
+      </li>
+    </ul>
 
-  <div class="text-center mt-10">
-    @for (assessment of assessmentDetails; track $index) {
-    <div>
-      <!-- Show the button only for the matching userId and assessmentId -->
-      @if (assessment.userId === userId && assessment.assessmentId ===
-      assessmentId) {
+    <div class="text-center mt-10">
       <button
-      (click)="onAcceptTerms()"
-        class="px-6 py-3 bg-blue-600 text-white font-semibold text-lg rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+        (click)="onAcceptTerms()"
+        class="px-6 py-3 bg-blue-600 text-white font-semibold text-lg rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out transform shadow-lg"
       >
         Start Quiz
       </button>
-      }
     </div>
-    }
   </div>
-</div>
 
-<div class="max-w-4xl mx-auto mt-16 p-4 text-center text-gray-600">
-  <p class="text-sm">
-    By continuing, you agree to our
-    <a href="#" class="text-blue-500 hover:underline">Privacy Policy</a> and
-    <a href="#" class="text-blue-500 hover:underline">Terms of Service</a>.
-  </p>
-</div>
+  <div class="max-w-4xl mx-auto mt-16 p-4 text-center text-gray-600">
+    <p class="text-sm">
+      By continuing, you agree to our
+      <a href="#" class="text-blue-500 hover:underline">Privacy Policy</a>
+      and
+      <a href="#" class="text-blue-500 hover:underline">Terms of Service</a>.
+    </p>
+  </div>
 }
