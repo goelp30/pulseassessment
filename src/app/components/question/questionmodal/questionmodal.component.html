@@ -78,9 +78,9 @@
           class="flex-1 border rounded-md px-3 py-2 "
         />
     
-      <!-- Toggle Button -->
+      
 <!-- Toggle Button -->
-<div class="relative w-32 h-10 p-2">
+<div class="relative w-32 h-8">
   <div
     (click)="toggleCorrectOption(i)"
     [class.bg-gray-300]="!option.get('isCorrectOption')?.value"
@@ -90,17 +90,17 @@
     <!-- Text: Left when Correct, Right when Incorrect -->
     <span
       class="absolute top-1/2 -translate-y-1/2 text-sm text-white font-medium transition-all duration-300"
-      [class.left-3]="option.get('isCorrectOption')?.value"
-      [class.right-3]="!option.get('isCorrectOption')?.value"
+      [class.left-4]="option.get('isCorrectOption')?.value"
+      [class.right-4]="!option.get('isCorrectOption')?.value"
     >
       {{ option.get('isCorrectOption')?.value ? 'Correct' : 'Incorrect' }}
     </span>
-
+ 
     <!-- Toggle Slider (White Ball) -->
     <div
       [class.translate-x-20]="option.get('isCorrectOption')?.value"
       [class.translate-x-0]="!option.get('isCorrectOption')?.value"
-      class="absolute left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300"
+      class="absolute w-12 h-8 bg-white rounded-full shadow-md transition-transform duration-300"
     ></div>
   </div>
 </div>
