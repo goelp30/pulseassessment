@@ -1,104 +1,71 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
-import { Option, Question } from '../../../../models/question';
+import { Question, Option } from '../../../../models/question';
+import { AssessmentList } from '../../../../models/newassessment';
+import { QuizService } from '../../services/quiz.service';
 import { CommonModule } from '@angular/common';
 import { QuestionDisplayComponent } from '../question-display/question-display.component';
 import { QuestionNavigatorComponent } from '../question-navigator/question-navigator.component';
 import { QuizTimerComponent } from '../quiz-timer/quiz-timer.component';
-import { AssessmentList } from '../../../../models/newassessment';
 
 @Component({
-  selector: 'app-quiz',
-  standalone: true,
+  standalone:true,
   imports: [CommonModule, QuestionDisplayComponent, QuestionNavigatorComponent, QuizTimerComponent],
-  templateUrl: './quiz.component.html'
+  selector: 'app-quiz',
+  templateUrl: './quiz.component.html',
 })
 export class QuizComponent implements OnInit, OnDestroy {
   questions: Question[] = [];
   options: { [key: string]: Option[] } = {};
   currentQuestion = 0;
-  totalSeconds = 2400; 
   loading = true;
-  userId: string = '';  
-
-  assessmentId: string = ''; //----------------
+  userId: string = '';
+  assessmentId: string = '';
+  totalSeconds = 2400; 
 
   constructor(
     private route: ActivatedRoute,
-    private firebaseService: FireBaseService<Question | Option| AssessmentList>
+    private quizService: QuizService
   ) {}
 
   ngOnInit(): void {
-    // Access userId from Router state
     const state = window.history.state;
     if (state?.assessmentId) {
-      this.assessmentId = state.assessmentId;  // Get assessmentId from router state
+      this.assessmentId = state.assessmentId;
       console.log('Assessment ID from state:', this.assessmentId);
     } else {
       console.error('Assessment ID not found in router state');
+      return;
     }
 
-    // if (state?.userId) {
-    //   this.userId = state.userId;  // Get userId from router state
-    //   console.log('User ID from state:', this.userId);
-    // } else {
-    //   console.error('User ID not found in router state');
-    // }
-
-    // Load the questions and options
-    // this.loadNextQuestion();
-    this.loadAssessmentQuestions(); //--------------
+    this.loadAssessmentData();
   }
 
-  // Function to load the next question dynamically based on currentQuestionId
-   // Function to load the questions based on assessmentId and its subjects
-   private loadAssessmentQuestions() {
-  // private loadNextQuestion() {
+  private loadAssessmentData(): void {
     this.loading = true;
 
-    // Load all questions
-    // Load the assessment list to find the subjects
-    this.firebaseService.getAllData('assessmentList').subscribe(
-      (assessments: AssessmentList[]) => {
-        const assessment = assessments.find(a => a.assessmentId === this.assessmentId);
-        if (assessment) {
-          console.log('Found assessment:', assessment);
-          this.loadQuestionsBasedOnSubjects(assessment);
-        } else {
-          console.error('Assessment not found!');
-        }
-      }
-    );
-  }
-   // Function to load questions based on subjects from the assessment
-   private loadQuestionsBasedOnSubjects(assessment: AssessmentList) {
-    const subjectIds = Object.keys(assessment.subjects);
+    this.quizService.getAssessmentById(this.assessmentId).subscribe((assessment) => {
+      if (assessment) {
+        console.log('Found assessment:', assessment);
+        this.quizService.getQuestionsBySubjects(Object.keys(assessment.subjects)).subscribe(
+          (questions) => {
+            this.questions = this.quizService.filterQuestionsByDifficulty(
+              questions,
+              assessment
+            );
 
-    // Load all questions based on the subjectIds
-    this.firebaseService.getAllData('questions').subscribe(
-      (questions: Question[]) => {
-        this.questions = questions.filter(q => subjectIds.includes(q.subjectId));
-        
-        // Load options related to these questions
-        this.firebaseService.getAllData('options').subscribe(
-          (options: Option[]) => {
-            options.forEach(option => {
-              const question = this.questions.find(q => q.questionId === option.questionId);
-              if (question) {
-                if (!this.options[question.questionId]) {
-                  this.options[question.questionId] = [];
-                }
-                this.options[question.questionId].push(option);
-              }
+            const questionIds = this.questions.map((q) => q.questionId);
+            this.quizService.getOptionsForQuestions(questionIds).subscribe((options) => {
+              this.options = options;
+              this.loading = false;
             });
-
-            // Once data is loaded, set loading to false
-            this.loading = false;
           }
         );
+      } else {
+        console.error('Assessment not found!');
+        this.loading = false;
       }
-    );
+    });
   }
 
   get currentQuestionData(): Question {
