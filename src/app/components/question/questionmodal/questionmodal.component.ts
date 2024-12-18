@@ -111,35 +111,29 @@ export class QuestionmodalComponent implements OnInit {
   }
   loadOptions(): void {
     if (this.question?.questionId) {
-      this.options.clear();
       this.firebaseService.getAllData('/options')
         .pipe(
-          map((options: Option[]) => 
-            options.filter(
+          map((options: Option[]) => {
+            // Filter options by questionId and include only enabled options
+            return options.filter(
               (option) =>
                 option.questionId === this.question?.questionId &&
                 !option.isOptionDisabled
-            )
-          )
+            );
+          })
         )
         .subscribe({
           next: (filteredOptions: Option[]) => {
-            // **Only preserve options already dynamically loaded, don't clear manually added ones**
-            const existingOptionIds = new Set(
-              this.options.controls.map(control => control.get('optionId')?.value)
-            );
-  
-            filteredOptions.forEach(option => {
-              if (!existingOptionIds.has(option.optionId)) {
-                this.options.push(
-                  this.fb.group({
-                    optionText: [option.optionText, Validators.required],
-                    isCorrectOption: [option.isCorrectOption],
-                    optionId: [option.optionId],
-                    isOptionDisabled: [option.isOptionDisabled],
-                  })
-                );
-              }
+            this.options.clear(); // Clear existing options
+            filteredOptions.forEach((option) => {
+              this.options.push(
+                this.fb.group({
+                  optionText: [option.optionText, Validators.required],
+                  isCorrectOption: [option.isCorrectOption],
+                  optionId: [option.optionId],
+                  isOptionDisabled: [option.isOptionDisabled], // Ensure this field exists
+                })
+              );
             });
           },
           error: (error) => {
@@ -148,7 +142,6 @@ export class QuestionmodalComponent implements OnInit {
         });
     }
   }
-  
   
   
   
@@ -338,6 +331,9 @@ async saveQuestion(): Promise<void> {
     if (this.isAddModal) {
       // Add new question logic
       const questionId = await this.addQuestion();
+      if (this.assessmentForm.value.questionType !== 'Descriptive') {
+        await this.storeOptions(questionId);
+      }
       console.log(`Question ${questionId} added successfully`);
     } else {
       // Update existing question logic
