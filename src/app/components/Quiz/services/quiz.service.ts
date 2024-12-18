@@ -1,117 +1,112 @@
 import { Injectable } from '@angular/core';
-import { Question } from '../../../models/question.model';
+import { Observable, forkJoin, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { Option, Question } from '../../../models/question';
+import { AssessmentList } from '../../../models/newassessment';
+import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 
 @Injectable({
   providedIn: 'root',
 })
 export class QuizService {
-  private baseQuestions: Question[] = [
-    {
-      id: 1,
-      questionType: 'medium',
-      text: 'What is the main building block of Angular applications?',
-      options: ['Components', 'Modules', 'Services', 'Templates'],
-      correctAnswer: 0, // Single choice correct answer
-      isMarkedForReview: false,
-      isVisited: false,
-    },
-    {
-      id: 2,
-      questionType: 'descriptive',
-      text: 'Explain the concept of dependency injection in Angular and its benefits.',
-      options: [],
-      correctAnswer: -1, // No correct answer for descriptive questions
-      isMarkedForReview: false,
-      isVisited: false,
-    },
-    {
-      id: 3,
-      questionType: 'hard',
-      text: 'What is Change Detection in Angular and how does it work?',
-      options: ['Manual checking of values', 'Zone.js tracking changes', 'Regular DOM updates', 'Continuous polling'],
-      correctAnswer: 1, // Single choice correct answer
-      isMarkedForReview: false,
-      isVisited: false,
-    },
-  ];
+  constructor(
+    private firebaseService: FireBaseService<Question | Option | AssessmentList>
+  ) {}
 
-  // Generate questions with dynamic descriptive and multi-check questions
-  generateQuestions(): Question[] {
-    const questions = [...this.baseQuestions];
-    const topics = ['Services', 'Routing', 'Forms', 'HTTP', 'Directives', 'Pipes', 'CLI'];
-    const actions = ['implement', 'configure', 'use', 'define', 'create'];
-
-    // Add more descriptive questions
-    questions.push({
-      id: 4,
-      questionType: 'descriptive',
-      text: 'Compare and contrast Angular Services and Components. When would you use each?',
-      options: [],
-      correctAnswer: -1, // No correct answer for descriptive questions
-      isMarkedForReview: false,
-      isVisited: false,
-    });
-
-    // Add a multi-check question
-    questions.push({
-      id: 5,
-      questionType: 'multi-check', // Multi-check question type
-      text: 'Which of the following are core Angular concepts?',
-      options: ['Components', 'Templates', 'Directives', 'Style Binding'],
-      correctAnswer: [0, 1, 2], // Multiple correct answers
-      isMarkedForReview: false,
-      isVisited: false,
-    });
-
-    // Generate remaining questions dynamically
-    for (let i = questions.length; i < 20; i++) {
-      const topic = topics[Math.floor(Math.random() * topics.length)];
-      const action = actions[Math.floor(Math.random() * actions.length)];
-      const type = Math.random() > 0.8 ? 'descriptive' : Math.random() > 0.5 ? 'medium' : 'hard';
-
-      if (type === 'descriptive') {
-        questions.push({
-          id: i + 1,
-          questionType: type,
-          text: `Explain how to ${action} Angular ${topic} and discuss its importance in application development.`,
-          options: [],
-          correctAnswer: -1, // No correct answer for descriptive questions
-          isMarkedForReview: false,
-          isVisited: false,
-        });
-      } else {
-        questions.push({
-          id: i + 1,
-          questionType: type,
-          text: `How do you ${action} Angular ${topic}?`,
-          options: [
-            `Using the ${topic} module`,
-            `Through ${topic} configuration`,
-            `With ${topic} implementation`,
-            `Via ${topic} service`,
-          ],
-          correctAnswer: Math.floor(Math.random() * 4), // Randomly selecting a correct option
-          isMarkedForReview: false,
-          isVisited: false,
-        });
-      }
-    }
-
-    return questions;
+  getAssessmentById(assessmentId: string): Observable<AssessmentList | null> {
+    return this.firebaseService.getAllData('assessmentList').pipe(
+      map((assessments: AssessmentList[]) =>
+        assessments.find((a) => a.assessmentId === assessmentId) || null
+      ),
+      catchError((error) => {
+        console.error('Error fetching assessments:', error);
+        return of(null);
+      })
+    );
   }
 
-  // Calculate time based on question type
-  calculateQuestionTime(questionType?: string): number {
-    switch (questionType?.toLowerCase()) {
-      case 'medium':
-      case 'hard':
-        return 1; // 1 minute for medium and hard questions
-      case 'descriptive':
-        return 3; // 3 minutes for descriptive questions
-      case 'multi-check':
-        return 2; // 2 minutes for multi-check questions
-      default:
-        return 2; // Default time for other types
+  getQuestionsBySubjects(subjectIds: string[]): Observable<Question[]> {
+    return this.firebaseService
+      .getAllDataByFilter('questions', 'isQuesDisabled', false)
+      .pipe(
+        map((questions: Question[]) =>
+          questions.filter((q) => subjectIds.includes(q.subjectId))
+        ),
+        catchError((error) => {
+          console.error('Error fetching questions:', error);
+          return of([]);
+        })
+      );
+  }
+
+  getOptionsForQuestions(questionIds: string[]): Observable<{ [key: string]: Option[] }> {
+    return this.firebaseService.getAllData('options').pipe(
+      map((options: Option[]) => {
+        const optionsMap: { [key: string]: Option[] } = {};
+        options.forEach((option) => {
+          if (questionIds.includes(option.questionId)) {
+            if (!optionsMap[option.questionId]) {
+              optionsMap[option.questionId] = [];
+            }
+            optionsMap[option.questionId].push(option);
+          }
+        });
+        return optionsMap;
+      }),
+      catchError((error) => {
+        console.error('Error fetching options:', error);
+        return of({});
+      })
+    );
+  }
+
+  filterQuestionsByDifficulty(
+    questions: Question[],
+    assessment: AssessmentList
+  ): Question[] {
+    const subjectIds = Object.keys(assessment.subjects);
+    let filteredQuestions: Question[] = [];
+
+    subjectIds.forEach((subjectId) => {
+      const subject = assessment.subjects[subjectId];
+      const subjectQuestions = questions.filter((q) => q.subjectId === subjectId);
+
+      const easyQuestions = subjectQuestions.filter(
+        (q) => q.questionLevel === 'Easy' && q.questionType !== 'Descriptive'
+      );
+      const mediumQuestions = subjectQuestions.filter(
+        (q) => q.questionLevel === 'Medium' && q.questionType !== 'Descriptive'
+      );
+      const hardQuestions = subjectQuestions.filter(
+        (q) => q.questionLevel === 'Hard' && q.questionType !== 'Descriptive'
+      );
+      const descriptiveQuestions = subjectQuestions.filter(
+        (q) => q.questionType === 'Descriptive'
+      );
+
+      filteredQuestions = [
+        ...filteredQuestions,
+        ...this.getRandomQuestions(easyQuestions, subject.easy),
+        ...this.getRandomQuestions(mediumQuestions, subject.medium),
+        ...this.getRandomQuestions(hardQuestions, subject.hard),
+        ...this.getRandomQuestions(descriptiveQuestions, subject.descriptive),
+      ];
+    });
+
+    return filteredQuestions;
+  }
+
+  private getRandomQuestions(questions: Question[], count: number): Question[] {
+    if (!questions || questions.length === 0) return [];
+    const shuffled = this.shuffleArray(questions);
+    return shuffled.slice(0, count);
+  }
+
+  private shuffleArray(array: any[]): any[] {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
     }
+    return array;
   }
 }
