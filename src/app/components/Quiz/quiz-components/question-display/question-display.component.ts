@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Options, Question } from '../../../../models/question.model';
+import { Option, Question } from '../../../../models/question';
 
 @Component({
   selector: 'app-question-display',
@@ -15,7 +15,7 @@ onDescriptiveAnswerChange($event: any) {
 throw new Error('Method not implemented.');
 }
   @Input() question!: Question;
-  @Input() options: Options[] = [];
+  @Input() options: Option[] = [];
   @Input() questionNumber!: number;
   @Input() totalQuestions!: number;
   @Output() answerSelect = new EventEmitter<number>();
