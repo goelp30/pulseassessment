@@ -238,4 +238,9 @@ backbutton={
   onSearchQueryChange(newQuery: string): void {
     this.searchQuery = newQuery;
   }
+  handleCloseModal(): void {
+    // Logic to close the modal (e.g., hide modal or remove component)
+    this.isQuestionModalVisible = false;
+  }
+  
 }

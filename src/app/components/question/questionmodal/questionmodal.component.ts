@@ -36,6 +36,7 @@ export class QuestionmodalComponent implements OnInit {
   editingMode = false; // Determine whether editing or creating
   subjectName: string='';
   modalTitle: string=this.subjectName;
+  temporaryDisabledOptions: Set<string> = new Set();
 
 
   constructor(
@@ -109,12 +110,12 @@ export class QuestionmodalComponent implements OnInit {
       this.loadOptions();
     }
   }
+
   loadOptions(): void {
     if (this.question?.questionId) {
       this.firebaseService.getAllData('/options')
         .pipe(
           map((options: Option[]) => {
-            // Filter options by questionId and include only enabled options
             return options.filter(
               (option) =>
                 option.questionId === this.question?.questionId &&
@@ -124,14 +125,14 @@ export class QuestionmodalComponent implements OnInit {
         )
         .subscribe({
           next: (filteredOptions: Option[]) => {
-            this.options.clear(); // Clear existing options
+            this.options.clear();
             filteredOptions.forEach((option) => {
               this.options.push(
                 this.fb.group({
                   optionText: [option.optionText, Validators.required],
                   isCorrectOption: [option.isCorrectOption],
                   optionId: [option.optionId],
-                  isOptionDisabled: [option.isOptionDisabled], // Ensure this field exists
+                  isOptionDisabled: [option.isOptionDisabled],
                 })
               );
             });
@@ -142,7 +143,6 @@ export class QuestionmodalComponent implements OnInit {
         });
     }
   }
-  
   
   
 
@@ -195,7 +195,7 @@ export class QuestionmodalComponent implements OnInit {
   
   
   removeOption(index: number): void {
-    const questionType = this.assessmentForm.get('questionType')?.value; // Get the question type
+    const questionType = this.assessmentForm.get('questionType')?.value;
     const currentOptionsCount = this.options.length;
   
     if (questionType === 'Single' && currentOptionsCount <= 2) {
@@ -208,24 +208,15 @@ export class QuestionmodalComponent implements OnInit {
       return;
     }
   
-    // Clear warning if all checks are passed
-    this.warningMessage = '';
-  
+    this.warningMessage = ''; // Clear warning
     const option = this.options.at(index) as FormGroup;
+    const optionId = option.get('optionId')?.value;
   
-    // Mark the option as disabled
-    option.patchValue({ isOptionDisabled: true });
+    if (optionId) {
+      this.temporaryDisabledOptions.add(optionId); // Mark as temporarily disabled
+    }
   
-    // Perform the Firebase update
-    const updatedOption = option.value;
-    this.firebaseService.update(`/options/${updatedOption.optionId}`, updatedOption)
-      .then(() => {
-        console.log('Option marked as disabled in Firebase.');
-        this.options.removeAt(index); // Remove from form array only after successful Firebase update
-      })
-      .catch((error) => {
-        console.error('Failed to disable the option in Firebase:', error);
-      });
+    this.options.removeAt(index); // Remove from form array
   }
   
 
@@ -425,7 +416,8 @@ async saveQuestion(): Promise<void> {
         subjectId: this.subjectId,
         optionText: optionControl.get('optionText')?.value,
         isCorrectOption: optionControl.get('isCorrectOption')?.value,
-        isOptionDisabled: optionControl.get('isOptionDisabled')?.value || false,
+        isOptionDisabled:
+          optionControl.get('isOptionDisabled')?.value || this.temporaryDisabledOptions.has(optionId),
       };
   
       return this.firebaseService.update(`/options/${optionId}`, optionData);
@@ -433,12 +425,14 @@ async saveQuestion(): Promise<void> {
   
     try {
       await Promise.all(optionPromises);
+      this.temporaryDisabledOptions.clear(); // Clear temporary state after commit
       console.log('Options updated successfully');
     } catch (error) {
       console.error('Failed to update options:', error);
       throw error;
     }
   }
+  
   
   
   
@@ -474,6 +468,19 @@ async saveQuestion(): Promise<void> {
       console.error('Failed to store options:', error);
     }
   }
+  revertChangesAndClose(): void {
+    // Clear temporary state
+    this.temporaryDisabledOptions.clear();
+  
+    // Reload original options if needed (optional, based on your use case)
+    if (this.editingMode && this.question) {
+      this.loadOptions(); // Reload options to restore original state
+    }
+  
+    // Emit event to parent to close the modal
+    this.closeModal.emit();
+  }
+  
   
   
   
