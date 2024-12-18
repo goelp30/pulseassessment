@@ -26,7 +26,7 @@
   <!-- Modal Box with internal scroll -->
   <div class="relative bg-white rounded-lg shadow-lg w-auto h-auto mt-4 mb-4 overflow-hidden">
     <!-- Scrollable Content Area -->
-    <div class="p-4 h-[calc(100vh-8rem)] overflow-y-auto">
+    <div class="p-4 max-h-[90vh] overflow-y-auto">
       <app-questionmodal
       [question]="selectedQuestion"
       [buttonLabel]="isAddModal ? 'Add' : 'Update'"
@@ -36,7 +36,7 @@
     </div>
 
     <!-- Close Button -->
-    <button type="button" class=" absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-5xl p-2 leading-none focus:outline-none" (click)="closeQuestionModal()">
+    <button type="button" class=" absolute top-1 right-2 text-gray-400 hover:text-gray-700 text-4xl leading-none focus:outline-none" (click)="closeQuestionModal()">
       &times;
     </button>
 

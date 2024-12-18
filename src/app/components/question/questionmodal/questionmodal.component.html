@@ -1,4 +1,4 @@
-<div class="container mx-auto p-6 bg-white rounded-lg w-[500px] w-full mt-2 max-h-[50vh]">
+<div class="container mx-auto p-6 bg-white rounded-lg w-[500px] w-full mt-2 max-h-[90vh]">
   <h4 class="text-center  mb-4 text-2xl">{{subjectName |titlecase }}</h4>
   <form [formGroup]="assessmentForm" class="space-y-6">
 
@@ -138,7 +138,7 @@
       <button
       type="submit"
       (click)="saveData()"
-      class="select-none rounded-lg border py-2 px-4"
+      class="select-none rounded-lg border py-2 px-4 m-4"
       [disabled]="isSaveDisabled"
       [class.bg-gray-400]="isSaveDisabled"
       [class.cursor-not-allowed]="isSaveDisabled"
