@@ -13,18 +13,20 @@ import { CommonModule, TitleCasePipe } from '@angular/common';
 import { Question} from '../../../models/question';
 import { Option } from '../../../models/question';
 import { map } from 'rxjs';
+import { ToastrModule, ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-questionmodal',
   templateUrl: './questionmodal.component.html',
   styleUrls: ['./questionmodal.component.css'],
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, CommonModule,TitleCasePipe],
+  imports: [ReactiveFormsModule, FormsModule, CommonModule,TitleCasePipe,ToastrModule],
 })
 export class QuestionmodalComponent implements OnInit {
   @Input() question: Question | null = null; // Input for editing mode
   @Output() closeModal = new EventEmitter<void>(); // output for close modal
- 
+ @Input() buttonLabel:string='add';
+ @Input() isAddModal: boolean = true;
 
   assessmentForm: FormGroup;
   questionTypes = ['Single', 'Multi', 'Descriptive'];
@@ -35,10 +37,12 @@ export class QuestionmodalComponent implements OnInit {
   subjectName: string='';
   modalTitle: string=this.subjectName;
 
+
   constructor(
     private fb: FormBuilder,
     private firebaseService: FireBaseService<Question>,
-    private subjectService: SubjectService
+    private subjectService: SubjectService,
+    private toastr:ToastrService
   ) {
     this.assessmentForm = this.fb.group({
       subjectId: [null, Validators.required],
@@ -287,21 +291,7 @@ async saveData() {
 
   if (this.assessmentForm.valid && this.validateOptions()) {
     try {
-      if (this.editingMode && this.question?.questionId) {
-        await this.updateQuestion();
-      } else {
-        const questionId = await this.addQuestion();
-        if (this.assessmentForm.value.questionType !== 'Descriptive') {
-          await this.storeOptions(questionId);
-        }
-      }
-
-      this.closeModal.emit();
-      
-      // Avoid `clear()` for all options; selectively reset newly added ones
-      this.assessmentForm.reset();
-      this.options.clear();
-      this.addOption();
+      await this.saveQuestion(); // Use saveQuestion to handle logic and notifications
     } catch (error) {
       alert(`Error saving data: ${error}`);
     }
@@ -310,11 +300,27 @@ async saveData() {
   }
 }
 
-
-
-
-
-
+async saveQuestion(): Promise<void> {
+  try {
+    if (this.isAddModal) {
+      // Add new question logic
+      const questionId = await this.addQuestion();
+      console.log(`Question ${questionId} added successfully`);
+    } else {
+      // Update existing question logic
+      await this.updateQuestion();
+      console.log(`Question ${this.question?.questionId} updated successfully`);
+    }
+    // Emit event to close modal and reset the form
+    this.closeModal.emit();
+    this.assessmentForm.reset();
+    this.options.clear();
+    this.addOption();
+  } catch (error) {
+    console.error('Failed to save question:', error);
+    this.toastr.error('Failed to save question. Please try again.', 'Error');
+  }
+}
 
   
   async addQuestion(): Promise<string> {
@@ -335,6 +341,7 @@ async saveData() {
     try {
       // Send data to Firebase
       await this.firebaseService.create(`/questions/${questionId}`, questionData);
+      this.toastr.success("Question Added Successfully")
       return questionId; // Return the generated ID
     } catch (error) {
       console.error('Error creating new question:', error);
@@ -367,6 +374,7 @@ async saveData() {
       await this.firebaseService.update(`/questions/${this.question.questionId}`, updatedData);
       // Update options associated with this question
       await this.updateOptions();
+      this.toastr.info("Question Updated Successfully")
       console.log('Question and options updated successfully');
     } catch (error) {
       console.error('Failed to update question:', error);

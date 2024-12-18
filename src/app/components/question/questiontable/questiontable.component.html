@@ -28,9 +28,11 @@
     <!-- Scrollable Content Area -->
     <div class="p-4 h-[calc(100vh-8rem)] overflow-y-auto">
       <app-questionmodal
-        [question]="selectedQuestion"
-        (closeModal)="closeQuestionModal()">
-      </app-questionmodal>
+      [question]="selectedQuestion"
+      [buttonLabel]="isAddModal ? 'Add' : 'Update'"
+      [isAddModal]="isAddModal"
+      (closeModal)="closeQuestionModal()">
+    </app-questionmodal>
     </div>
 
     <!-- Close Button -->
