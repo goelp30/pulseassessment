@@ -47,10 +47,10 @@ export class ViewAssessmentComponent implements OnInit {
         mergeMap((evaluationData: any[]) => {
           const questionIds = evaluationData.map((item) => item.questionId);
           return this.firebaseservice
-            .getQuestionsFromIds('EvaluationQuestionData', questionIds)
+            .getQuestionsFromIds('questions', questionIds)
             .pipe(
               mergeMap((questionData: any[]) => {
-                return this.firebaseservice.getAllOptions('EvaluationOptionData').pipe(
+                return this.firebaseservice.getAllOptions('options').pipe(
                   map((optionData: any[]) => {
                     const optionsMap = optionData.reduce((acc, option) => {
                       if (!acc[option.questionId]) {
@@ -68,7 +68,7 @@ export class ViewAssessmentComponent implements OnInit {
                       return {
                         ...item,
                         questionText: question?.questionText,
-                        questionWeitage: question?.questionWeitage,
+                        questionWeitage: question?.questionWeightage,
                         questionType: question?.questionType,
                         options: options,
                       };

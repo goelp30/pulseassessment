@@ -36,7 +36,7 @@ export class QuizService {
           console.error('Error fetching questions:', error);
           return of([]);
         })
-      );
+      ); 
   }
 
   getOptionsForQuestions(questionIds: string[]): Observable<{ [key: string]: Option[] }> {
