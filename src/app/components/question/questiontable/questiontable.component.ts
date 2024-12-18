@@ -203,17 +203,37 @@ backbutton={
   deleteQuestion() {
     if (this.selectedQuestionToDelete) {
       const questionToDelete = this.selectedQuestionToDelete;
-      questionToDelete.isQuesDisabled = true; // Mark as deleted (disabled)
+      questionToDelete.isQuesDisabled = true; // Mark as disabled in the Questions table
   
+      // First, update the 'Questions' table to mark the question as disabled
       this.fireBaseService.update(`questions/${questionToDelete.questionId}`, questionToDelete)
         .then(() => {
-          this.toastr.error('Question deleted successfully', 'Deleted');
-          this.eConfirmationVisible = false;
+          // Once the question is marked as disabled, update the related Options entries
   
-          // Remove from UI
-          this.questions = this.questions.filter(question => question.questionId !== questionToDelete.questionId);
+          // Get all Options entries and update the ones that reference this questionId
+          this.fireBaseService.getAllDataByFilter('options', 'isOptionDisabled', false).subscribe((optionsList: Option[]) => {
+            const optionsToUpdate = optionsList.filter((option) => option.questionId === questionToDelete.questionId);
+            
+            // For each Option entry related to the deleted question
+            const updatePromises = optionsToUpdate.map((option) => {
+              option.isOptionDisabled = true; // Mark as disabled in the Options table
+              return this.fireBaseService.update(`options/${option.optionId}`, option);
+            });
+  
+            // Wait for all updates to be completed
+            Promise.all(updatePromises)
+              .then(() => {
+                this.toastr.success('Question deleted successfully', 'Deleted');
+                this.eConfirmationVisible = false;
+                this.fetchQuestions(); // Refresh the questions list after deletion
+              })
+              .catch((error) => {
+                console.error('Error updating Options entries:', error);
+                this.toastr.error('Failed to update related options', 'Error');
+              });
+          });
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Error deleting question:', error);
           this.toastr.error('Failed to delete question', 'Error');
         });
