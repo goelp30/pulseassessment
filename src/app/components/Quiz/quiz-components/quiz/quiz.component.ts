@@ -22,8 +22,8 @@ export class QuizComponent implements OnInit, OnDestroy {
   loading = true;
   userId: string = '';
   assessmentId: string = '';
-  totalSeconds = 2400; 
   showModal = false; 
+  totalQuestionTime: number = 0; // New property to store total question time
 
   constructor(
     private route: ActivatedRoute,
@@ -61,6 +61,9 @@ export class QuizComponent implements OnInit, OnDestroy {
               questions,
               assessment
             );
+
+            // Calculate total question time
+            this.totalQuestionTime = this.questions.reduce((total, question) => total + question.questionTime, 0);
 
             const questionIds = this.questions.map((q) => q.questionId);
             this.quizService.getOptionsForQuestions(questionIds).subscribe((options) => {
@@ -132,6 +135,7 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   submitFinalQuiz() {
     console.log('Quiz submitted:', this.questions);
+
     this.showModal = false;
   }
 

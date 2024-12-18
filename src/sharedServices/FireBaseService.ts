@@ -87,7 +87,6 @@ export class FireBaseService<T> {
     return this.database.object(`${tableName}/${id}`).set(params);
   }
 
-  // Get question by its ID
   getQuestionById(questionId: number): Observable<Question> {
     return this.database
       .object(`questions/${questionId}`)
