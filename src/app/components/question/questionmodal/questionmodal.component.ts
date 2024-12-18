@@ -342,7 +342,7 @@ async saveData() {
       const optionData: Option = {
         optionId,
         questionId: this.question?.questionId || '',
-        subjectid: this.subjectId,
+        subjectId: this.subjectId,
         optionText: optionControl.get('optionText')?.value,
         isCorrectOption: optionControl.get('isCorrectOption')?.value,
       };
@@ -375,7 +375,7 @@ async saveData() {
       const optionData: Option = {
         optionId,
         questionId,
-        subjectid: this.subjectId,
+        subjectId: this.subjectId,
         optionText: optionControl.get('optionText')?.value,
         isCorrectOption: optionControl.get('isCorrectOption')?.value,
       };
