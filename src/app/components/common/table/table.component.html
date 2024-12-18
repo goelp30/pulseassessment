@@ -158,13 +158,13 @@
 
     <!-- No Data Found Section -->
     @if(isLoading){
-    <div class="flex justify-center mt-4">
-      <div class="loader"></div>
-    </div>
-    } @if(!isLoading && filteredData.length === 0){
-    <div class="flex justify-center mt-4 text-gray-500">
-      <b class="text-gray-600">No data found</b>
-    </div>
+      <div class="flex justify-center mt-4">
+        <div class="loader"></div>
+      </div>
+      } @if(!isLoading && filteredData.length === 0){
+      <div class="flex justify-center mt-4 text-gray-500">
+        <b class="text-gray-600">No data found</b>
+      </div>
     }
   </div>
 </div>
