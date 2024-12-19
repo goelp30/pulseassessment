@@ -64,3 +64,6 @@ body {
 .dark .sortable-item:hover {
   background-color: #555;
 }
+.intra{
+  background-color: rgb(37, 150, 190)
+}

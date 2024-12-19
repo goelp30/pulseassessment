@@ -6,6 +6,7 @@ export type Assessment = {
   dateCreated: number,
   dateUpdated: number,
   isDisabled:boolean,
-  isautoEvaluated:boolean
+  isautoEvaluated:boolean,
+  isLinkGenerated?:boolean
 };
 

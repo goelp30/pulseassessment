@@ -92,43 +92,64 @@ export class AssessTableComponent  {
     };
     this.fireBaseService.create(TableNames.Assessment + '/' + uniqueId, assess);
   }
-
   // Get assessments with isDisabled: false (only active assessments)
   getAssessments() {
     this.fireBaseService.getAllDataByFilter(this.tableName, 'isDisabled', false).subscribe((res: Assessment[]) => {
       // Initially filter out assessments with isDisabled = true
-      console.log('1', res)
+      // console.log('1', res)
       // Set the filtered active assessments
       this.assessments = res;
       // Trigger change detection manually if needed
       this.cdr.detectChanges();
     });
   }
-
   // Confirm the deletion of an assessment
   confirmDelete(assessment: Assessment) {
     this.selectedAssessmentToDelete = assessment;
     this.eConfirmationVisible = true;
   }
-
   // Proceed with the deletion of the assessment
   deleteAssessment() {
     if (this.selectedAssessmentToDelete) {
       const assessmentToDelete = this.selectedAssessmentToDelete;
-      assessmentToDelete.isDisabled = true; // Mark as deleted (disabled)
-
+      assessmentToDelete.isDisabled = true; // Mark as disabled in the Assessment table
+  
+      // First, update the 'Assessment' table to mark it as disabled
       this.fireBaseService.update(`${this.tableName}/${assessmentToDelete.assessmentId}`, assessmentToDelete)
         .then(() => {
-          this.toastr.error('Assessment deleted successfully', 'Deleted');
-          this.eConfirmationVisible = false;
-          this.getAssessments();
+          // Once the assessment is marked as disabled, update the related AssessmentList entries
+  
+          // Get all AssessmentList entries and update the ones that reference this assessmentId
+          this.fireBaseService.getAllDataByFilter(this.assessmentListTable, 'isDisable', false).subscribe((assessmentList: AssessmentList[]) => {
+            const assessmentsToUpdate = assessmentList.filter((entry) => entry.assessmentId === assessmentToDelete.assessmentId);
+            
+            // For each AssessmentList entry related to the deleted assessment
+            const updatePromises = assessmentsToUpdate.map((assessment) => {
+              assessment.isDisable = true; // Mark as disabled in the AssessmentList table
+              return this.fireBaseService.update(`${this.assessmentListTable}/${assessment.assessmentId}`, assessment);
+            });
+  
+            // Wait for all updates to be completed
+            Promise.all(updatePromises)
+              .then(() => {
+                this.toastr.error('Assessment deleted successfully', 'Deleted');
+                this.eConfirmationVisible = false;
+                this.getAssessments(); // Refresh the assessments list after deletion
+              })
+              .catch((error) => {
+                console.error('Error updating AssessmentList entries:', error);
+                this.toastr.error('Failed to update related records', 'Error');
+              });
+          });
+  
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Error deleting assessment:', error);
           this.toastr.error('Failed to delete assessment', 'Error');
         });
     }
   }
+  
 
   assessmentListTable=TableNames.AssessmentList;
   // View the details of the assessment and related subjects
@@ -157,9 +178,7 @@ closeModal(): void {
       } else {
         console.error('Subject ID is missing.');
       }
-    
   }
-
 
   // Update the selected assessment
   updateAssessment() {
