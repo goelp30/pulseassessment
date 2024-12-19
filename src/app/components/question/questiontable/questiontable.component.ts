@@ -76,7 +76,7 @@ export class QuestiontableComponent implements OnInit {
   isAddModal: boolean = false;
   subjectName: string='';
 backbutton={
-  label:"Back to subject",
+  label:"Back to Subject",
   colorClass:"bg-blue-500 py-2 px-4 text-white rounded-md ml-6",
 };
 

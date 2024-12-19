@@ -90,7 +90,7 @@
             <p
               class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
             >
-              {{ row[column] | titlecase }}
+            {{ row[column]?.length > 50 ? (row[column] | titlecase | slice:0:50) + '...' : (row[column] | titlecase) }}
             </p>
           </td>
           }
