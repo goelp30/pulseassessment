@@ -77,7 +77,7 @@ export class QuizAnswerService {
     const assessmentData = {
       assessmentID: this.assessmentID,
       quizId: this.quizId,
-      isEvaluated: questions.some(q => q.questionType === 'descriptive') ? false : true,  
+      isEvaluated: questions.some(q => q.questionType && q.questionType.toLowerCase() === 'descriptive') ? false : true,  
       userId: this.userId,
       result: '', 
     };

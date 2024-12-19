@@ -40,13 +40,13 @@
                     id="{{ question.questionId }}-{{ option.optionId }}"
                     name="{{ question.questionId }}"
                     class="cursor-pointer"
-                    [checked]="question.userAnswer === option.optionId"
+                    [checked]="question.userAnswer == option.optionId"
                     disabled>
              <label for="{{ question.questionId }}-{{ option.optionId }}"
                     class="text-lg font-medium cursor-pointer
-                           {{ question.userAnswer === option.optionId && option.isCorrectOption ? 'text-green-700' : '' }}
-                           {{ question.userAnswer === option.optionId && !option.isCorrectOption ? 'text-red-700' : '' }}
-                           {{ question.userAnswer === undefined ? 'text-gray-500' : '' }}">
+                           {{ question.userAnswer == option.optionId && option.isCorrectOption ? 'text-green-700' : '' }}
+                           {{ question.userAnswer == option.optionId && !option.isCorrectOption ? 'text-red-700' : '' }}
+                           {{ question.userAnswer == undefined ? 'text-gray-500' : '' }}">
                  {{ option.optionText }}
              </label>
              
