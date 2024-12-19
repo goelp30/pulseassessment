@@ -58,7 +58,7 @@ export class QuestiontableComponent implements OnInit {
   buttons = [
     {
       label: 'Edit',
-      colorClass: 'bg-blue-500 py-2 px-4 text-white rounded-md',
+      colorClass: 'bg-custom-blue text-white py-2 px-4 text-white rounded-md',
       action: (row: Question) => this.editQuestion(row),
     },
     {
@@ -76,8 +76,8 @@ export class QuestiontableComponent implements OnInit {
   isAddModal: boolean = false;
   subjectName: string='';
 backbutton={
-  label:"Back to Subject",
-  colorClass:"bg-blue-500 py-2 px-4 text-white rounded-md ml-6",
+  label:"Back to subject",
+  colorClass:"bg-custom-blue text-white py-2 px-4 text-white rounded-md",
 };
 
 

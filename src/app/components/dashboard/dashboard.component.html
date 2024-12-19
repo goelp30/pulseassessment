@@ -1,12 +1,12 @@
 <div class="min-h-screen bg-gray-100 flex">
   <!-- Sidebar -->
   <aside
-    class="fixed inset-y-0 left-0 w-64 bg-blue-500 text-white shadow-lg flex flex-col justify-between"
+    class="fixed inset-y-0 left-0 w-64 bg-custom-blue text-white shadow-lg flex flex-col justify-between"
   >
     <div>
       <!-- Header -->
-      <div class="flex items-center justify-center h-20 bg-blue-600">
-        <h2 class="text-3xl font-bold tracking-wide">ADMIN</h2>
+      <div class="flex items-center justify-center h-20 border-b-2 border-custom-border-blue">
+        <h2 class="text-2xl font-bold tracking-wide  ">Pulse Assessment</h2>
       </div>
 
       <!-- Navigation Links -->
@@ -30,12 +30,12 @@
 
   <!-- Main Content -->
   <div class="ml-64 flex-1">
-    <!-- Header -->
+    <!-- Header mb-8 -->
     <header
-      class="bg-white shadow-md mb-8 p-4 flex justify-between items-center"
+      class="bg-white shadow-md border-b-2 h-20 p-4 flex justify-between items-center"
     >
       <!-- Page Title -->
-      <h1 class="text-2xl font-semibold text-gray-800">
+      <h1 class="text-3xl font-semibold text-gray-800">
         {{ currentPage | titlecase }}
       </h1>
 
@@ -55,12 +55,12 @@
           class="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-lg py-2"
         >
           <p
-            class="block px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white"
+            class="block px-4 py-2 text-gray-700 hover:bg-blue-800 hover:text-white"
           >
             Welcome {{ userFirstName | capitalize }}
           </p>
           <a
-            class="block px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white"
+            class="block px-4 py-2 text-gray-700 hover:bg-blue-800 hover:text-white"
             href="#"
             (click)="logout()"
             >Sign Out</a
@@ -70,7 +70,7 @@
     </header>
 
     <!-- Page Content -->
-    <main class="bg-white rounded-lg shadow-md p-6">
+    <main class="bg-white p-6">
       <router-outlet></router-outlet>
     </main>
   </div>
