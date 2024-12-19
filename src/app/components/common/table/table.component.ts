@@ -6,16 +6,15 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
-import { CommonModule } from '@angular/common';
+import { CommonModule, TitleCasePipe } from '@angular/common';
 import { ButtonComponent } from '../button/button.component';
 import { SearchbarComponent } from '../searchbar/searchbar.component';
 import { FormsModule } from '@angular/forms';
-import { CapitalizePipe } from "../../../capitalize.pipe";
 
 @Component({
   selector: 'app-table',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, SearchbarComponent, FormsModule, CapitalizePipe],
+  imports: [CommonModule, ButtonComponent, SearchbarComponent, FormsModule],
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.css'],
 })

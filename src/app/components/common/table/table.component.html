@@ -130,8 +130,8 @@
               >
                 {{
                   row[column]?.length > 50
-                    ? (row[column] | capitalize | slice : 0 : 80) + "..."
-                    : (row[column] | capitalize)
+                    ? (row[column] | titlecase | slice : 0 : 80) + "..."
+                    : (row[column] | titlecase)
                 }}
               </p>
             </td>
