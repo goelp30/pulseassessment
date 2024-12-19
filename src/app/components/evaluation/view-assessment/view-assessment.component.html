@@ -3,56 +3,65 @@
     <div class="flex items-center justify-between mb-2">
       <!-- Header Section -->
       <h1 class="text-blue-700 text-5xl font-bold flex-grow text-center">
-        {{clickedData?.title}}
+        Angular
       </h1>
 
       <!-- Marks Scored Section -->
-       <div class="flex flex-col">
-      <div class="text-blue-800 text-lg font-medium">
-        <span>Marks Scored:</span>
-        <span class="text-green-700 font-semibold">
-          {{clickedData?.marksScored || 0}} /  {{getTotalMarks()}}
-        </span>
+      <div class="flex flex-col">
+        <div class="text-blue-800 text-lg font-medium">
+          <span>Marks Scored:</span>
+          <span class="text-green-700 font-semibold">
+            {{ getUserMarks() || 0 }} / {{ getTotalMarks() }}
+          </span>
+        </div>
+        <!-- Result Section -->
+        <div class="font-bold text-2xl flex items-center">
+          <label class="text-blue-800 text-lg font-medium">Result:</label>
+          <span class="text-lg font-semibold" 
+            [ngClass]="{
+              'text-green-700': clickedData.result === 'Pass',
+              'text-red-700': clickedData.result === 'Fail'
+            }">
+            {{ clickedData.result }}
+          </span>
+        </div>
       </div>
-      
-      <!-- Result Section -->
-      <div class="font-bold text-2xl flex items-center">
-        <label class="text-blue-800 text-lg font-medium"> Result: </label>
-        <span class="text-lg font-semibold">
-          {{clickedData?.result}}
-        </span>
-      </div>
-    </div>
     </div>
 
     <!-- Questions Section -->
     <div class="w-full max-w-6xl mx-auto p-6 bg-gray-100 rounded-xl">
       <!-- Loop through each question -->
-      @for(question of clickedData.questions; track question.question_id) {
+      @for(question of evaluationList; track question.questionId) {
         <div class="relative my-6 p-6 border border-gray-300 rounded-lg bg-white shadow-md">
           <!-- Question Text -->
           <div class="text-lg font-medium text-gray-800">
-            {{question.question_text}}
+            {{ question.questionText }}
           </div>
 
-          @if(question.question_type !== 'descriptive') {
-            <div class="text-right text-gray-600 text-sm font-medium mb-0 absolute bottom-5 right-5">
-              Marks: <span class="text-green-600">{{question.marksScored || 0}} / {{question.totalMarks}}</span>
-            </div>
-          }
+          <!-- Marks and Weigtage for all question types -->
+          <div class="text-right text-gray-600 text-sm font-medium mb-0 absolute bottom-5 right-5">
+            Marks: <span class="text-green-600">
+              {{ question.marks || 0 }} / {{ question.questionWeitage }}
+            </span>
+          </div>
 
           <!-- Single-Answer Question -->
-          @if (question.question_type == "single_answer") {
+          @if(question.questionType == "Single") {
             <div class="space-y-3">
               @for(option of question.options; track option) {
                 <div class="flex items-center space-x-4">
-                  <input type="radio" id="{{question.question_id}}-{{option}}" name="{{question.question_id}}"
-                    class="cursor-pointer" [checked]="question.user_answer === option" disabled>
-                  <label for="{{question.question_id}}-{{option}}" class="text-lg font-medium cursor-pointer 
-                         {{ question.user_answer === option && option === question.correct_answer ? 'text-green-700' : '' }} 
-                         {{ question.user_answer === option && option !== question.correct_answer ? 'text-red-700' : '' }} 
-                         {{ question.user_answer === undefined ? 'text-gray-500' : '' }}">
-                    {{option}}
+                  <input type="radio"
+                         id="{{ question.questionId }}-{{ option.optionId }}"
+                         name="{{ question.questionId }}"
+                         class="cursor-pointer"
+                         [checked]="question.userAnswer == option.optionId"
+                         disabled>
+                  <label for="{{ question.questionId }}-{{ option.optionId }}"
+                         class="text-lg font-medium cursor-pointer
+                           {{ question.userAnswer == option.optionId && option.isCorrectOption ? 'text-green-700' : '' }}
+                           {{ question.userAnswer == option.optionId && !option.isCorrectOption ? 'text-red-700' : '' }}
+                           {{ question.userAnswer == undefined ? 'text-gray-500' : '' }}">
+                    {{ option.optionText }}
                   </label>
                 </div>
               }
@@ -60,17 +69,22 @@
           }
 
           <!-- Multi-Answer Question -->
-          @else if (question.question_type == "multi_answer") {
+          @else if(question.questionType == "Multi") {
             <div class="space-y-3">
               @for(option of question.options; track option) {
                 <div class="flex items-center space-x-4">
-                  <input type="checkbox" id="{{question.question_id}}-{{option}}" class="cursor-pointer"
-                    [checked]="question.user_answer.includes(option)" disabled>
-                  <label for="{{question.question_id}}-{{option}}" class="text-lg font-medium cursor-pointer"
-                    [class.text-green-700]="question.user_answer.includes(option) && question.correct_answers.includes(option)"
-                    [class.text-red-700]="question.user_answer.includes(option) && !question.correct_answers.includes(option)"
-                    [class.text-gray-500]="!question.user_answer.includes(option)">
-                    {{option}}
+                  <input type="checkbox"
+                         id="{{ question.questionId }}-{{ option.optionId }}"
+                         name="{{ question.questionId }}"
+                         class="cursor-pointer"
+                         [checked]="question.userAnswer?.includes(option.optionId)"
+                         disabled>
+                  <label for="{{ question.questionId }}-{{ option.optionId }}"
+                         class="text-lg font-medium cursor-pointer
+                           {{ question.userAnswer?.includes(option.optionId) && option.isCorrectOption ? 'text-green-700' : '' }}
+                           {{ question.userAnswer?.includes(option.optionId) && !option.isCorrectOption ? 'text-red-700' : '' }}
+                           {{ !question.userAnswer?.includes(option.optionId) ? 'text-gray-500' : '' }}">
+                    {{ option.optionText }}
                   </label>
                 </div>
               }
@@ -78,29 +92,27 @@
           }
 
           <!-- Descriptive Question -->
-          @else if (question.question_type == "descriptive") {
+          @else if(question.questionType == "Descriptive") {
             <div class="space-y-4 py-3">
-              <!-- User's Answer (No input box, just plain text) -->
+              <!-- User Answer -->
               <div>
-                <label for="userAnswer" class="block text-blue-700 font-semibold">User's Answer:</label>
-                <div class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-800">
-                  {{question.user_answer}}
+                <label class="block text-blue-700 font-semibold">User Answer</label>
+                <div class="p-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-800">
+                  {{ question.answer }}
                 </div>
               </div>
 
-              <!-- Marks (Displayed without an input box) -->
-              <div class="text-right text-sm">
-                Marks: <span class="text-green-600">{{question.marksScored || 0}} / {{question.totalMarks}}</span>
-              </div>
+              <!-- Assigned Marks (Display Marks instead of Input Box) -->
+              
             </div>
           }
         </div>
       }
     </div>
 
-    <!-- Footer Section with Centered Button -->
-    <div class="flex justify-center mb-3">
-      <app-button 
+    <!-- Submit Button -->
+    <div class="text-center m-6">
+      <app-button
         [label]="'Back To Dashboard'"
         [class]="'px-4 py-3 text-white bg-blue-600 border-2 border-blue-800 rounded-md transition-all duration-300 hover:bg-blue-700'"
         (click)="onSubmit()">

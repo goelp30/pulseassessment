@@ -11,18 +11,19 @@ import { Option, Question } from '../../../../models/question';
   styleUrls: ['./question-display.component.css']
 })
 export class QuestionDisplayComponent {
-onDescriptiveAnswerChange($event: any) {
-throw new Error('Method not implemented.');
+
+onDescriptiveAnswerChange($event: string) {
+  this.answerSelect.emit($event);
 }
   @Input() question!: Question;
   @Input() options: Option[] = [];
   @Input() questionNumber!: number;
   @Input() totalQuestions!: number;
-  @Output() answerSelect = new EventEmitter<number>();
+  @Output() answerSelect = new EventEmitter<string>();
   @Output() reviewToggle = new EventEmitter<void>();
 
   onAnswerSelect(optionId: string): void {
-    this.answerSelect.emit(Number(optionId));
+    this.answerSelect.emit(String(optionId));
   }
 
   onReviewToggle(): void {
@@ -35,4 +36,5 @@ throw new Error('Method not implemented.');
     }
     return this.question.selectedAnswer === Number(optionId);
   }
+  
 }

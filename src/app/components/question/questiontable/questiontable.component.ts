@@ -8,29 +8,20 @@ import { QuestionmodalComponent } from '../questionmodal/questionmodal.component
 import { CommonModule } from '@angular/common';
 import { Option } from '../../../models/question';
 import { TableNames } from '../../../enums/TableName';
+import { Question } from '../../../models/question';
 import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';
-
-export type Question = {
-  subjectId: string;
-  questionId: any;
-  questionText: any;
-  questionType: string;
-  questionLevel: string;
-  questionWeightage: number;
-  questionTime: number;
-  createdOn: number;
-  updatedOn: number;
-  isQuesDisabled?: boolean;
-};
+import { ButtonComponent } from '../../common/button/button.component';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-questiontable',
   standalone: true,
   templateUrl: './questiontable.component.html',
   styleUrls: ['./questiontable.component.css'],
-  imports:[HeaderComponent,TableComponent,QuestionmodalComponent,CommonModule,PopupModuleComponent]
+  imports:[HeaderComponent,TableComponent,QuestionmodalComponent,CommonModule,PopupModuleComponent,ButtonComponent,RouterModule]
 })
 export class QuestiontableComponent implements OnInit {
+
   questions: Question[] = [];
   options: Option[] = [];
 
@@ -80,17 +71,21 @@ export class QuestiontableComponent implements OnInit {
 
  
   searchPlaceholder: string = 'Search Questions';
-  tableName: string = TableNames.Question;
   searchQuery: string = '';
   isModalVisible: boolean = false;
   isAddModal: boolean = false;
   subjectName: string='';
+backbutton={
+  label:"Back to subject",
+  colorClass:"bg-blue-500 py-2 px-4 text-white rounded-md ml-6",
+};
 
 
   constructor(
     private toastr: ToastrService,
     private subjectService: SubjectService,
-    private fireBaseService: FireBaseService<Question>
+    private fireBaseService: FireBaseService<Question>,
+    private router:Router
   ) {}
 
   ngOnInit(): void {
@@ -129,6 +124,11 @@ export class QuestiontableComponent implements OnInit {
       }
     });
   }
+
+  navigatetosubject() {
+    this.router.navigate(['/subjects']);
+
+  }
   
   fetchQuestions(): void {
     this.fireBaseService.listensToChangeWithFilter('questions', 'subjectId', this.subjectId).subscribe(
@@ -137,7 +137,7 @@ export class QuestiontableComponent implements OnInit {
         this.questions = data.filter(question => !question.isQuesDisabled);
         console.log('Active questions:', this.questions);
       },
-      (error) => {
+      (error:Error) => {
         console.error('Error while loading questions:', error);
       }
     );
@@ -158,7 +158,8 @@ export class QuestiontableComponent implements OnInit {
       createdOn: Date.now(),
       updatedOn: Date.now(),
     };
-    this.isQuestionModalVisible = true; // Open only for adding a new question
+    this.isQuestionModalVisible = true;
+    this.isAddModal=true; // Open only for adding a new question
   }
   
 
@@ -190,17 +191,37 @@ export class QuestiontableComponent implements OnInit {
   deleteQuestion() {
     if (this.selectedQuestionToDelete) {
       const questionToDelete = this.selectedQuestionToDelete;
-      questionToDelete.isQuesDisabled = true; // Mark as deleted (disabled)
+      questionToDelete.isQuesDisabled = true; // Mark as disabled in the Questions table
   
+      // First, update the 'Questions' table to mark the question as disabled
       this.fireBaseService.update(`questions/${questionToDelete.questionId}`, questionToDelete)
         .then(() => {
-          this.toastr.error('Question deleted successfully', 'Deleted');
-          this.eConfirmationVisible = false;
+          // Once the question is marked as disabled, update the related Options entries
   
-          // Remove from UI
-          this.questions = this.questions.filter(question => question.questionId !== questionToDelete.questionId);
+          // Get all Options entries and update the ones that reference this questionId
+          this.fireBaseService.getAllDataByFilter('options', 'isOptionDisabled', false).subscribe((optionsList: Option[]) => {
+            const optionsToUpdate = optionsList.filter((option) => option.questionId === questionToDelete.questionId);
+            
+            // For each Option entry related to the deleted question
+            const updatePromises = optionsToUpdate.map((option) => {
+              option.isOptionDisabled = true; // Mark as disabled in the Options table
+              return this.fireBaseService.update(`options/${option.optionId}`, option);
+            });
+  
+            // Wait for all updates to be completed
+            Promise.all(updatePromises)
+              .then(() => {
+                this.toastr.success('Question deleted successfully', 'Deleted');
+                this.eConfirmationVisible = false;
+                this.fetchQuestions(); // Refresh the questions list after deletion
+              })
+              .catch((error) => {
+                console.error('Error updating Options entries:', error);
+                this.toastr.error('Failed to update related options', 'Error');
+              });
+          });
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Error deleting question:', error);
           this.toastr.error('Failed to delete question', 'Error');
         });
@@ -217,6 +238,7 @@ export class QuestiontableComponent implements OnInit {
   editQuestion(row: Question): void {
     this.selectedQuestion = { ...row };
     this.isQuestionModalVisible = true;
+    this.isAddModal=false;
   }
   closeQuestionModal() {
     this.isQuestionModalVisible = false;
@@ -224,4 +246,9 @@ export class QuestiontableComponent implements OnInit {
   onSearchQueryChange(newQuery: string): void {
     this.searchQuery = newQuery;
   }
+  handleCloseModal(): void {
+    // Logic to close the modal (e.g., hide modal or remove component)
+    this.isQuestionModalVisible = false;
+  }
+  
 }

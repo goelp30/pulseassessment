@@ -60,6 +60,7 @@ ngOnInit(): void {
       this.savedFormData = JSON.parse(savedData);
     }
   }
+
   this.subscribeToFormChanges();
   this.router.events.subscribe((event) => {
     if (event instanceof NavigationStart) {
