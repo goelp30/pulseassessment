@@ -182,32 +182,30 @@ export class QuestionmodalComponent implements OnInit {
   }
   
   
-async removeOption(index: number): Promise<void> {
-  const questionType = this.assessmentForm.get('questionType')?.value;
-  const activeOptionsCount = this.options.controls.filter(
-    (control) => !control.get('isOptionDisabled')?.value
-  ).length; // Only count active options
-
-  if (questionType === 'Single' && activeOptionsCount <= 2) {
-    this.warningMessage = 'A single-choice question must have at least 2  options.';
-    return;
+  async removeOption(index: number): Promise<void> {
+    const questionType = this.assessmentForm.get('questionType')?.value;
+    const activeOptionsCount = this.options.controls.filter(
+      (control) => !control.get('isOptionDisabled')?.value
+    ).length; // Only count active options
+  
+    // Allow removal but show a warning if the condition isn't met
+    if (questionType === 'Single' && activeOptionsCount <= 2) {
+      this.warningMessage = 'A single-choice question must have at least 2 options.';
+    } else if (questionType === 'Multi' && activeOptionsCount <= 3) {
+      this.warningMessage = 'A multi-choice question must have at least 3 options.';
+    } else {
+      this.warningMessage = ''; // Clear any previous warning message
+    }
+  
+    // Mark the option as disabled (soft-delete)
+    const option = this.options.at(index) as FormGroup;
+    if (option) {
+      option.patchValue({ isOptionDisabled: true });
+    } else {
+      this.toastr.error('Invalid option index.', 'Error');
+    }
   }
-
-  if (questionType === 'Multi' && activeOptionsCount <= 3) {
-    this.warningMessage = 'A multi-choice question must have at least 3  options.';
-    return;
-  }
-
-  this.warningMessage = ''; // Clear any previous warning message
-
-  // Mark the option as disabled (soft-delete)
-  const option = this.options.at(index) as FormGroup;
-  if (option) {
-    option.patchValue({ isOptionDisabled: true });
-  } else {
-    this.toastr.error('Invalid option index.', 'Error');
-  }
-}
+  
 
 
 
@@ -248,22 +246,41 @@ validateOptions(): boolean {
 
 get isSaveDisabled(): boolean {
   const questionType = this.assessmentForm.get('questionType')?.value;
-  const totalOptions = this.options.length;
+  const activeOptionsCount = this.options.controls.filter(
+    (control) => !control.get('isOptionDisabled')?.value
+  ).length;
 
+  const correctOptionsCount = this.options.controls.filter(
+    (control) => control.get('isCorrectOption')?.value && !control.get('isOptionDisabled')?.value
+  ).length;
+
+  // Base check for form validity
   if (!this.assessmentForm.valid) {
     return true; // Form is invalid
   }
 
-  if (questionType === 'Single' && totalOptions < 2) {
-    return true; // Single-choice must have at least 2 options
+  // Validation for Single-choice questions
+  if (questionType === 'Single') {
+    if (activeOptionsCount < 2 || correctOptionsCount !== 1) {
+      return true; // Single-choice must have at least 2 options and exactly 1 correct option
+    }
   }
 
-  if (questionType === 'Multi' && totalOptions < 3) {
-    return true; // Multi-choice must have at least 3 options
+  // Validation for Multi-choice questions
+  if (questionType === 'Multi') {
+    if (
+      activeOptionsCount < 3 || // At least 3 options
+      correctOptionsCount < 2 || // At least 2 correct options
+      correctOptionsCount === activeOptionsCount // Not all options can be correct
+    ) {
+      return true;
+    }
   }
 
-  return false; // Otherwise, enable the button
+  // No restrictions for Descriptive questions
+  return false; // All conditions passed
 }
+
 
 
 
