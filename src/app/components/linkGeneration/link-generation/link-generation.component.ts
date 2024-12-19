@@ -45,7 +45,7 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
     {
       label: 'Generate Link',
       colorClass:
-        'bg-custom-blue py-2 px-4 text-white font-semibold hover:bg-blue-700  text-white rounded-md transition duration-300 ease-in-out transform',
+        'bg-custom-blue py-2 px-4 text-white font-semibold hover:opacity-80 transition-opacity  text-white rounded-md ',
       action: (row: any) => this.openModal(row),
     },
   ];
