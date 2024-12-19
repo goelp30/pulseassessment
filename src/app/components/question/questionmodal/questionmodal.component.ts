@@ -181,35 +181,6 @@ export class QuestionmodalComponent implements OnInit {
     }
   }
   
-
-
-//  async removeOption(index: number): Promise<void> {
-//   if (!this.editingMode) {
-//     this.toastr.error('Remove option is only available in edit mode.', 'Error');
-//     return;
-//   }
-
-//   const option = this.options.at(index) as FormGroup;
-//   if (!option) {
-//     this.toastr.error('Invalid option index.', 'Error');
-//     return;
-//   }
-
-//   try {
-//     // Mark the option as disabled
-//     const updatedOption = { ...option.value, isOptionDisabled: true };
-
-//     // Update Firebase
-//     await this.firebaseService.update(`/options/${updatedOption.optionId}`, updatedOption);
-
-//     // Remove the option from the form only after successful update
-//     this.options.removeAt(index);
-//     this.toastr.success('Option removed successfully.');
-//   } catch (error) {
-//     console.error('Error while disabling the option in Firebase:', error);
-//     this.toastr.error('Could not remove the option. Please try again.', 'Error');
-//   }
-// }
 async removeOption(index: number): Promise<void> {
   const questionType = this.assessmentForm.get('questionType')?.value;
   const activeOptionsCount = this.options.controls.filter(
@@ -232,7 +203,6 @@ async removeOption(index: number): Promise<void> {
   const option = this.options.at(index) as FormGroup;
   if (option) {
     option.patchValue({ isOptionDisabled: true });
-    this.toastr.info('Option removed successfully.', 'Info');
   } else {
     this.toastr.error('Invalid option index.', 'Error');
   }
