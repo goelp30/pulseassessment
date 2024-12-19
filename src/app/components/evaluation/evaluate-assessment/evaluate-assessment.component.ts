@@ -109,7 +109,7 @@ export class EvaluateAssessmentComponent implements OnInit {
   evaluateAutoScoredQuestions(): void {
     this.evaluationList.forEach((question: any) => {
       if (question.questionType === 'Single') {
-        const selectedOption = question.options.find((option: { optionId: any }) => option.optionId === question.userAnswer);
+        const selectedOption = question.options.find((option: { optionId: any }) => option.optionId == question.userAnswer);
         question.marks = selectedOption?.isCorrectOption ? question.questionWeitage : 0;
       } else if (question.questionType === 'Multi') {
         const correctOptions = question.options

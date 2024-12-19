@@ -205,7 +205,7 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
       action: (row: any) => this.handleButtonClick(row),
     },
   ];
-  searchPlaceholder = 'Search here....';
+  searchPlaceholder = 'Search....';
   // Add properties to store user data
   candidates: Candidate[] = [];
   employees: Employee[] = [];
@@ -284,7 +284,7 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
   }
 
   getAssessmentForEvaluation(): void {
-    this.getCandidatesAndEmployees()
+    this.getCandidatesAndEmployees();
     this.isLoading = true;
     this.firebaseservice
       .getAllData('AssessmentData')
