@@ -1,16 +1,14 @@
-
 export type QuizAnswer = {
-  userAnswer?: string[];        // Array of user answers (if applicable)
-  answer?: string;              // Descriptive answer (if applicable)
-  isDescriptive: boolean;       // Indicates if the question is descriptive
-  questionId: string;           // Unique ID for the question
-  quizId: string;               // Unique ID for the quiz
-  marks: string;                // Marks or score for the answer (initially can be empty)
-}
-
+  userAnswer?: string[];
+  answer?: string;
+  isDescriptive: boolean;
+  questionId: string;
+  quizId: string;
+  marks: string;
+};
 
 export type QuizAnswers = {
-  [quizId: string]: {        
-    [questionId: string]: QuizAnswer;  
+  [quizId: string]: {
+    [questionId: string]: QuizAnswer;
   };
-}
+};
