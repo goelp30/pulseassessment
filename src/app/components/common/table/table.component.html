@@ -6,7 +6,6 @@
       'block w-[50vw] px-4 py-2 mb-2 border border-gray-300 rounded-full text-lg shadow-md outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 transition-all duration-100 transform'
     "
     [placeholder]="searchPlaceholder"
-    [searchQuery]="searchQuery"
     (searchQueryChange)="onSearchQueryChange($event)"
   >
   </app-searchbar>
@@ -29,7 +28,7 @@
             (click)="selectTab(tab)"
           >
             <div class="z-20 text-inherit">
-              &nbsp;&nbsp;{{ tabAliases[tab] || tab }}&nbsp;&nbsp;
+              {{ tabAliases[tab] || tab }}
             </div>
             @if(activeTab === tab){
             <div
@@ -45,76 +44,110 @@
 </div>
 }
 
-<!-- Table Section -->
+<!-- Additional Filters Section (Conditionally Displayed for assessmentRecords) -->
+@if(showAdditionalFilters) {
 <div
-  class="relative flex flex-col w-full text-gray-700 bg-white shadow-md rounded-xl bg-clip-border overflow-y-auto"
+  class="flex flex-wrap justify-center sm:flex-nowrap items-center gap-4 sm:gap-6 mb-2 sm:mb-8"
 >
-  <div
-    class="relative mx-4 overflow-hidden text-gray-700 bg-white rounded-none bg-clip-border"
-  >
-    <div class="flex items-center justify-between gap-8">
-      <div class="flex flex-col gap-2 shrink-0 sm:flex-row"></div>
-    </div>
-    <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
-      <div class="block w-full overflow-hidden md:w-max"></div>
-    </div>
+  <!-- Dropdown for Filters -->
+  <div class="w-full sm:w-auto">
+    <label for="filter" class="block text-sm font-medium text-gray-700 mb-1">
+      Filter by:
+    </label>
+    <select
+      id="filter"
+      name="filter"
+      [(ngModel)]="selectedFilter"
+      (change)="onFilterChange()"
+      class="w-full px-4 py-2 border rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+    >
+      <option value="">All</option>
+      @for (filter of filterOptions; track $index) {
+      <option [value]="filter">
+        {{ filter }}
+      </option>
+      }
+    </select>
   </div>
 
-  <div class="p-6 px-0">
-    <table class="w-full text-left table-auto min-w-max">
-      <thead>
-        <tr
-          class="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] text-center gap-4 border-blue-gray-100 bg-blue-gray-50/50 border-y"
-        >
-          @for(column of tableColumns; track column){
-          <th class="p-4">
-            @for(alias of getColumnAliases(column); track alias){
-            <ng-container>
-              <div>{{ alias }}</div>
-            </ng-container>
-            }
-          </th>
-          }
-          <th class="p-4 text-center">Action</th>
-        </tr>
-      </thead>
+  <!-- Dropdown for Status -->
+  <div class="w-full sm:w-auto">
+    <label for="status" class="block text-sm font-medium text-gray-700 mb-1">
+      Status:
+    </label>
+    <select
+      id="status"
+      name="status"
+      [(ngModel)]="selectedStatus"
+      (change)="onStatusChange()"
+      class="w-full px-4 py-2 border rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+    >
+      <option value="">All</option>
+      @for (status of statusOptions; track $index) {
+      <option [value]="status">
+        {{ status }}
+      </option>
+      }
+    </select>
+  </div>
+</div>
+}
 
-      <tbody class="overflow-y-auto max-h-96">
-        @if(filteredData.length > 0){ @for(row of getPaginatedData(); track
-        row){
-        <tr
-          class="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] text-center gap-4"
-        >
-          @for(column of tableColumns; track column){
-          <td class="p-4 border-b border-blue-gray-50">
-            <p
-              class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+<!-- Table Section -->
+<div class="min-h-screen p-1 sm:p-8">
+  <div class="bg-white shadow-xl rounded-xl p-6 sm:p-8">
+    <div class="overflow-x-auto rounded-lg">
+      <table
+        class="min-w-full bg-white border border-gray-300 rounded-lg shadow text-sm sm:text-base"
+      >
+        <thead class="bg-custom-blue">
+          <tr>
+            @for(column of tableColumns; track column){
+            <th
+              class="px-4 sm:px-6 py-3 text-left text-white font-semibold border-b"
             >
-              {{ row[column] | titlecase }}
-            </p>
-          </td>
-          }
-          <td class="p-4 border-b border-blue-gray-50">
-            <div class="flex justify-center gap-4">
-              @for(button of buttons; track button){
-              <app-button
-                [label]="button.label"
-                [colorClass]="button.colorClass"
-                (action)="button.action(row)"
-              >
-              </app-button>
-              }
-            </div>
-          </td>
-        </tr>
-        } }
-      </tbody>
-    </table>
+              {{ getColumnAliases(column)[0] || column }}
+            </th>
+            }
+            <th
+              class="px-4 sm:px-6 py-3 text-center text-white font-semibold border-b"
+            >
+              Action
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @if(filteredData.length > 0){ @for(row of getPaginatedData(); track
+          row){
+          <tr class="even:bg-gray-50">
+            @for(column of tableColumns; track column){
+            <td class="px-4 sm:px-6 py-3 border-b">
+              <p class="text-blue-gray-900">
+                {{ row[column] | titlecase }}
+              </p>
+            </td>
+            }
+            <td class="px-4 sm:px-6 py-3 border-b">
+              <div class="flex justify-center gap-4">
+                @for(button of buttons; track button){
+                <app-button
+                  [label]="button.label"
+                  [colorClass]="button.colorClass"
+                  (action)="button.action(row)"
+                ></app-button>
+                }
+              </div>
+            </td>
+          </tr>
+          } }
+        </tbody>
+      </table>
+    </div>
 
     <!-- Pagination Section -->
     @if(filteredData.length > 0){
     <div
-      class="flex justify-center items-center gap-2 p-4 border-t border-blue-gray-50"
+      class="flex justify-center items-center gap-2 p-4 border-t border-gray-300"
     >
       <button
         (click)="previousPage()"
@@ -147,24 +180,20 @@
         Next
       </button>
     </div>
-    }
-
-    <!-- Page Info Section -->
-    @if(filteredData.length > 0){
-    <div class="flex justify-center mt-">
+    <div class="flex justify-center mt-4">
       <p>Page {{ currentPage }} of {{ totalPages }}</p>
     </div>
     }
 
     <!-- No Data Found Section -->
     @if(isLoading){
-      <div class="flex justify-center mt-4">
-        <div class="loader"></div>
-      </div>
-      } @if(!isLoading && filteredData.length === 0){
-      <div class="flex justify-center mt-4 text-gray-500">
-        <b class="text-gray-600">No data found</b>
-      </div>
+    <div class="flex justify-center mt-4">
+      <div class="loader"></div>
+    </div>
+    } @if(!isLoading && filteredData.length === 0){
+    <div class="flex justify-center mt-4 text-gray-500">
+      <b class="text-red-600">No data found</b>
+    </div>
     }
   </div>
 </div>
