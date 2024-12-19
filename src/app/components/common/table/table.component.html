@@ -127,13 +127,22 @@
                 [ngClass]="
                   column === 'status' ? getStatusClass(row[column]) : ''
                 "
+                (click)="copyToClipboard(row[column])"
+                style="cursor: pointer"
               >
                 {{
                   row[column]?.length > 50
-                    ? (row[column] | capitalize | slice : 0 : 80) + "..."
+                    ? (row[column] | capitalize | slice : 0 : 26) + "..."
                     : (row[column] | capitalize)
                 }}
               </p>
+              <!-- Popup Notification -->
+              <div
+                *ngIf="isPopupVisible"
+                class="link_copy"
+              >
+                Link copied!
+              </div>
             </td>
             }
             <td class="px-4 sm:px-6 py-3 border-b">
@@ -170,19 +179,23 @@
       </button>
       <div class="flex gap-2">
         @for(page of pageNumbers; track page){
-          <button
+        <button
           (click)="goToPage(page)"
           class="select-none rounded-lg border py-2 px-4"
-          [ngStyle]="currentPage === page ? { 'background-color': '#003e7e', color: 'white' } : {}"
+          [ngStyle]="
+            currentPage === page
+              ? { 'background-color': '#003e7e', color: 'white' }
+              : {}
+          "
         >
           {{ page }}
         </button>
-        
+
         }
       </div>
       <button
         (click)="nextPage()"
-        class=" select-none rounded-lg border py-2 px-4"
+        class="select-none rounded-lg border py-2 px-4"
         [disabled]="currentPage >= totalPages"
         [class.bg-gray-400]="currentPage >= totalPages"
         [class.cursor-not-allowed]="currentPage >= totalPages"

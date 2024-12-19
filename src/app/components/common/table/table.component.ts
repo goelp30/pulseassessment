@@ -10,12 +10,18 @@ import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../button/button.component';
 import { SearchbarComponent } from '../searchbar/searchbar.component';
 import { FormsModule } from '@angular/forms';
-import { CapitalizePipe } from "../../../capitalize.pipe";
+import { CapitalizePipe } from '../../../capitalize.pipe';
 
 @Component({
   selector: 'app-table',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, SearchbarComponent, FormsModule, CapitalizePipe],
+  imports: [
+    CommonModule,
+    ButtonComponent,
+    SearchbarComponent,
+    FormsModule,
+    CapitalizePipe,
+  ],
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.css'],
 })
@@ -54,6 +60,11 @@ export class TableComponent implements OnInit, OnChanges {
   activeTab: string = '';
   pageNumbers: number[] = [];
   isLoading: boolean = true;
+
+  // For link in Assessment records
+  isPopupVisible: boolean = false;
+  copiedUrl: string | null = null;
+
 
   constructor(private fireBaseService: FireBaseService<any>) {}
 
@@ -218,5 +229,27 @@ export class TableComponent implements OnInit, OnChanges {
       return button.disableFunction(row);
     }
     return false;
+  }
+
+
+  copyToClipboard(url: string): void {
+    navigator.clipboard.writeText(url).then(
+      () => {
+        this.copiedUrl = url; // Set the copied URL to show style changes
+        this.showPopup(); // Trigger the popup
+      },
+      (err) => {
+        console.error('Failed to copy URL: ', err);
+      }
+    );
+  }
+
+  showPopup(): void {
+    this.isPopupVisible = true;
+
+    // Hide the popup after 2 seconds
+    setTimeout(() => {
+      this.isPopupVisible = false;
+    }, 1000);
   }
 }
