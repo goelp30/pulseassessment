@@ -3,12 +3,11 @@ import { CommonModule } from '@angular/common';
 import { Subject } from '../../models/subject';
 import { AuthService } from '../../../sharedServices/auth.service';
 import { Router, RouterOutlet } from '@angular/router';
-import { CapitalizePipe } from '../../capitalize.pipe';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true, // Indicates that this component is standalone
-  imports: [CommonModule, RouterOutlet, CapitalizePipe], // Modules imported for this component
+  imports: [CommonModule, RouterOutlet], // Modules imported for this component
   templateUrl: './dashboard.component.html', // Path to HTML file
 })
 export class DashboardComponent implements OnInit {

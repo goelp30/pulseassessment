@@ -4,11 +4,11 @@
   [class]="
     'block w-full px-4 py-2 mb-4 border border-gray-300 rounded-full text-lg shadow-md outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 transition-all duration-100 transform '
   "
->
-</app-searchbar>
-<span class="text-black-600 font-semibold"
-  >Assessment Name: {{ assessmentName | capitalize }}</span
->
+></app-searchbar>
+<div>
+  <span class="text-black-400 font-semibold">Assessment Name: </span>
+  <span class="text-gray-500">{{ assessmentName | titlecase }}</span>
+</div>
 <div class="flex justify-between items-center my-2">
   <div class="flex items-center">
     <input
@@ -25,12 +25,12 @@
   <div class="text-xs text-gray-500">({{ filteredNames.length }} items)</div>
 </div>
 <div
-  class="h-32 overflow-y-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
+  class="h-36 overflow-y-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
 >
   <!-- Check if filteredNames is empty -->
-  @if(filteredNames.length === 0){
+  @if (filteredNames.length === 0) {
   <div class="h-32 text-center text-gray-500 font-medium">User not found</div>
-  } @if(filteredNames.length > 0){
+  } @if (filteredNames.length > 0) {
   <div>
     <ul class="space-y-1">
       <!-- Loop through filteredNames and display each name -->
@@ -56,7 +56,7 @@
 </div>
 <!-- Display selected names -->
 <div
-  class="h-32 overflow-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
+  class="h-36 overflow-auto mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
 >
   <p class="text-sm font-semibold mb-2 text-gray-800">
     Selected {{ assessmentType === "internal" ? "Employees" : "Candidates" }}
@@ -65,7 +65,8 @@
     <!-- Check if selectedNames is empty -->
     @if (selectedNames.length === 0) {
     <p class="text-center text-gray-500 font-medium">
-      No {{ assessmentType === "internal" ? "Employee" : "Candidate" }} selected
+      No {{ assessmentType === "internal" ? "Employee" : "Candidate" }}
+      selected
     </p>
     } @else {
     <!-- Display selected names here -->
@@ -79,13 +80,13 @@
         (click)="removeSelectedName(name)"
         class="ml-1 text-red-500 font-bold hover:text-red-700 focus:outline-none transition-all duration-200 ease-in-out"
       >
-        &times;
+        ×
       </button>
     </div>
     } }
   </div>
 </div>
-<div class="flex justify-between items-center space-x-4 mb-12">
+<div class="flex justify-between items-center space-x-4 mb-2">
   <!-- DateTime field -->
   <input
     type="datetime-local"
@@ -100,8 +101,23 @@
     [label]="isSending ? 'Sending...' : 'Send'"
     [ngClass]="{ 'disabled-button': !isSendButtonEnabled() }"
     [colorClass]="
-      'px-4 py-2 bg-custom-blue text-white text-white rounded-md hover:bg-blue-700 focus:outline-none transition-all duration-200 ease-in-out'
+      'px-4 py-2 bg-custom-blue text-white text-white rounded-md hover:opacity-80 transition-opacity'
     "
     (click)="onSend()"
   ></app-button>
+</div>
+<!-- <div class="flex justify-center">
+  @if (showPastTimeError) {
+  <span class="text-red-600 text-center"> The selected time is in the past. Please select a valid time. </span>
+  }
+</div> -->
+
+<div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+  @if (showPastTimeError) {
+  <h3 class="text-center font-medium">
+    <span class="text-red-600 font-semibold">
+      The selected time is in the past. Please select a valid time
+    </span>
+  </h3>
+  }
 </div>

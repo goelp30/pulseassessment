@@ -10,12 +10,16 @@ import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../button/button.component';
 import { SearchbarComponent } from '../searchbar/searchbar.component';
 import { FormsModule } from '@angular/forms';
-import { CapitalizePipe } from "../../../capitalize.pipe";
 
 @Component({
   selector: 'app-table',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, SearchbarComponent, FormsModule, CapitalizePipe],
+  imports: [
+    CommonModule,
+    ButtonComponent,
+    SearchbarComponent,
+    FormsModule,
+  ],
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.css'],
 })
@@ -24,7 +28,7 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() tableData: any[] = [];
   @Input() tableColumns: string[] = [];
   @Input() columnAliases: { [key: string]: string[] } = {};
-  @Input() buttons: { label: string; colorClass: string; action: Function }[] =
+  @Input() buttons: { label: string | ((row: any) => string); colorClass: string; action: Function }[] =
     [];
   @Input() searchQuery: string = '';
   @Input() onSearchQueryChange: (newQuery: string) => void = () => {};
@@ -54,6 +58,11 @@ export class TableComponent implements OnInit, OnChanges {
   activeTab: string = '';
   pageNumbers: number[] = [];
   isLoading: boolean = true;
+
+  // For link in Assessment records
+  isPopupVisible: boolean = false;
+  copiedUrl: string | null = null;
+
 
   constructor(private fireBaseService: FireBaseService<any>) {}
 
@@ -206,6 +215,12 @@ export class TableComponent implements OnInit, OnChanges {
     this.pageNumbers = pages;
   }
 
+    getButtonLabel(button:any, row: any): string {
+    if (typeof button.label === 'function') {
+      return button.label(row);
+    }
+      return button.label;
+  }
   getCustomButtonClasses(button: any, row: any) {
     if (button.customClassFunction) {
       return button.customClassFunction(row);
@@ -219,4 +234,39 @@ export class TableComponent implements OnInit, OnChanges {
     }
     return false;
   }
+
+
+  copyToClipboard(url: string): void {
+    navigator.clipboard.writeText(url).then(
+      () => {
+        this.copiedUrl = url; // Set the copied URL to show style changes
+        this.showPopup(); // Trigger the popup
+      },
+      (err) => {
+        console.error('Failed to copy URL: ', err);
+      }
+    );
+  }
+
+  showPopup(): void {
+    this.isPopupVisible = true;
+
+    // Hide the popup after 2 seconds
+    setTimeout(() => {
+      this.isPopupVisible = false;
+    }, 1000);
+  }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

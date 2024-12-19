@@ -53,12 +53,12 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
     {
       label: ' Invalid',
       colorClass:
-        'px-3 py-2 bg-red-500 text-white font-semibold cursor-pointer rounded-md shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400',
+        'px-3 py-2 bg-red-500 text-white font-semibold cursor-pointer rounded-md shadow hover:opacity-80 transition-opacity',
       action: (row: any) => this.invalidateAssessment(row),
       customClassFunction: (row: any) => {
         return this.isInvalidDisabled(row)
           ? 'px-3 py-2 bg-red-500 text-white font-semibold cursor-pointer rounded-md shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 opacity-50 disabled-button'
-          : 'px-3 py-2 bg-red-500 text-white font-semibold cursor-pointer rounded-md shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400';
+          : 'px-3 py-2 bg-red-500 text-white font-semibold cursor-pointer rounded-md shadow hover:opacity-80 transition-opacity';
       },
       disableFunction: (row: any) => this.isInvalidDisabled(row),
     },
@@ -69,7 +69,7 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
     Expired: 'text-red-600 font-semibold',
     'In Progress': 'text-yellow-600 font-semibold',
     Completed: 'text-blue-600 font-semibold',
-    Invalid: 'text-gray-600 font-semibold',
+    Invalid: 'text-blue-900 font-semibold',
   };
 
   private destroy$ = new Subject<void>(); // Subject to manage subscriptions

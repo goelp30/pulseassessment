@@ -95,10 +95,10 @@
 
 <!-- Table Section -->
 <div class="min-h-screen p-1 sm:p-8">
-  <div class="bg-white shadow-xl rounded-xl p-6 sm:p-8">
-    <div class="overflow-x-auto rounded-lg">
+  <div class="bg-white shadow-xl min-h-screen rounded-xl p-6 sm:p-8">
+    <div class="overflow-x-auto min-h-screen">
       <table
-        class="min-w-full bg-white border border-gray-300 rounded-lg shadow text-sm sm:text-base"
+        class="min-w-full bg-white border border-gray-300 rounded-lg text-sm sm:text-base"
       >
         <thead class="bg-custom-blue">
           <tr>
@@ -127,20 +127,29 @@
                 [ngClass]="
                   column === 'status' ? getStatusClass(row[column]) : ''
                 "
+                (click)="copyToClipboard(row[column])"
+                style="cursor: pointer"
               >
                 {{
                   row[column]?.length > 50
-                    ? (row[column] | capitalize | slice : 0 : 80) + "..."
-                    : (row[column] | capitalize)
+                    ? (row[column] | titlecase | slice : 0 : 26) + "..."
+                    : (row[column] | titlecase)
                 }}
               </p>
+              <!-- Popup Notification -->
+              <div
+                *ngIf="showAdditionalFilters && isPopupVisible"
+                class="link_copy"
+              >
+                Link copied!
+              </div>
             </td>
             }
             <td class="px-4 sm:px-6 py-3 border-b">
               <div class="flex justify-center gap-4">
                 @for(button of buttons; track button){
                 <app-button
-                  [label]="button.label"
+                  [label]="getButtonLabel(button, row)"
                   [colorClass]="getCustomButtonClasses(button, row)"
                   (action)="button.action(row)"
                   [disabled]="isButtonDisabled(button, row)"
@@ -152,58 +161,63 @@
           } }
         </tbody>
       </table>
-    </div>
 
-    <!-- Pagination Section -->
-    @if(filteredData.length > 0){
-    <div
-      class="flex justify-center items-center gap-2 p-4 border-t border-gray-300"
-    >
-      <button
-        (click)="previousPage()"
-        class="select-none rounded-lg border py-2 px-4"
-        [disabled]="currentPage <= 1"
-        [class.bg-gray-400]="currentPage <= 1"
-        [class.cursor-not-allowed]="currentPage <= 1"
-      >
-        Previous
-      </button>
-      <div class="flex gap-2">
-        @for(page of pageNumbers; track page){
-          <button
-          (click)="goToPage(page)"
-          class="select-none rounded-lg border py-2 px-4"
-          [ngStyle]="currentPage === page ? { 'background-color': '#003e7e', color: 'white' } : {}"
-        >
-          {{ page }}
-        </button>
-        
-        }
+      <!-- No Data Found Section -->
+      @if(isLoading){
+      <div class="flex justify-center mt-4 top-0">
+        <div class="loader"></div>
       </div>
-      <button
-        (click)="nextPage()"
-        class=" select-none rounded-lg border py-2 px-4"
-        [disabled]="currentPage >= totalPages"
-        [class.bg-gray-400]="currentPage >= totalPages"
-        [class.cursor-not-allowed]="currentPage >= totalPages"
-      >
-        Next
-      </button>
+      } @if(!isLoading && filteredData.length === 0){
+      <div class="flex justify-center mt-4 top-0 text-gray-500">
+        <b class="text-red-600">No data found</b>
+      </div>
+      }
     </div>
-    <div class="flex justify-center mt-4">
-      <p>Page {{ currentPage }} of {{ totalPages }}</p>
-    </div>
-    }
 
-    <!-- No Data Found Section -->
-    @if(isLoading){
-    <div class="flex justify-center mt-4">
-      <div class="loader"></div>
-    </div>
-    } @if(!isLoading && filteredData.length === 0){
-    <div class="flex justify-center mt-4 text-gray-500">
-      <b class="text-red-600">No data found</b>
-    </div>
+
+<!-- Pagination Section -->
+@if(filteredData.length > 0){
+<div
+  class="flex justify-center items-center gap-2 p-4  border-gray-300"
+>
+  <button
+    (click)="previousPage()"
+    class="select-none rounded-lg border py-2 px-4"
+    [disabled]="currentPage <= 1"
+    [class.bg-gray-400]="currentPage <= 1"
+    [class.cursor-not-allowed]="currentPage <= 1"
+  >
+    Previous
+  </button>
+  <div class="flex gap-2">
+    @for(page of pageNumbers; track page){
+    <button
+      (click)="goToPage(page)"
+      class="select-none rounded-lg border py-2 px-4"
+      [ngStyle]="
+        currentPage === page
+          ? { 'background-color': '#003e7e', color: 'white' }
+          : {}
+      "
+    >
+      {{ page }}
+    </button>
+
     }
   </div>
+  <button
+    (click)="nextPage()"
+    class="select-none rounded-lg border py-2 px-4"
+    [disabled]="currentPage >= totalPages"
+    [class.bg-gray-400]="currentPage >= totalPages"
+    [class.cursor-not-allowed]="currentPage >= totalPages"
+  >
+    Next
+  </button>
+</div>
+<div class="flex justify-center mt-4">
+  <p>Page {{ currentPage }} of {{ totalPages }}</p>
+</div>
+}
+</div>
 </div>
