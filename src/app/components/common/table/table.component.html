@@ -170,19 +170,19 @@
       </button>
       <div class="flex gap-2">
         @for(page of pageNumbers; track page){
-        <button
+          <button
           (click)="goToPage(page)"
           class="select-none rounded-lg border py-2 px-4"
-          [class.bg-blue-500]="currentPage === page"
-          [class.text-white]="currentPage === page"
+          [ngStyle]="currentPage === page ? { 'background-color': '#003e7e', color: 'white' } : {}"
         >
           {{ page }}
         </button>
+        
         }
       </div>
       <button
         (click)="nextPage()"
-        class="select-none rounded-lg border py-2 px-4"
+        class=" select-none rounded-lg border py-2 px-4"
         [disabled]="currentPage >= totalPages"
         [class.bg-gray-400]="currentPage >= totalPages"
         [class.cursor-not-allowed]="currentPage >= totalPages"
