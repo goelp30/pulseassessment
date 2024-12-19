@@ -30,7 +30,7 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() tableData: any[] = [];
   @Input() tableColumns: string[] = [];
   @Input() columnAliases: { [key: string]: string[] } = {};
-  @Input() buttons: { label: string; colorClass: string; action: Function }[] =
+  @Input() buttons: { label: string | ((row: any) => string); colorClass: string; action: Function }[] =
     [];
   @Input() searchQuery: string = '';
   @Input() onSearchQueryChange: (newQuery: string) => void = () => {};
@@ -217,6 +217,12 @@ export class TableComponent implements OnInit, OnChanges {
     this.pageNumbers = pages;
   }
 
+    getButtonLabel(button:any, row: any): string {
+    if (typeof button.label === 'function') {
+      return button.label(row);
+    }
+      return button.label;
+  }
   getCustomButtonClasses(button: any, row: any) {
     if (button.customClassFunction) {
       return button.customClassFunction(row);

@@ -138,7 +138,7 @@
               </p>
               <!-- Popup Notification -->
               <div
-                *ngIf="isPopupVisible"
+                *ngIf="showAdditionalFilters && isPopupVisible"
                 class="link_copy"
               >
                 Link copied!
@@ -149,7 +149,7 @@
               <div class="flex justify-center gap-4">
                 @for(button of buttons; track button){
                 <app-button
-                  [label]="button.label"
+                  [label]="getButtonLabel(button, row)"
                   [colorClass]="getCustomButtonClasses(button, row)"
                   (action)="button.action(row)"
                   [disabled]="isButtonDisabled(button, row)"
