@@ -6,19 +6,19 @@
 </app-header>
 
 <app-table
-  [tableName]="'assessmentRecords'"
-  [tableData]="assessments"
-  [tableColumns]="tableColumns"
-  [columnAliases]="columnAliases"
-  [buttons]="buttons"
-  [searchQuery]="searchQuery"
-  [onSearchQueryChange]="onSearch.bind(this)"
-  [filterKey]="'status'"
-  [filterOptions]="filterOptions"
-  [statusOptions]="statusOptions"
-  [showAdditionalFilters]="true"
-  [searchPlaceholder]="searchPlaceholder"
+[tableName]="'assessmentRecords'"
+[tableData]="assessments"
+[tableColumns]="tableColumns"
+[columnAliases]="columnAliases"
+[buttons]="buttons"
+[searchQuery]="searchQuery"
+[onSearchQueryChange]="onSearch.bind(this)"
+[filterKey]="'status'"
+[filterOptions]="filterOptions"
+[statusOptions]="statusOptions"
+[showAdditionalFilters]="true"
+[searchPlaceholder]="searchPlaceholder"
+[statusMapping]="statusMapping"
 ></app-table>
-
 
 

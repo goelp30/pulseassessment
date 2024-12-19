@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
 import { FormsModule } from '@angular/forms';
 import { assessmentRecords } from '../../../../models/assessmentRecords';
@@ -15,7 +15,7 @@ import { NavigationEnd, Router } from '@angular/router';
   templateUrl: './assessment-records.component.html',
   styleUrls: ['./assessment-records.component.css'],
 })
-export class AssessmentRecordsComponent implements OnInit {
+export class AssessmentRecordsComponent implements OnInit, OnDestroy {
   assessments: assessmentRecords[] = [];
   searchQuery: string = '';
   selectedFilter: string = 'Search...'; // Default to 'userName'
@@ -55,11 +55,24 @@ export class AssessmentRecordsComponent implements OnInit {
       colorClass:
         'px-3 py-2 bg-red-500 text-white font-semibold cursor-pointer rounded-md shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400',
       action: (row: any) => this.invalidateAssessment(row),
+      customClassFunction: (row: any) => {
+        return this.isInvalidDisabled(row)
+          ? 'px-3 py-2 bg-red-500 text-white font-semibold cursor-pointer rounded-md shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 opacity-50 disabled-button'
+          : 'px-3 py-2 bg-red-500 text-white font-semibold cursor-pointer rounded-md shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400';
+      },
+      disableFunction: (row: any) => this.isInvalidDisabled(row),
     },
   ];
 
-  private destroy$ = new Subject<void>(); // Subject to manage subscriptions
+  statusMapping: { [key: string]: string } = {
+    Active: 'text-green-600 font-semibold',
+    Expired: 'text-red-600 font-semibold',
+    'In Progress': 'text-yellow-600 font-semibold',
+    Completed: 'text-blue-600 font-semibold',
+    Invalid: 'text-gray-600 font-semibold',
+  };
 
+  private destroy$ = new Subject<void>(); // Subject to manage subscriptions
   constructor(
     private firebaseService: FireBaseService<any>,
     private router: Router
@@ -101,6 +114,7 @@ export class AssessmentRecordsComponent implements OnInit {
   }
 
   invalidateAssessment(assessment: assessmentRecords) {
+    if (this.isInvalidDisabled(assessment)) return;
     const recordKey = `${assessment.assessmentId}_${assessment.userId}`;
     assessment.isValid = false;
 
@@ -147,22 +161,6 @@ export class AssessmentRecordsComponent implements OnInit {
   onSearch(query: string) {
     this.searchQuery = query;
   }
-
-  // onFilterChange() {
-  //   this.searchPlaceholder = this.getSearchPlaceholder();
-  // }
-  // getSearchPlaceholder(): string {
-  //   switch (this.selectedFilter) {
-  //     case 'userName':
-  //       return (this.searchPlaceholder = 'Search by Name');
-  //     case 'email':
-  //       return (this.searchPlaceholder = 'Search by Email');
-  //     case 'assessmentName':
-  //       return (this.searchPlaceholder = 'Search by Assessment Name');
-  //     default:
-  //       return (this.searchPlaceholder = 'Search'); // fallback if selectedFilter is not found
-  //   }
-  // }
 
   isInvalidDisabled(assessment: assessmentRecords): boolean {
     return (
