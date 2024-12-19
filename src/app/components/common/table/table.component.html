@@ -64,7 +64,7 @@
     <table class="w-full text-left table-auto min-w-max">
       <thead>
         <tr
-          class="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] text-center gap-4 border-blue-gray-100 bg-blue-gray-50/50 border-y"
+          class="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] text-left pl-20 gap-4 border-blue-gray-100 bg-blue-gray-50/50 border-y"
         >
           @for(column of tableColumns; track column){
           <th class="p-4">
@@ -83,19 +83,19 @@
         @if(filteredData.length > 0){ @for(row of getPaginatedData(); track
         row){
         <tr
-          class="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] text-center gap-4"
+          class="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] text-left"
         >
           @for(column of tableColumns; track column){
           <td class="p-4 border-b border-blue-gray-50">
             <p
-              class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+              class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900 pl-20"
             >
               {{ row[column] | titlecase }}
             </p>
           </td>
           }
           <td class="p-4 border-b border-blue-gray-50">
-            <div class="flex justify-center gap-4">
+            <div class="flex justify-end pr-20 gap-4">
               @for(button of buttons; track button){
               <app-button
                 [label]="button.label"

@@ -12,7 +12,6 @@ import { HeaderComponent } from '../../common/header/header.component';
 import { ButtonComponent } from '../../common/button/button.component';
 import { SubjectService } from '../../../../sharedServices/Subject.service';
 import { Router } from '@angular/router';
-import { Question } from '../../../models/question';
 
 @Component({
   selector: 'app-subjecttable',
@@ -48,6 +47,7 @@ export class SubjectTableComponent {
   selectedSubjectToDelete: Subject | null = null;
   eConfirmationVisible: boolean = false;
   SubjectToDelete:boolean=false;
+
  
  
 
@@ -108,6 +108,7 @@ export class SubjectTableComponent {
   // Save a new subject to the database
   saveNewSubject() {
     if (!this.selectedSubject || !this.selectedSubject.subjectName || this.selectedSubject.subjectName.trim() === '') {
+      this.toastr.clear();
       this.toastr.warning('Please enter subject name', 'Warning', { timeOut: 2000 });
       return;
     }
@@ -118,19 +119,23 @@ export class SubjectTableComponent {
         subject.subjectName.trim().toLowerCase() === this.selectedSubject?.subjectName.trim().toLowerCase()
       );
       if (isDuplicate) {
+        this.toastr.clear();
         this.toastr.warning('Subject already exists', 'Warning', { timeOut: 2000 });
-        return; // Prevent adding duplicate subject
+        return;
       }
 
+      
       // Proceed with adding the new subject if no duplicates
       if (this.selectedSubject) {
-        this.fireBaseService.create(`${this.tableName}/${this.selectedSubject.subjectId}`, this.selectedSubject)
+        this.fireBaseService
+          .create(`${this.tableName}/${this.selectedSubject.subjectId}`, this.selectedSubject)
           .then(() => {
+            this.toastr.clear();
             this.toastr.success('Subject added successfully', 'Added', { timeOut: 2000 });
             this.isModalVisible = false;
             this.selectedSubject = null;
           })
-          .catch((error) => {
+          .catch(error => {
             console.error('Error adding subject:', error);
           });
       }
@@ -147,38 +152,46 @@ export class SubjectTableComponent {
   // Update an existing subject
   updateSubject() {
     if (!this.selectedSubject || !this.selectedSubject.subjectName || this.selectedSubject.subjectName.trim() === '') {
+      this.toastr.clear();
       this.toastr.warning('Please enter subject name', 'Warning', { timeOut: 2000 });
-      return; // Update and no input is given, then it should not be added
+      return;
     }
 
+    let isToastShown = false;
+
     // Check if the subject already exists (excluding the current subject being updated)
-    this.fireBaseService.getAllDataByFilter(this.tableName, 'isDisabled', false)
-    .subscribe(subjects => {
+    this.fireBaseService.getAllDataByFilter(this.tableName, 'isDisabled', false).subscribe(subjects => {
       const isDuplicate = subjects.some(subject =>
         subject.subjectId !== this.selectedSubject?.subjectId &&
         subject.subjectName.trim().toLowerCase() === this.selectedSubject?.subjectName.trim().toLowerCase()
       );
       if (isDuplicate) {
-        this.toastr.warning('Subject already exists', 'Warning', { timeOut: 2000 });
-        return; // Prevent updating to duplicate subject
+        if (!isToastShown) { 
+          this.toastr.clear(); // Clear existing toasts
+          this.toastr.warning('Subject already exists', 'Warning', { timeOut: 2000 });
+          isToastShown = true; // Prevent further toasts
+        }
+        return; // Exit to avoid further logic
       }
 
       // Proceed with updating the subject if no duplicates
-      if (this.selectedSubject) {
-        this.toastr.info('Subject updated successfully', 'Updated', { timeOut: 2000 });
-
-        this.fireBaseService.update(`${this.tableName}/${this.selectedSubject.subjectId}`, this.selectedSubject)
+      if (this.selectedSubject && !isToastShown) {
+        this.fireBaseService
+          .update(`${this.tableName}/${this.selectedSubject.subjectId}`, this.selectedSubject)
           .then(() => {
+            this.toastr.clear(); // Ensure no duplicate toasts
+            this.toastr.info('Subject updated successfully', 'Updated', { timeOut: 2000 });
             this.isModalVisible = false;
             this.selectedSubject = null;
           })
-          .catch((error) => {
+          .catch(error => {
+            this.toastr.clear();
             console.error('Error updating subject:', error);
+            this.toastr.error('Failed to update subject', 'Error', { timeOut: 2000 });
           });
       }
     });
   }
-
   // Delete subject
   confirmDelete(subject: Subject) {
     this.selectedSubjectToDelete = subject;
@@ -186,41 +199,21 @@ export class SubjectTableComponent {
   }
   deleteSubject() {
     if (this.selectedSubjectToDelete) {
-      const subjectToDelete = this.selectedSubjectToDelete;
-      subjectToDelete.isDisabled = true; // Mark the subject as disabled
-  
-      // First, update the subject to mark it as disabled
-      this.fireBaseService.update(`${this.tableName}/${subjectToDelete.subjectId}`, subjectToDelete)
+      const SubjectToDelete = this.selectedSubjectToDelete;
+      SubjectToDelete.isDisabled = true; // Mark as deleted (disabled)
+ 
+      this.fireBaseService.update(`${this.tableName}/${SubjectToDelete.subjectId}`,SubjectToDelete)
         .then(() => {
-          // Once the subject is marked as disabled, fetch all questions associated with the subject
-          this.fireBaseService.getAllDataByFilter('questions', 'isQuesDisabled', false).subscribe((questionsList: Question[]) => {
-            const questionsToUpdate = questionsList.filter((question) => question.subjectId === subjectToDelete.subjectId);
-  
-            // Disable all questions associated with this subject
-            const updatePromises = questionsToUpdate.map((question) => {
-              question.isQuesDisabled = true;
-              return this.fireBaseService.update(`questions/${question.questionId}`, question);
-            });
-  
-            // Wait for all updates to complete
-            Promise.all(updatePromises)
-              .then(() => {
-                this.toastr.success('Subject and related questions disabled successfully', 'Deleted');
-                this.eConfirmationVisible = false;
-              })
-              .catch((error) => {
-                console.error('Error updating related questions:', error);
-                this.toastr.error('Failed to update related questions', 'Error');
-              });
-          });
+          this.toastr.error('Subject deleted successfully', 'Deleted');
+          this.eConfirmationVisible = false;
+          // this.getAssessments();
         })
-        .catch((error) => {
+        .catch(error => {
           console.error('Error deleting subject:', error);
           this.toastr.error('Failed to delete subject', 'Error');
         });
     }
   }
-  
   closeModal(): void {
     this.isModalVisible = false; // For the Assessment Details modal
     this.eConfirmationVisible = false; // For the Delete Confirmation modal
