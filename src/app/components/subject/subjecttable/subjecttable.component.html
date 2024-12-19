@@ -15,7 +15,7 @@
       />
       <app-button
           [label]="isAddModal ? 'Add' : 'Update'"
-          [colorClass]="'bg-custom-blue text-white text-white rounded-md px-6 py-2 hover:bg-blue-600 transition absolute right-4  mr-6 mt-4'"
+          [colorClass]="'bg-custom-blue hover:opacity-80 transition-opacity text-white text-white rounded-md px-6 py-2 hover:opacity-80 transition-opacity transition absolute right-4  mr-6 mt-4'"
           (action)="isAddModal ? saveNewSubject() : updateSubject()"
         ></app-button>
     </div>
@@ -43,7 +43,7 @@
   [title]="'List of Subjects'" 
   [subtitle]="'Manage your subjects here'"
   [buttonLabel]="'Add Subject'"
-  [buttonClasses]="'bg-custom-blue text-white text-white rounded-md px-4 py-2'"
+  [buttonClasses]="'bg-custom-blue hover:opacity-80 transition-opacity text-white text-white rounded-md px-4 py-2'"
   (addSubjectEvent)="addSubject()">
 </app-header>
 

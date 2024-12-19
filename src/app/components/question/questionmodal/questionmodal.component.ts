@@ -116,19 +116,15 @@ export class QuestionmodalComponent implements OnInit {
       this.firebaseService.getAllData('/options')
         .pipe(
           map((options: Option[]) => 
-            options.filter(
-              (option) =>
-                option.questionId === this.question?.questionId &&
-                !option.isOptionDisabled
-            )
+            options
+              .filter((option) => option.questionId === this.question?.questionId && !option.isOptionDisabled)
+              .sort((a, b) => a.createdOn - b.createdOn) // Assuming options have a 'createdOn' field that maintains order
           )
         )
         .subscribe({
           next: (filteredOptions: Option[]) => {
-            // **Only preserve options already dynamically loaded, don't clear manually added ones**
-            const existingOptionIds = new Set(
-              this.options.controls.map(control => control.get('optionId')?.value)
-            );
+            // Only preserve options already dynamically loaded, don't clear manually added ones
+            const existingOptionIds = new Set(this.options.controls.map(control => control.get('optionId')?.value));
   
             filteredOptions.forEach(option => {
               if (!existingOptionIds.has(option.optionId)) {
@@ -149,6 +145,7 @@ export class QuestionmodalComponent implements OnInit {
         });
     }
   }
+  
   
   
   
@@ -424,6 +421,8 @@ async saveQuestion(): Promise<void> {
         optionText: optionControl.get('optionText')?.value,
         isCorrectOption: optionControl.get('isCorrectOption')?.value,
         isOptionDisabled: optionControl.get('isOptionDisabled')?.value,
+        createdOn:Date.now(),
+        updatedOn:Date.now()
       };
   
       // Save updated or removed option to Firebase
@@ -460,6 +459,8 @@ async saveQuestion(): Promise<void> {
         optionText: optionControl.get('optionText')?.value,
         isCorrectOption: optionControl.get('isCorrectOption')?.value,
         isOptionDisabled: false, // Always set as active on save
+        createdOn: Date.now(), // Store creation timestamp to maintain order
+        updatedOn:Date.now()
       };
   
       return this.firebaseService.create(`/options/${optionData.optionId}`, optionData);
@@ -472,6 +473,7 @@ async saveQuestion(): Promise<void> {
       throw error;
     }
   }
+  
   
   
   

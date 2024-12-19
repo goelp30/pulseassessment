@@ -58,12 +58,12 @@ export class QuestiontableComponent implements OnInit {
   buttons = [
     {
       label: 'Edit',
-      colorClass: 'bg-custom-blue text-white py-2 px-4 text-white rounded-md',
+      colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white py-2 px-4 text-white rounded-md',
       action: (row: Question) => this.editQuestion(row),
     },
     {
       label: 'Delete',
-      colorClass: 'bg-red-500 py-2 px-4 text-white rounded-md',
+      colorClass: 'bg-red-500 hover:opacity-80 transition-opacity py-2 px-4 text-white rounded-md',
       action: (row: any) => this.confirmDelete(row),
  
     },
@@ -76,8 +76,8 @@ export class QuestiontableComponent implements OnInit {
   isAddModal: boolean = false;
   subjectName: string='';
 backbutton={
-  label:"Back to subject",
-  colorClass:"bg-custom-blue text-white py-2 px-4 text-white rounded-md",
+  label:"Back to Subject",
+  colorClass:"bg-custom-blue hover:opacity-80 transition-opacity text-white py-2 px-4 text-white rounded-md",
 };
 
 
@@ -134,14 +134,20 @@ backbutton={
     this.fireBaseService.listensToChangeWithFilter('questions', 'subjectId', this.subjectId).subscribe(
       (data) => {
         console.log('Raw data:', data); // Check for any disabled questions
-        this.questions = data.filter(question => !question.isQuesDisabled);
+  
+        // Filter and sort questions
+        this.questions = data
+          .filter(question => !question.isQuesDisabled) // Filter out disabled questions
+          .sort((a, b) => b.createdOn - a.createdOn);   // Sort by 'createdOn' in descending order
+  
         console.log('Active questions:', this.questions);
       },
-      (error:Error) => {
+      (error: Error) => {
         console.error('Error while loading questions:', error);
       }
     );
   }
+  
   
   
   
@@ -191,29 +197,29 @@ backbutton={
   deleteQuestion() {
     if (this.selectedQuestionToDelete) {
       const questionToDelete = this.selectedQuestionToDelete;
-      questionToDelete.isQuesDisabled = true; // Mark as disabled in the Questions table
+      questionToDelete.isQuesDisabled = true;
   
-      // First, update the 'Questions' table to mark the question as disabled
+      let deletionInProgress = true; // Flag to track deletion progress
+  
+      // Update the Questions table to disable the question
       this.fireBaseService.update(`questions/${questionToDelete.questionId}`, questionToDelete)
         .then(() => {
-          // Once the question is marked as disabled, update the related Options entries
-  
-          // Get all Options entries and update the ones that reference this questionId
           this.fireBaseService.getAllDataByFilter('options', 'isOptionDisabled', false).subscribe((optionsList: Option[]) => {
             const optionsToUpdate = optionsList.filter((option) => option.questionId === questionToDelete.questionId);
             
-            // For each Option entry related to the deleted question
             const updatePromises = optionsToUpdate.map((option) => {
-              option.isOptionDisabled = true; // Mark as disabled in the Options table
+              option.isOptionDisabled = true;
               return this.fireBaseService.update(`options/${option.optionId}`, option);
             });
   
-            // Wait for all updates to be completed
             Promise.all(updatePromises)
               .then(() => {
-                this.toastr.success('Question deleted successfully', 'Deleted');
+                if (deletionInProgress) {
+                  this.toastr.success('Question deleted successfully', 'Deleted');
+                  deletionInProgress = false; // Avoid duplicate toasts
+                }
                 this.eConfirmationVisible = false;
-                this.fetchQuestions(); // Refresh the questions list after deletion
+                this.fetchQuestions(); // Refresh the questions list
               })
               .catch((error) => {
                 console.error('Error updating Options entries:', error);
@@ -227,6 +233,7 @@ backbutton={
         });
     }
   }
+  
   
   
   

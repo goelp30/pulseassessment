@@ -6,7 +6,7 @@
     <div class="flex space-x-4">
    
       <div class="w-1/2">
-        <label for="questionType" class="block text-sm font-medium text-gray-700">Question Type</label>
+        <label for="questionType" class="block text-lg font-medium text-gray-700">Question Type</label>
         <select
           id="questionType"
           formControlName="questionType"
@@ -17,7 +17,7 @@
       </div>
 
       <div class="w-1/2">
-        <label for="questionLevel" class="block text-sm font-medium text-gray-700">Question Level</label>
+        <label for="questionLevel" class="block text-lg font-medium text-gray-700">Question Level</label>
         <select
           id="questionLevel"
           formControlName="questionLevel"
@@ -31,7 +31,7 @@
     <!-- Question Text -->
     <div class="flex space-x-4">
       <div class="w-full">
-        <label class="block text-sm font-medium text-gray-700">Question Text</label>
+        <label class="block text-lg font-medium text-gray-700">Question Text</label>
         <input
           type="text"
           formControlName="questionText"
@@ -44,7 +44,7 @@
     <!-- Weightage and Time -->
     <div class="flex space-x-4">
       <div class="w-1/2">
-        <label class="block text-sm font-medium text-gray-700">Weightage</label>
+        <label class="block text-lg font-medium text-gray-700">Weightage</label>
         <input
           type="number"
           formControlName="questionWeightage"
@@ -54,7 +54,7 @@
       </div>
 
       <div class="w-1/2">
-        <label class="block text-sm font-medium text-gray-700">Time (minutes)</label>
+        <label class="block text-lg font-medium text-gray-700">Time (minutes)</label>
         <input
           type="number"
           formControlName="questionTime"
@@ -79,18 +79,21 @@
             class="flex-1 border rounded-md px-3 py-2"
           />
       
-          <!-- Toggle Button -->
           <div class="relative w-32 h-8">
             <div
               (click)="toggleCorrectOption(i)"
-              [class.bg-gray-300]="!option.get('isCorrectOption')?.value"
-              [class.bg-blue-500]="option.get('isCorrectOption')?.value"
+              [ngClass]="{
+                'bg-blue-900': option.get('isCorrectOption')?.value,
+                'bg-gray-300': !option.get('isCorrectOption')?.value
+              }"
               class="w-full h-full rounded-full transition-all duration-300 cursor-pointer flex items-center relative"
             >
               <span
-                class="absolute top-1/2 -translate-y-1/2 text-sm text-white font-medium transition-all duration-300"
-                [class.left-4]="option.get('isCorrectOption')?.value"
-                [class.right-4]="!option.get('isCorrectOption')?.value"
+                class="absolute top-1/2 -translate-y-1/2 text-sm font-medium transition-all duration-300"
+                [ngClass]="{
+                  'left-4 text-white': option.get('isCorrectOption')?.value,
+                  'right-4 text-black': !option.get('isCorrectOption')?.value
+                }"
               >
                 {{ option.get('isCorrectOption')?.value ? 'Correct' : 'Incorrect' }}
               </span>
@@ -101,6 +104,7 @@
               ></div>
             </div>
           </div>
+          
       
           <!-- Delete Button -->
           <button
@@ -116,13 +120,13 @@
       
       
       <!-- Warning Message -->
-      <p *ngIf="warningMessage" class="text-red-500 text-sm mb-2">{{ warningMessage }}</p>
+      <p *ngIf="warningMessage" class="text-red-500 text-lg mb-2">{{ warningMessage }}</p>
       
       <!-- Add Option Button -->
       <button
         type="button"
         (click)="addOption()"
-        class="bg-blue-500 py-2 px-4 text-white rounded-md"
+        class="bg-custom-blue hover:opacity-80 transition-opacity py-2 px-4 text-white rounded-md"
       >
         Add Option
       </button>      
@@ -130,19 +134,21 @@
     
 
     <!-- Submit Button -->
-    <div class="text-right px-2">
-      <button
-      type="submit"
-      (click)="saveData()"
-      class="select-none rounded-lg border py-2 px-4 m-4"
-      [disabled]="isSaveDisabled"
-      [class.bg-gray-400]="isSaveDisabled"
-      [class.cursor-not-allowed]="isSaveDisabled"
-      [class.bg-blue-500]="!isSaveDisabled"
-      [class.text-white]="!isSaveDisabled"
-    >
-    {{buttonLabel}}
-    </button>
+   <div class="text-right px-2">
+  <button
+  type="submit"
+  (click)="saveData()"
+  class="select-none rounded-lg border py-2 px-4 m-4 bg-custom-blue text-white"
+  [disabled]="isSaveDisabled"
+  [class.bg-gray-400]="isSaveDisabled"
+  [class.cursor-not-allowed]="isSaveDisabled"
+  [class.hover:bg-custom-blue]="!isSaveDisabled"
+>
+  {{buttonLabel}}
+</button>
+
+  
+  
       
     
     <p *ngIf="assessmentForm.get('options')?.errors?.['noCorrectOption']" class="text-red-500 text-sm">

@@ -22,7 +22,8 @@ export interface Question {
     subjectId: string;
     optionText: string;
     isCorrectOption: boolean;
-
     isOptionDisabled?:boolean
+    createdOn: number;
+    updatedOn: number;
   }
 
