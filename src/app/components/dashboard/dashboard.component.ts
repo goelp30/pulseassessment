@@ -21,6 +21,8 @@ export class DashboardComponent implements OnInit {
     { label: 'Manage Subjects', route: '/subjects', icon: 'fas fa-plus' },
     { label: 'Generate Link', route: '/generatelink', icon: 'fas fa-question-circle' },
     { label: 'Manage Assessment', route: '/assessment-list', icon: 'fas fa-question-circle' },
+    { label: 'Assessment Records', route: '/assessmentrecords', icon: 'fas fa-question-circle' },
+    { label: 'Evaluation dashboard ', route: '/evaluation', icon: 'fas fa-question-circle' },
   ];
 
   constructor(
