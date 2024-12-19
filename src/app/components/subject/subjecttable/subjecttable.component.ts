@@ -55,12 +55,12 @@ export class SubjectTableComponent {
   buttons = [
     {
       label: 'Edit',
-      colorClass: 'bg-blue-500 py-2 px-4 text-white rounded-md',
+      colorClass: 'bg-custom-blue text-white py-2 px-4 text-white rounded-md',
       action: (row: any) => this.editSubject(row),
     },
     {
       label: 'Manage',
-      colorClass: 'bg-green-500 py-2 px-4 text-white rounded-md',
+      colorClass: 'bg-custom-blue text-white py-2 px-4 text-white rounded-md',
       action: (row: any) => this.manageSubject(row),
     },
     {
