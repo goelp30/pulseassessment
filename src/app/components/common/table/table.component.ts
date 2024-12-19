@@ -10,7 +10,6 @@ import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../button/button.component';
 import { SearchbarComponent } from '../searchbar/searchbar.component';
 import { FormsModule } from '@angular/forms';
-import { CapitalizePipe } from '../../../capitalize.pipe';
 
 @Component({
   selector: 'app-table',
@@ -20,7 +19,6 @@ import { CapitalizePipe } from '../../../capitalize.pipe';
     ButtonComponent,
     SearchbarComponent,
     FormsModule,
-    CapitalizePipe,
   ],
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.css'],
@@ -259,3 +257,16 @@ export class TableComponent implements OnInit, OnChanges {
     }, 1000);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
