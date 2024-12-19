@@ -4,12 +4,14 @@ export type SubjectCounts = {
     medium: number;    
     hard: number;   
     descriptive: number; 
+    
   };
   
  export  type AssessmentList = {
     assessmentId: string; 
     dateCreated: number,
     dateUpdated: number,
+    isDisable:boolean;
     subjects: {
       [subjectId: string]: SubjectCounts; 
     };

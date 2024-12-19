@@ -11,6 +11,7 @@ import { timeout } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
 import { HeaderComponent } from '../../common/header/header.component';
 import { ButtonComponent } from '../../common/button/button.component';
+import { AssessmentService } from '../services/assessmentServices/assessment.service';
 
 @Component({
   selector: 'app-assessment-list',
@@ -25,7 +26,7 @@ export class AssessmentListComponent implements OnInit {
   // subjects:Subject[]=[];
   isEditing: boolean = false;
 
-  constructor(private fireBaseService: FireBaseService<Assessment>,private toastr: ToastrService,private router:Router) {}
+  constructor(private fireBaseService: FireBaseService<Assessment>,private toastr: ToastrService,private router:Router,private assessmentService:AssessmentService) {}
 
   ngOnInit(): void {
 
@@ -39,12 +40,9 @@ export class AssessmentListComponent implements OnInit {
     //   console.log(this.subjects);
     // });
   }
-
   // assessment code-team2
   addAssessment() {
-
     const uniqueId = crypto.randomUUID();
-
     const assessment: Assessment = {
       assessmentId: uniqueId,
       assessmentName: 'Sample Assessment 123',
@@ -61,13 +59,15 @@ export class AssessmentListComponent implements OnInit {
     // Optionally, you can push the new assessment into the local array for immediate UI update
     this.assessments.push(assessment);
   }
-
   /**
    * Listen to assessment changes (real-time updates)
    */
   showSuccess() {this.toastr.info('Hello world!', 'Toastr fun!',{timeOut:1000});}
-
+  clearEverything(): void {
+   
+  }
   RouteAssessment(){
     this.router.navigate(['/drag-and-drop']);
+    this.assessmentService.setAsssessmentId('');
   }
 }
