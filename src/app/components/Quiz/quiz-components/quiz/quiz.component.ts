@@ -145,14 +145,13 @@ export class QuizComponent implements OnInit, OnDestroy {
   });
 
     this.quizAnswerService.submitQuiz(this.questions);  
-    this.showModal = true;
+    this.showModal = false;
 
   }
 
   submitFinalQuiz() {
-    console.log('Quiz submitted:', this.questions);
-
-    this.showModal = false;
+    
+    this.showModal = true;
   }
 
   handleTimeUp() {
