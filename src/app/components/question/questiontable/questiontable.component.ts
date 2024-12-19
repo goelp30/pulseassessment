@@ -76,7 +76,7 @@ export class QuestiontableComponent implements OnInit {
   isAddModal: boolean = false;
   subjectName: string='';
 backbutton={
-  label:"Back to subject",
+  label:"Back to Subject",
   colorClass:"bg-custom-blue hover:opacity-80 transition-opacity text-white py-2 px-4 text-white rounded-md",
 };
 
@@ -134,14 +134,20 @@ backbutton={
     this.fireBaseService.listensToChangeWithFilter('questions', 'subjectId', this.subjectId).subscribe(
       (data) => {
         console.log('Raw data:', data); // Check for any disabled questions
-        this.questions = data.filter(question => !question.isQuesDisabled);
+  
+        // Filter and sort questions
+        this.questions = data
+          .filter(question => !question.isQuesDisabled) // Filter out disabled questions
+          .sort((a, b) => b.createdOn - a.createdOn);   // Sort by 'createdOn' in descending order
+  
         console.log('Active questions:', this.questions);
       },
-      (error:Error) => {
+      (error: Error) => {
         console.error('Error while loading questions:', error);
       }
     );
   }
+  
   
   
   
