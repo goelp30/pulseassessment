@@ -169,17 +169,18 @@ export class QuestionmodalComponent implements OnInit {
   
   
   addOption(): void {
-    if (this.assessmentForm.value.questionType === 'Descriptive') {
-      return; // No options allowed for Descriptive questions
-    }
+    const activeOptionsCount = this.options.controls.filter(
+      (control) => !control.get('isOptionDisabled')?.value
+    ).length;
   
-    if (this.options.length < 6) {
+    if (activeOptionsCount < 6) {
       this.options.push(this.createOptionGroup());
       this.warningMessage = '';
     } else {
-      this.warningMessage = 'Cannot add more than 6 options.';
+      this.warningMessage = 'Cannot add more than 6 active options.';
     }
   }
+  
   
 async removeOption(index: number): Promise<void> {
   const questionType = this.assessmentForm.get('questionType')?.value;
@@ -220,46 +221,31 @@ toggleCorrectOption(index: number) {
 
   
 validateOptions(): boolean {
-  const questionType = this.assessmentForm.get('questionType')?.value;
-  const totalOptions = this.options.length;
-  const correctOptionsCount = this.options.controls.filter(
-    (option) => option.get('isCorrectOption')?.value
+  const activeOptionsCount = this.options.controls.filter(
+    (control) => !control.get('isOptionDisabled')?.value
   ).length;
 
-  if (totalOptions > 6) {
-    this.warningMessage = 'A question can have a maximum of 6 options.';
-    return false;
-  }
+  const correctOptionsCount = this.options.controls.filter(
+    (control) => control.get('isCorrectOption')?.value && !control.get('isOptionDisabled')?.value
+  ).length;
+
+  const questionType = this.assessmentForm.get('questionType')?.value;
 
   if (questionType === 'Single') {
-    if (totalOptions < 2) {
-      this.warningMessage = 'Single-choice questions must have at least 2 options.';
-      return false;
-    }
-    if (correctOptionsCount !== 1) {
-      this.warningMessage = 'Single-choice questions must have exactly one correct option.';
+    if (activeOptionsCount < 2 || correctOptionsCount !== 1) {
+      this.warningMessage = 'Single-choice questions must have at least 2 active options and exactly one correct option.';
       return false;
     }
   } else if (questionType === 'Multi') {
-    if (totalOptions < 3) {
-      this.warningMessage = 'Multi-choice questions must have at least 3 options.';
+    if (activeOptionsCount < 3 || correctOptionsCount < 2 || correctOptionsCount === activeOptionsCount) {
+      this.warningMessage = 'Multi-choice questions must have at least 3 active options and 2 correct options, but not all options can be correct.';
       return false;
     }
-    if (correctOptionsCount < 2) {
-      this.warningMessage = 'Multi-choice questions must have at least 2 correct options.';
-      return false;
-    }
-    if (correctOptionsCount === totalOptions) {
-      this.warningMessage = 'Multi-choice questions cannot have all options marked as correct.';
-      return false;
-    }
-  } else if (questionType === 'Descriptive') {
-    // Descriptive questions do not require options validation
-    return true;
   }
 
-  return true; // Validation passed
+  return true;
 }
+
 get isSaveDisabled(): boolean {
   const questionType = this.assessmentForm.get('questionType')?.value;
   const totalOptions = this.options.length;
@@ -298,14 +284,27 @@ async saveData() {
 
   if (this.assessmentForm.valid && this.validateOptions()) {
     try {
-      await this.saveQuestion(); // Use saveQuestion to handle logic and notifications
+      if (this.isAddModal) {
+        const questionId = await this.addQuestion();
+        console.log(`Question ${questionId} added successfully.`);
+      } else {
+        await this.updateQuestion();
+        console.log(`Question ${this.question?.questionId} updated successfully.`);
+      }
+
+      // Reset the form and modal
+      this.closeModal.emit();
+      this.assessmentForm.reset();
+      this.options.clear();
+      this.addOption();
     } catch (error) {
-      alert(`Error saving data: ${error}`);
+      console.error('Error saving data:', error);
     }
   } else {
-    alert('Please fill out all required fields correctly.');
+    console.warn('Validation failed. Please check the form fields.');
   }
 }
+
 
 async saveQuestion(): Promise<void> {
   try {
@@ -393,14 +392,13 @@ async saveQuestion(): Promise<void> {
     }
   }
   async updateOptions(): Promise<void> {
-    const optionPromises = this.options.controls.map((optionControl) => {
+    const updatePromises = this.options.controls.map((optionControl) => {
       const optionId = optionControl.get('optionId')?.value;
+  
       if (!optionId) {
         console.warn('Option ID missing during update operation. Skipping.');
         return Promise.resolve();
       }
-  
-      const isDisabled = optionControl.get('isOptionDisabled')?.value || false;
   
       const optionData: Option = {
         optionId,
@@ -408,15 +406,16 @@ async saveQuestion(): Promise<void> {
         subjectId: this.subjectId,
         optionText: optionControl.get('optionText')?.value,
         isCorrectOption: optionControl.get('isCorrectOption')?.value,
-        isOptionDisabled: isDisabled,
+        isOptionDisabled: optionControl.get('isOptionDisabled')?.value,
       };
   
-      // Update Firebase to reflect the option's updated status
+      // Save updated or removed option to Firebase
       return this.firebaseService.update(`/options/${optionId}`, optionData);
     });
   
     try {
-      await Promise.all(optionPromises);
+      await Promise.all(updatePromises);
+      console.log('Options updated successfully.');
     } catch (error) {
       console.error('Failed to update options:', error);
       throw error;
@@ -429,35 +428,34 @@ async saveQuestion(): Promise<void> {
   
   
   
+  
 
   async storeOptions(questionId: string): Promise<void> {
-    const optionPromises = this.options.controls.map(optionControl => {
-      const optionId = optionControl.get('optionId')?.value;
+    const activeOptions = this.options.controls.filter(
+      (control) => !control.get('isOptionDisabled')?.value
+    );
   
-      if (!optionId) {
-        console.warn('Option ID missing during store operation. Skipping.');
-        return Promise.resolve();
-      }
-  
+    const optionPromises = activeOptions.map((optionControl) => {
       const optionData: Option = {
-        optionId,
+        optionId: optionControl.get('optionId')?.value || crypto.randomUUID(),
         questionId,
         subjectId: this.subjectId,
         optionText: optionControl.get('optionText')?.value,
         isCorrectOption: optionControl.get('isCorrectOption')?.value,
-        isOptionDisabled: optionControl.get('isOptionDisabled')?.value || false,
+        isOptionDisabled: false, // Always set as active on save
       };
   
-      return this.firebaseService.update(`/options/${optionId}`, optionData);
+      return this.firebaseService.create(`/options/${optionData.optionId}`, optionData);
     });
   
     try {
       await Promise.all(optionPromises);
-      console.log('Options stored successfully');
     } catch (error) {
       console.error('Failed to store options:', error);
+      throw error;
     }
   }
+  
   
   
   
