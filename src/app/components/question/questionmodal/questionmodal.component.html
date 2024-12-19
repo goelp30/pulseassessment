@@ -83,9 +83,13 @@
           <div class="relative w-32 h-8">
             <div
               (click)="toggleCorrectOption(i)"
-              [class.bg-gray-300]="!option.get('isCorrectOption')?.value"
-              class="w-full h-full rounded-full transition-all duration-300 cursor-pointer flex items-center relative bg-blue-900"
+              [ngClass]="{
+                'bg-blue-900': option.get('isCorrectOption')?.value,
+                'bg-gray-300': !option.get('isCorrectOption')?.value
+              }"
+              class="w-full h-full rounded-full transition-all duration-300 cursor-pointer flex items-center relative"
             >
+          
 
       
           
