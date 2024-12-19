@@ -177,7 +177,7 @@ export class QuestionmodalComponent implements OnInit {
       this.options.push(this.createOptionGroup());
       this.warningMessage = '';
     } else {
-      this.warningMessage = 'Cannot add more than 6 active options.';
+      this.warningMessage = 'Cannot add more than 6 options.';
     }
   }
   
@@ -189,12 +189,12 @@ async removeOption(index: number): Promise<void> {
   ).length; // Only count active options
 
   if (questionType === 'Single' && activeOptionsCount <= 2) {
-    this.warningMessage = 'A single-choice question must have at least 2 active options.';
+    this.warningMessage = 'A single-choice question must have at least 2  options.';
     return;
   }
 
   if (questionType === 'Multi' && activeOptionsCount <= 3) {
-    this.warningMessage = 'A multi-choice question must have at least 3 active options.';
+    this.warningMessage = 'A multi-choice question must have at least 3  options.';
     return;
   }
 
@@ -233,12 +233,12 @@ validateOptions(): boolean {
 
   if (questionType === 'Single') {
     if (activeOptionsCount < 2 || correctOptionsCount !== 1) {
-      this.warningMessage = 'Single-choice questions must have at least 2 active options and exactly one correct option.';
+      this.warningMessage = 'Single-choice questions must have at least 2 options and exactly one correct option.';
       return false;
     }
   } else if (questionType === 'Multi') {
     if (activeOptionsCount < 3 || correctOptionsCount < 2 || correctOptionsCount === activeOptionsCount) {
-      this.warningMessage = 'Multi-choice questions must have at least 3 active options and 2 correct options, but not all options can be correct.';
+      this.warningMessage = 'Multi-choice questions must have at least 3 options and 2 correct options, but not all options can be correct.';
       return false;
     }
   }
