@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { AuthService } from '../../../../sharedServices/auth.service';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Subject } from '../../../models/subject';
@@ -11,12 +11,14 @@ import { ToastrModule, ToastrService } from 'ngx-toastr';
 import { HeaderComponent } from '../../common/header/header.component';
 import { ButtonComponent } from '../../common/button/button.component';
 import { SubjectService } from '../../../../sharedServices/Subject.service';
-import { Router } from '@angular/router';
 import { Question } from '../../../models/question';
+import { Router, NavigationEnd } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-subjecttable',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     TableComponent,
     PopupModuleComponent,
@@ -29,7 +31,7 @@ import { Question } from '../../../models/question';
   templateUrl: './subjecttable.component.html',
   styleUrls: ['./subjecttable.component.css'],
 })
-export class SubjectTableComponent {
+export class SubjectTableComponent  implements OnInit{
   // Data properties
   subjects: Subject[] = [];
   tableColumns: (keyof Subject)[] = ['subjectName'];
@@ -72,6 +74,7 @@ export class SubjectTableComponent {
   ];
 
   modaltitle: string = 'Add Subject';
+ private routerSubscription!: Subscription;
 
   // Dependency injection
   constructor(
@@ -79,29 +82,37 @@ export class SubjectTableComponent {
     private fireBaseService: FireBaseService<Subject>,
     private toastr: ToastrService,
     private subjectService: SubjectService, // Inject SubjectService
-    private router: Router // Inject Router
+    private router: Router, // Inject Router
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.fetchSubjects();
+  
+    this.routerSubscription = this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd && event.urlAfterRedirects.includes('/subjects')) {
+        this.fetchSubjects(); // Refetch subjects on navigation
+      }
+    });
   }
+
   fetchSubjects(): void {
     this.fireBaseService.listensToChangeWithFilter(this.tableName, 'isDisabled', false).subscribe(
       (data: Subject[]) => {
-        console.log('Raw subject data:', data); // Log raw data for debugging
-   
-        // Filter and sort subjects
         this.subjects = data
           .filter(subject => !subject.isDisabled) // Exclude disabled subjects
           .sort((a, b) => b.createdOn - a.createdOn); // Sort by 'createdOn' in descending order
-   
-        console.log('Active subjects:', this.subjects);
+        
+        this.cdr.markForCheck(); // Trigger change detection manually
       },
       (error: Error) => {
-        console.error('Error while fetching subjects:', error);
+        console.error('Error while fetching real-time subjects:', error);
       }
     );
   }
+  
+  
+
 
   // Logout method
   logout() {
@@ -115,6 +126,7 @@ export class SubjectTableComponent {
 
   // Add new subject
   addSubject() {
+    this.fetchSubjects();
     this.selectedSubject = {
       subjectId: crypto.randomUUID(),
       subjectName: '',
@@ -132,34 +144,38 @@ export class SubjectTableComponent {
       this.toastr.warning('Please enter subject name', 'Warning', { timeOut: 2000 });
       return;
     }
-
-    // Check if the subject already exists
-    this.fireBaseService.getAllDataByFilter(this.tableName, 'isDisabled', false).subscribe(subjects => {
-      const isDuplicate = subjects.some(subject =>
-        subject.subjectName.trim().toLowerCase() === this.selectedSubject?.subjectName.trim().toLowerCase()
-      );
-      if (isDuplicate) {
-        this.toastr.warning('Subject already exists', 'Warning', { timeOut: 2000 });
-        return; // Prevent adding duplicate subject
-      }
-
-      // Proceed with adding the new subject if no duplicates
-      if (this.selectedSubject) {
-        this.fireBaseService.create(`${this.tableName}/${this.selectedSubject.subjectId}`, this.selectedSubject)
-          .then(() => {
-            this.toastr.success('Subject added successfully', 'Added', { timeOut: 2000 });
-            this.isModalVisible = false;
-            this.selectedSubject = null;
-          })
-          .catch((error) => {
-            console.error('Error adding subject:', error);
-          });
-      }
-    });
+  
+    // Use a single subscription
+    const subscription = this.fireBaseService.getAllDataByFilter(this.tableName, 'isDisabled', false)
+      .subscribe(subjects => {
+        const isDuplicate = subjects.some(subject =>
+          subject.subjectName.trim().toLowerCase() === this.selectedSubject?.subjectName.trim().toLowerCase()
+        );
+  
+        if (isDuplicate) {
+          this.toastr.warning('Subject already exists', 'Warning', { timeOut: 2000 });
+        } else {
+          // Proceed with adding the new subject if no duplicates
+          this.fireBaseService.create(`${this.tableName}/${this.selectedSubject!.subjectId}`, this.selectedSubject)
+            .then(() => {
+              this.toastr.success('Subject added successfully', 'Added', { timeOut: 2000 });
+              this.isModalVisible = false;
+              this.selectedSubject = null;
+              this.fetchSubjects();
+            })
+            .catch((error) => {
+              console.error('Error adding subject:', error);
+            });
+        }
+  
+        subscription.unsubscribe(); // Unsubscribe after the operation
+      });
   }
+  
 
   // Edit an existing subject
   editSubject(row: any) {
+    this.fetchSubjects();
     this.selectedSubject = { ...row };
     this.isModalVisible = true;
     this.isAddModal = false;
@@ -169,39 +185,41 @@ export class SubjectTableComponent {
   updateSubject() {
     if (!this.selectedSubject || !this.selectedSubject.subjectName || this.selectedSubject.subjectName.trim() === '') {
       this.toastr.warning('Please enter subject name', 'Warning', { timeOut: 2000 });
-      return; // Update and no input is given, then it should not be added
+      return;
     }
-
-    // Check if the subject already exists (excluding the current subject being updated)
-    this.fireBaseService.getAllDataByFilter(this.tableName, 'isDisabled', false)
-    .subscribe(subjects => {
-      const isDuplicate = subjects.some(subject =>
-        subject.subjectId !== this.selectedSubject?.subjectId &&
-        subject.subjectName.trim().toLowerCase() === this.selectedSubject?.subjectName.trim().toLowerCase()
-      );
-      if (isDuplicate) {
-        this.toastr.warning('Subject already exists', 'Warning', { timeOut: 2000 });
-        return; // Prevent updating to duplicate subject
-      }
-
-      // Proceed with updating the subject if no duplicates
-      if (this.selectedSubject) {
-        this.toastr.info('Subject updated successfully', 'Updated', { timeOut: 2000 });
-
-        this.fireBaseService.update(`${this.tableName}/${this.selectedSubject.subjectId}`, this.selectedSubject)
-          .then(() => {
-            this.isModalVisible = false;
-            this.selectedSubject = null;
-          })
-          .catch((error) => {
-            console.error('Error updating subject:', error);
-          });
-      }
-    });
+  
+    // Use a single subscription
+    const subscription = this.fireBaseService.getAllDataByFilter(this.tableName, 'isDisabled', false)
+      .subscribe(subjects => {
+        const isDuplicate = subjects.some(subject =>
+          subject.subjectId !== this.selectedSubject?.subjectId &&
+          subject.subjectName.trim().toLowerCase() === this.selectedSubject?.subjectName.trim().toLowerCase()
+        );
+  
+        if (isDuplicate) {
+          this.toastr.warning('Subject already exists', 'Warning', { timeOut: 2000 });
+        } else {
+          // Proceed with updating the subject if no duplicates
+          this.fireBaseService.update(`${this.tableName}/${this.selectedSubject!.subjectId}`, this.selectedSubject!)
+            .then(() => {
+              this.toastr.success('Subject updated successfully', 'Updated', { timeOut: 2000 });
+              this.isModalVisible = false;
+              this.selectedSubject = null;
+              this.fetchSubjects();
+            })
+            .catch((error) => {
+              console.error('Error updating subject:', error);
+            });
+        }
+  
+        subscription.unsubscribe(); // Unsubscribe after the operation
+      });
   }
+  
 
   // Delete subject
   confirmDelete(subject: Subject) {
+    this.fetchSubjects();
     this.selectedSubjectToDelete = subject;
     this.eConfirmationVisible = true;
   }
@@ -228,6 +246,7 @@ export class SubjectTableComponent {
               .then(() => {
                 this.toastr.success('Subject and related questions disabled successfully', 'Deleted');
                 this.eConfirmationVisible = false;
+                this.fetchSubjects();
               })
               .catch((error) => {
                 console.error('Error updating related questions:', error);
