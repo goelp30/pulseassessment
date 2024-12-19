@@ -1,46 +1,101 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { assessmentRecords } from '../../../../models/assessmentRecords';
-import { NgClass } from '@angular/common';
-import { CapitalizePipe } from "../../../../capitalize.pipe";
+import { TableComponent } from '../../../common/table/table.component';
+import { HeaderComponent } from '../../../common/header/header.component';
+import { TableNames } from '../../../../enums/TableName';
+import { filter, Subject, takeUntil } from 'rxjs';
+import { NavigationEnd, Router } from '@angular/router';
 
 @Component({
   selector: 'app-assessment-records',
   standalone: true,
-  imports: [FormsModule, NgClass, CapitalizePipe],
+  imports: [FormsModule, TableComponent, HeaderComponent],
   templateUrl: './assessment-records.component.html',
   styleUrls: ['./assessment-records.component.css'],
 })
 export class AssessmentRecordsComponent implements OnInit {
   assessments: assessmentRecords[] = [];
-  filteredAssessments: assessmentRecords[] = [];
   searchQuery: string = '';
-  selectedFilter: string = 'Name';
+  selectedFilter: string = 'Search...'; // Default to 'userName'
   selectedStatus: string = '';
-  filterOptions: string[] = ['Name', 'Email', 'Assessment'];
-  statusOptions: string[] = ['Active', 'Expired', 'In Progress', 'Completed', 'Invalid'];
-  isLoading:boolean=true;
+  filterOptions: string[] = ['userName', 'email', 'assessmentName'];
+  statusOptions: string[] = [
+    'Active',
+    'Expired',
+    'In Progress',
+    'Completed',
+    'Invalid',
+  ];
+  isLoading: boolean = true;
+
+  tableName: string = TableNames.Assessment;
+  tableColumns: string[] = [
+    'assessmentName',
+    'userName',
+    'email',
+    'status',
+    'url',
+  ];
+
+  columnAliases: { [key: string]: string[] } = {
+    assessmentName: ['Assessment Name'],
+    userName: ['User Name'],
+    email: ['Email'],
+    status: ['Status'],
+    url: ['Url'],
+  };
+
+  searchPlaceholder: string = this.selectedFilter;
+
+  buttons = [
+    {
+      label: ' Invalid',
+      colorClass:
+        'px-3 py-2 bg-red-500 text-white font-semibold cursor-pointer rounded-md shadow hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400',
+      action: (row: any) => this.invalidateAssessment(row),
+    },
+  ];
+
+  private destroy$ = new Subject<void>(); // Subject to manage subscriptions
 
   constructor(
     private firebaseService: FireBaseService<any>,
     private router: Router
   ) {}
+
   ngOnInit(): void {
     this.fetchAssessments();
+
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntil(this.destroy$) // Unsubscribe when component is destroyed
+      )
+      .subscribe(() => {
+        this.fetchAssessments();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next(); // Emit value to complete all subscriptions
+    this.destroy$.complete(); // Complete the subject
   }
 
   fetchAssessments() {
-    this.isLoading = true; 
+    this.isLoading = true;
     this.firebaseService
       .getAllData('assessmentRecords')
-      .subscribe((data: any[]) => {
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((data: assessmentRecords[]) => {
         this.assessments = data.map((assessment) => ({
           ...assessment,
           status: this.getStatus(assessment) || 'Unknown',
+          email: assessment.email || 'No email provided',
+          userName: assessment.userName || 'No userName provided',
         }));
-        this.filteredAssessments = [...this.assessments];
+        console.log('Processed assessments:', this.assessments);
         this.isLoading = false;
       });
   }
@@ -52,12 +107,7 @@ export class AssessmentRecordsComponent implements OnInit {
     this.updateState(recordKey, { isValid: false })
       .then(() => {
         console.log(`Successfully invalidated assessment: ${recordKey}`);
-
-        // Update the status in the UI
         assessment.status = 'Invalid';
-
-        // Optionally trigger a re-filter in case the search query is active
-        this.onSearch();
       })
       .catch((error) => {
         console.error(`Error invalidating assessment ${recordKey}:`, error);
@@ -94,30 +144,25 @@ export class AssessmentRecordsComponent implements OnInit {
     return 'Unknown';
   }
 
-  onSearch() {
-    const query = this.searchQuery.trim().toLowerCase();
-    this.filteredAssessments = this.assessments.filter((assessment) => {
-      const matchesFilter = this.matchFilter(assessment, query);
-      const matchesStatus = this.selectedStatus
-        ? assessment.status?.toLowerCase() === this.selectedStatus.toLowerCase()
-        : true;
-
-      return matchesFilter && matchesStatus;
-    });
+  onSearch(query: string) {
+    this.searchQuery = query;
   }
 
-  matchFilter(assessment: assessmentRecords, query: string): boolean {
-    switch (this.selectedFilter) {
-      case 'Name':
-        return assessment.userName.toLowerCase().includes(query);
-      case 'Email':
-        return assessment.email.toLowerCase().includes(query);
-      case 'Assessment':
-        return assessment.assessmentName.toLowerCase().includes(query);
-      default:
-        return false;
-    }
-  }
+  // onFilterChange() {
+  //   this.searchPlaceholder = this.getSearchPlaceholder();
+  // }
+  // getSearchPlaceholder(): string {
+  //   switch (this.selectedFilter) {
+  //     case 'userName':
+  //       return (this.searchPlaceholder = 'Search by Name');
+  //     case 'email':
+  //       return (this.searchPlaceholder = 'Search by Email');
+  //     case 'assessmentName':
+  //       return (this.searchPlaceholder = 'Search by Assessment Name');
+  //     default:
+  //       return (this.searchPlaceholder = 'Search'); // fallback if selectedFilter is not found
+  //   }
+  // }
 
   isInvalidDisabled(assessment: assessmentRecords): boolean {
     return (
