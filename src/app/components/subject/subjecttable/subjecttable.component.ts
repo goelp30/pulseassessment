@@ -82,6 +82,27 @@ export class SubjectTableComponent {
     private router: Router // Inject Router
   ) {}
 
+  ngOnInit(): void {
+    this.fetchSubjects();
+  }
+  fetchSubjects(): void {
+    this.fireBaseService.listensToChangeWithFilter(this.tableName, 'isDisabled', false).subscribe(
+      (data: Subject[]) => {
+        console.log('Raw subject data:', data); // Log raw data for debugging
+   
+        // Filter and sort subjects
+        this.subjects = data
+          .filter(subject => !subject.isDisabled) // Exclude disabled subjects
+          .sort((a, b) => b.createdOn - a.createdOn); // Sort by 'createdOn' in descending order
+   
+        console.log('Active subjects:', this.subjects);
+      },
+      (error: Error) => {
+        console.error('Error while fetching subjects:', error);
+      }
+    );
+  }
+
   // Logout method
   logout() {
     this.auth.logout();
