@@ -184,23 +184,6 @@ export class SubjectTableComponent {
     this.selectedSubjectToDelete = subject;
     this.eConfirmationVisible = true;
   }
-  // deleteSubject() {
-  //   if (this.selectedSubjectToDelete) {
-  //     const SubjectToDelete = this.selectedSubjectToDelete;
-  //     SubjectToDelete.isDisabled = true; // Mark as deleted (disabled)
- 
-  //     this.fireBaseService.update(`${this.tableName}/${SubjectToDelete.subjectId}`,SubjectToDelete)
-  //       .then(() => {
-  //         this.toastr.error('Subject deleted successfully', 'Deleted');
-  //         this.eConfirmationVisible = false;
-  //         // this.getAssessments();
-  //       })
-  //       .catch(error => {
-  //         console.error('Error deleting subject:', error);
-  //         this.toastr.error('Failed to delete subject', 'Error');
-  //       });
-  //   }
-  // }
   deleteSubject() {
     if (this.selectedSubjectToDelete) {
       const subjectToDelete = this.selectedSubjectToDelete;
