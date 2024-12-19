@@ -128,6 +128,22 @@ export class QuizComponent implements OnInit, OnDestroy {
   submitQuiz() {
     console.log('Quiz submitted:', this.questions);
     console.log('User ID:', this.userId);
+    // Ensure all questions are saved, attempted or not
+  this.questions.forEach((question) => {
+    const answer = this.quizAnswerService.getUserAnswers()[question.questionId];
+    if (answer) {
+      // If there is an answer, store it (either descriptive or not)
+      this.quizAnswerService.storeAnswer(
+        question.questionId,
+        answer.isDescriptive,
+        answer.userAnswer || answer.answer || []  // Ensure that it never passes undefined
+      );
+    } else {
+      // For non-attempted questions, save a placeholder or empty answer
+      this.quizAnswerService.storeAnswer(question.questionId, false, []);  // Empty array for non-attempted questions
+    }
+  });
+
     this.quizAnswerService.submitQuiz(this.questions);  
     this.showModal = true;
 
