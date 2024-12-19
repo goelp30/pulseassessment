@@ -8,22 +8,10 @@ import { QuestionmodalComponent } from '../questionmodal/questionmodal.component
 import { CommonModule } from '@angular/common';
 import { Option } from '../../../models/question';
 import { TableNames } from '../../../enums/TableName';
+import { Question } from '../../../models/question';
 import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';
 import { ButtonComponent } from '../../common/button/button.component';
 import { Router, RouterModule } from '@angular/router';
-
-export type Question = {
-  subjectId: string;
-  questionId: any;
-  questionText: any;
-  questionType: string;
-  questionLevel: string;
-  questionWeightage: number;
-  questionTime: number;
-  createdOn: number;
-  updatedOn: number;
-  isQuesDisabled?: boolean;
-};
 
 @Component({
   selector: 'app-questiontable',

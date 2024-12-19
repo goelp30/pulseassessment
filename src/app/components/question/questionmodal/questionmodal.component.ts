@@ -110,31 +110,37 @@ export class QuestionmodalComponent implements OnInit {
       this.loadOptions();
     }
   }
-
   loadOptions(): void {
     if (this.question?.questionId) {
+      this.options.clear();
       this.firebaseService.getAllData('/options')
         .pipe(
-          map((options: Option[]) => {
-            return options.filter(
+          map((options: Option[]) => 
+            options.filter(
               (option) =>
                 option.questionId === this.question?.questionId &&
                 !option.isOptionDisabled
-            );
-          })
+            )
+          )
         )
         .subscribe({
           next: (filteredOptions: Option[]) => {
-            this.options.clear();
-            filteredOptions.forEach((option) => {
-              this.options.push(
-                this.fb.group({
-                  optionText: [option.optionText, Validators.required],
-                  isCorrectOption: [option.isCorrectOption],
-                  optionId: [option.optionId],
-                  isOptionDisabled: [option.isOptionDisabled],
-                })
-              );
+            // **Only preserve options already dynamically loaded, don't clear manually added ones**
+            const existingOptionIds = new Set(
+              this.options.controls.map(control => control.get('optionId')?.value)
+            );
+  
+            filteredOptions.forEach(option => {
+              if (!existingOptionIds.has(option.optionId)) {
+                this.options.push(
+                  this.fb.group({
+                    optionText: [option.optionText, Validators.required],
+                    isCorrectOption: [option.isCorrectOption],
+                    optionId: [option.optionId],
+                    isOptionDisabled: [option.isOptionDisabled],
+                  })
+                );
+              }
             });
           },
           error: (error) => {
@@ -143,6 +149,8 @@ export class QuestionmodalComponent implements OnInit {
         });
     }
   }
+  
+  
   
   
 
@@ -173,52 +181,34 @@ export class QuestionmodalComponent implements OnInit {
     }
   }
   
+async removeOption(index: number): Promise<void> {
+  const questionType = this.assessmentForm.get('questionType')?.value;
+  const activeOptionsCount = this.options.controls.filter(
+    (control) => !control.get('isOptionDisabled')?.value
+  ).length; // Only count active options
 
-
-  // removeOption(index: number): void {
-  //   const option = this.options.at(index) as FormGroup;
-  
-  //   // Mark the option as disabled
-  //   option.patchValue({ isOptionDisabled: true });
-  
-  //   // Perform the Firebase update
-  //   const updatedOption = option.value;
-  //   this.firebaseService.update(`/options/${updatedOption.optionId}`, updatedOption)
-  //     .then(() => {
-  //       console.log('Option marked as disabled in Firebase.');
-  //       this.options.removeAt(index); // Remove from form array only after successful Firebase update
-  //     })
-  //     .catch((error) => {
-  //       console.error('Failed to disable the option in Firebase:', error);
-  //     });
-  // }
-  
-  
-  removeOption(index: number): void {
-    const questionType = this.assessmentForm.get('questionType')?.value;
-    const currentOptionsCount = this.options.length;
-  
-    if (questionType === 'Single' && currentOptionsCount <= 2) {
-      this.warningMessage = 'A single-choice question must have at least 2 options.';
-      return;
-    }
-  
-    if (questionType === 'Multi' && currentOptionsCount <= 3) {
-      this.warningMessage = 'A multi-choice question must have at least 3 options.';
-      return;
-    }
-  
-    this.warningMessage = ''; // Clear warning
-    const option = this.options.at(index) as FormGroup;
-    const optionId = option.get('optionId')?.value;
-  
-    if (optionId) {
-      this.temporaryDisabledOptions.add(optionId); // Mark as temporarily disabled
-    }
-  
-    this.options.removeAt(index); // Remove from form array
+  if (questionType === 'Single' && activeOptionsCount <= 2) {
+    this.warningMessage = 'A single-choice question must have at least 2 active options.';
+    return;
   }
-  
+
+  if (questionType === 'Multi' && activeOptionsCount <= 3) {
+    this.warningMessage = 'A multi-choice question must have at least 3 active options.';
+    return;
+  }
+
+  this.warningMessage = ''; // Clear any previous warning message
+
+  // Mark the option as disabled (soft-delete)
+  const option = this.options.at(index) as FormGroup;
+  if (option) {
+    option.patchValue({ isOptionDisabled: true });
+  } else {
+    this.toastr.error('Invalid option index.', 'Error');
+  }
+}
+
+
 
 
 toggleCorrectOption(index: number) {
@@ -361,6 +351,7 @@ async saveQuestion(): Promise<void> {
     try {
       // Send data to Firebase
       await this.firebaseService.create(`/questions/${questionId}`, questionData);
+       await this.storeOptions(questionId);
       this.toastr.success("Question Added Successfully")
       return questionId; // Return the generated ID
     } catch (error) {
@@ -401,7 +392,6 @@ async saveQuestion(): Promise<void> {
       throw error;
     }
   }
-  
   async updateOptions(): Promise<void> {
     const optionPromises = this.options.controls.map((optionControl) => {
       const optionId = optionControl.get('optionId')?.value;
@@ -410,23 +400,23 @@ async saveQuestion(): Promise<void> {
         return Promise.resolve();
       }
   
+      const isDisabled = optionControl.get('isOptionDisabled')?.value || false;
+  
       const optionData: Option = {
         optionId,
         questionId: this.question?.questionId || '',
         subjectId: this.subjectId,
         optionText: optionControl.get('optionText')?.value,
         isCorrectOption: optionControl.get('isCorrectOption')?.value,
-        isOptionDisabled:
-          optionControl.get('isOptionDisabled')?.value || this.temporaryDisabledOptions.has(optionId),
+        isOptionDisabled: isDisabled,
       };
   
+      // Update Firebase to reflect the option's updated status
       return this.firebaseService.update(`/options/${optionId}`, optionData);
     });
   
     try {
       await Promise.all(optionPromises);
-      this.temporaryDisabledOptions.clear(); // Clear temporary state after commit
-      console.log('Options updated successfully');
     } catch (error) {
       console.error('Failed to update options:', error);
       throw error;
@@ -468,19 +458,6 @@ async saveQuestion(): Promise<void> {
       console.error('Failed to store options:', error);
     }
   }
-  revertChangesAndClose(): void {
-    // Clear temporary state
-    this.temporaryDisabledOptions.clear();
-  
-    // Reload original options if needed (optional, based on your use case)
-    if (this.editingMode && this.question) {
-      this.loadOptions(); // Reload options to restore original state
-    }
-  
-    // Emit event to parent to close the modal
-    this.closeModal.emit();
-  }
-  
   
   
   
@@ -491,4 +468,3 @@ async saveQuestion(): Promise<void> {
     this.assessmentForm.patchValue({ questionTime: time });
   }
 }
-
