@@ -9,7 +9,6 @@ export type SubjectCounts = {
   
  export  type AssessmentList = {
     assessmentId: string; 
-    isLinkGenerated?:boolean;
     dateCreated: number,
     dateUpdated: number,
     isDisable:boolean;
