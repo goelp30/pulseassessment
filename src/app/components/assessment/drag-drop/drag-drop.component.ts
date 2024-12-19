@@ -76,6 +76,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     this.subscribeToFormChanges();
     this.setupNavigationListener();
   }
+
   
   saveToSessionStorage(): void {
     if (this.isBrowser()) {
@@ -84,6 +85,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       sessionStorage.setItem('assessmentTitle', this.assessmentTitle);
       sessionStorage.setItem('viewMode', this.viewMode);
       sessionStorage.setItem('rightListForm', JSON.stringify(this.rightListForm.value));
+
     }
   }
   setupNavigationListener(): void {

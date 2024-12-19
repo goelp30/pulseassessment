@@ -1,5 +1,6 @@
 import { Component, NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../sharedServices/auth.service';
 
 @Component({
@@ -14,10 +15,12 @@ export class LoginComponent {
   email : string = '';
   password : string = '';
 
-  constructor(private auth : AuthService) { }
+  constructor(private auth : AuthService, private router: Router) {
+    auth.isLoggedIn.subscribe((val) => val === true ? this.router.navigate(['/subjects']) : this.router.navigate(['/login']));
+  }
 
   /**
-   * 
+   *
    * @returns To login and redirect to dashboard
    */
   login() {
@@ -31,7 +34,7 @@ export class LoginComponent {
       return;
     }
 
-    this.auth.login(this.email,this.password);    
+    this.auth.login(this.email,this.password);
     this.email = '';
     this.password = '';
   }

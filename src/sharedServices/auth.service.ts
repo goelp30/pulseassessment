@@ -21,6 +21,7 @@ export class AuthService {
    */
   login(email : string, password : string) {
     this.fireauth.signInWithEmailAndPassword(email,password).then( res => {
+        sessionStorage.setItem('userFirstName', res && res?.user && res?.user?.email ? res.user.email.substring(0, res.user.email.indexOf(".")) : '');
         sessionStorage.setItem('isLoggedIn', 'true');
         this.isLoggedIn.next(sessionStorage.getItem('isLoggedIn') !== null ? true : false);
         this.router.navigateByUrl('/subjects');
@@ -50,6 +51,7 @@ export class AuthService {
    */
   logout() {
     this.fireauth.signOut().then( () => {
+      sessionStorage.removeItem('userFirstName')
       sessionStorage.removeItem('isLoggedIn');
       this.isLoggedIn.next(false);
       this.router.navigate(['/login']);

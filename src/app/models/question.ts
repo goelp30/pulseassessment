@@ -1,21 +1,28 @@
-export type Question={
-    subjectId:string,
-    questionId : any,
-    questionText:any,
-    questionType:string,
-    questionLevel:string,
-    questionWeightage:number,
-    questionTime:number,
-    createdOn:number,
-    updatedOn:number,
+export interface Question {
+    questionId: string;
+    subjectId: string;
+    questionText: string;
+    questionType: string;
+    questionLevel: string;
+    questionWeightage: number;
+    questionTime: number;
+    createdOn: number;
+    updatedOn: number;
     isQuesDisabled?: boolean;
-}
+    isMarkedForReview?: boolean;
+    isVisited?: boolean;
+    selectedAnswer?:any;
+    descriptiveAnswer?: string;
+    options?: Option[];
+  }
 
-export type Option={
-    subjectid:string,
-    questionId: string,
-    optionId : string,
-    optionText:any,
-    isCorrectOption:boolean
-}
+  export interface Option {
+    optionId: string;
+    questionId: string;
+    subjectId: string;
+    optionText: string;
+    isCorrectOption: boolean;
+
+    isOptionDisabled?:boolean
+  }
 

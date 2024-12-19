@@ -18,11 +18,13 @@ import { Candidate } from '../../../models/candidate';
 import { Employee } from '../../../models/employee';
 import { Subscription } from 'rxjs';
 import { BitlyService } from '../services/bitly.service';
+import { CapitalizePipe } from "../../../capitalize.pipe";
+import { HeaderComponent } from "../../common/header/header.component";
 
 @Component({
   selector: 'app-modal',
   standalone: true,
-  imports: [CommonModule, SearchbarComponent, FormsModule, ButtonComponent],
+  imports: [CommonModule, SearchbarComponent, FormsModule, ButtonComponent, CapitalizePipe],
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.css'],
   providers: [DatePipe],

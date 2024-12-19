@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Options, Question } from '../../../../models/question.model';
+import { Option, Question } from '../../../../models/question';
 
 @Component({
   selector: 'app-question-display',
@@ -11,18 +11,19 @@ import { Options, Question } from '../../../../models/question.model';
   styleUrls: ['./question-display.component.css']
 })
 export class QuestionDisplayComponent {
-onDescriptiveAnswerChange($event: any) {
-throw new Error('Method not implemented.');
+
+onDescriptiveAnswerChange($event: string) {
+  this.answerSelect.emit($event);
 }
   @Input() question!: Question;
-  @Input() options: Options[] = [];
+  @Input() options: Option[] = [];
   @Input() questionNumber!: number;
   @Input() totalQuestions!: number;
-  @Output() answerSelect = new EventEmitter<number>();
+  @Output() answerSelect = new EventEmitter<string>();
   @Output() reviewToggle = new EventEmitter<void>();
 
   onAnswerSelect(optionId: string): void {
-    this.answerSelect.emit(Number(optionId));
+    this.answerSelect.emit(String(optionId));
   }
 
   onReviewToggle(): void {
@@ -35,4 +36,5 @@ throw new Error('Method not implemented.');
     }
     return this.question.selectedAnswer === Number(optionId);
   }
+  
 }
