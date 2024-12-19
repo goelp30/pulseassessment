@@ -122,8 +122,17 @@
           <tr class="even:bg-gray-50">
             @for(column of tableColumns; track column){
             <td class="px-4 sm:px-6 py-3 border-b">
-              <p class="text-blue-gray-900">
-                {{ row[column] | titlecase }}
+              <p
+                class="text-blue-gray-900"
+                [ngClass]="
+                  column === 'status' ? getStatusClass(row[column]) : ''
+                "
+              >
+                {{
+                  row[column]?.length > 50
+                    ? (row[column] | capitalize | slice : 0 : 80) + "..."
+                    : (row[column] | capitalize)
+                }}
               </p>
             </td>
             }
@@ -132,8 +141,9 @@
                 @for(button of buttons; track button){
                 <app-button
                   [label]="button.label"
-                  [colorClass]="button.colorClass"
+                  [colorClass]="getCustomButtonClasses(button, row)"
                   (action)="button.action(row)"
+                  [disabled]="isButtonDisabled(button, row)"
                 ></app-button>
                 }
               </div>

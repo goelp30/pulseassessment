@@ -10,11 +10,12 @@ import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../button/button.component';
 import { SearchbarComponent } from '../searchbar/searchbar.component';
 import { FormsModule } from '@angular/forms';
+import { CapitalizePipe } from "../../../capitalize.pipe";
 
 @Component({
   selector: 'app-table',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, SearchbarComponent, FormsModule],
+  imports: [CommonModule, ButtonComponent, SearchbarComponent, FormsModule, CapitalizePipe],
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.css'],
 })
@@ -36,6 +37,12 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() filterOptions: string[] = [];
   @Input() statusOptions: string[] = [];
   @Input() showAdditionalFilters: boolean = false;
+
+  // New Input for handling status display
+  @Input() statusMapping: { [key: string]: string } = {};
+
+  // new input for custom button display
+  @Input() customButtonDisplay: { [key: string]: any } = {};
 
   selectedFilter: string = '';
   selectedStatus: string = '';
@@ -152,6 +159,11 @@ export class TableComponent implements OnInit, OnChanges {
     return filteredData;
   }
 
+  // Function to get the CSS classes for status display
+  getStatusClass(status: string): string {
+    return this.statusMapping[status] || '';
+  }
+
   getColumnAliases(column: string): string[] {
     return this.columnAliases[column] || [column];
   }
@@ -192,5 +204,19 @@ export class TableComponent implements OnInit, OnChanges {
       pages.push(i);
     }
     this.pageNumbers = pages;
+  }
+
+  getCustomButtonClasses(button: any, row: any) {
+    if (button.customClassFunction) {
+      return button.customClassFunction(row);
+    }
+    return button.colorClass;
+  }
+
+  isButtonDisabled(button: any, row: any) {
+    if (button.disableFunction) {
+      return button.disableFunction(row);
+    }
+    return false;
   }
 }
