@@ -3,13 +3,14 @@
   <h2 class="text-lg font-semibold mb-4">Question Navigator</h2>
   <div class="grid grid-cols-5 gap-2">
     <button
-      *ngFor="let question of questions; let i = index"
-      (click)="onQuestionSelect(i)"
-      class="w-10 h-10 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
-      [ngClass]="getButtonClass(i)"
-    >
-      {{ i + 1 }}
-    </button>
+    *ngFor="let question of questions; let i = index"
+    (click)="onQuestionSelect(i)"
+    class="w-10 h-10 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
+    [ngClass]="getButtonClass(i)"
+    [disabled]="!(questions[i].selectedAnswer || questions[i].isMarkedForReview || questions[i].isVisited)">
+    {{ i + 1 }}
+  </button>
+  
   </div>
 
   <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
