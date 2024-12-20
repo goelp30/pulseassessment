@@ -2,13 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject } from '../../models/subject';
 import { AuthService } from '../../../sharedServices/auth.service';
-import { Router, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { PageLabelService } from '../../../sharedServices/pagelabel.service';
 
 @Component({
   selector: 'app-dashboard',
-  standalone: true, // Indicates that this component is standalone
-  imports: [CommonModule, RouterOutlet], // Modules imported for this component
-  templateUrl: './dashboard.component.html', // Path to HTML file
+  standalone: true, 
+  imports: [CommonModule, RouterOutlet], 
+  templateUrl: './dashboard.component.html', 
 })
 export class DashboardComponent implements OnInit {
   currentPage: string = 'Manage Subjects';
@@ -23,13 +24,38 @@ export class DashboardComponent implements OnInit {
     { label: 'Assessment Records', route: '/assessmentrecords', icon: 'fas fa-history' },
     { label: 'Evaluation dashboard ', route: '/evaluation', icon: 'fas fa-chart-line' },
   ];
+  private routeLabelMap: { [key: string]: string } = {
+    '/subjects': 'Manage Subjects',
+    '/questions': 'Manage Questions', 
+    '/generatelink': 'Generate Link',
+    '/assessment-list': 'Manage Assessment',
+    '/assessmentrecords': 'Assessment Records',
+    '/evaluation': 'Evaluation Dashboard'
+  };
 
   constructor(
-    private auth: AuthService, private router: Router
+    private auth: AuthService, private router: Router,
+    private pageLabelService: PageLabelService  
   ) { }
 
   ngOnInit(): void {
     this.userFirstName = sessionStorage.getItem('userFirstName') || '';
+
+    // Subscribe to the currentPage observable
+    this.pageLabelService.currentPage$.subscribe(label => {
+      this.currentPage = label;
+    });
+
+    // Listen for route changes to update the label
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.updatePageLabel(event.urlAfterRedirects);
+      }
+    });
+  }
+  updatePageLabel(url: string): void {
+    const label = this.routeLabelMap[url] || 'Dashboard';  // Fallback to 'Dashboard'
+    this.pageLabelService.updatePageLabel(label);  // Update the label through the service
   }
 
   toggleMenu(): void {
@@ -42,7 +68,7 @@ export class DashboardComponent implements OnInit {
   }
 
   setCurrentPage(page: any): void {
-    this.currentPage = page.label;
+    this.pageLabelService.updatePageLabel(page.label);  // Update label when a page is clicked
     this.router.navigate([page.route]);
   }
 }
