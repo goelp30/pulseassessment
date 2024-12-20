@@ -121,6 +121,7 @@ export class SubjectTableComponent  implements OnInit{
 
   // Handle search input changes
   onSearchQueryChange(newQuery: string): void {
+    this.fetchSubjects();
     this.searchQuery = newQuery;
   }
 
@@ -160,6 +161,7 @@ export class SubjectTableComponent  implements OnInit{
             .then(() => {
               this.toastr.success('Subject added successfully', 'Added', { timeOut: 2000 });
               this.isModalVisible = false;
+              this.closeModal();
               this.selectedSubject = null;
               this.fetchSubjects();
             })
@@ -204,6 +206,7 @@ export class SubjectTableComponent  implements OnInit{
             .then(() => {
               this.toastr.success('Subject updated successfully', 'Updated', { timeOut: 2000 });
               this.isModalVisible = false;
+              this.closeModal();
               this.selectedSubject = null;
               this.fetchSubjects();
             })
@@ -262,6 +265,7 @@ export class SubjectTableComponent  implements OnInit{
   }
   
   closeModal(): void {
+    this.isAddModal = false;
     this.isModalVisible = false; // For the Assessment Details modal
     this.eConfirmationVisible = false; // For the Delete Confirmation modal
   }
