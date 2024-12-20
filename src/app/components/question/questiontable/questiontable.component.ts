@@ -59,13 +59,13 @@ export class QuestiontableComponent implements OnInit {
     {
       label: '',
       icon: 'fa fa-edit',  // Font Awesome Edit Icon
-      colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white py-2 px-4 text-white rounded-md text-xl ', 
+      colorClass: 'text-blue-900 text-2xl ', 
       action: (row: any) => this.editQuestion(row),
     },    
     {
       label: '',
       icon: 'fa fa-trash',  // Font Awesome Delete Icon
-      colorClass: 'bg-red-500 hover:opacity-80 transition-opacity py-2 px-4 text-white rounded-md text-xl',
+      colorClass: 'text-red-500 text-2xl',
       action: (row: any) => this.confirmDelete(row),
     },
   ];
