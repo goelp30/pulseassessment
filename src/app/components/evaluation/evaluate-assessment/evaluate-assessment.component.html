@@ -1,28 +1,27 @@
 <div class="p-2 rounded-lg">
-  <div class="p-2 rounded-lg">
-    <div class="flex items-center justify-between mb-2">
-      <h1 class=" text-blue-800 text-5xl font-bold flex-grow text-center">
-       {{clickedData.assessmentName}}
-      </h1>
-      <div class="text-blue-800 text-lg fon t-medium ml-auto text-right font-semibold">
-        
-         <span>Marks Scored:</span>
-        <span class="text-green-700 font-semibold">
-          {{ getUserTotalMarks() || 0 }} / {{ getTotalMarks() }}
-        </span>
-      </div>
-    </div>
+   <!-- Evaluation Header -->
+   <app-evaluation-header
+   [assessmentName]="clickedData.assessmentName"
+   [userMarks]="getUserTotalMarks()"
+   [totalMarks]="getTotalMarks()"
+   [result]="clickedData.result">
+ </app-evaluation-header>
+  
 <div class="w-full max-w-6xl mx-auto p-6 rounded-xl">
       <div>
-        <h2 class="text-lg font-semibold text-blue-800"> Attempted Questions:</h2>
-      @for(question of attemptedQuestions;track attemptedQuestions){
+        <h2 class="text-lg font-semibold text-blue-800">
+          Attempted Questions: <span class="text-green-700 font-semibold">{{ attemptedQuestions.length }}</span>
+        </h2>
+        @for(question of attemptedQuestions;track attemptedQuestions){
       <app-question-display [question]="question" [options]="question.options" [userAnswer]="question.userAnswer"
         [answer]="question.answer" [marks]="question.marks"  [assignedMarks]="question.assigned_marks" 
         (marksChanged)="onMarksChange($event)">
       </app-question-display>}
     </div>
     <div>
-      <h2 class="text-lg font-semibold text-blue-800">Not Attempted Questions</h2>
+      <h2 class="text-lg font-semibold text-blue-800">
+        Unattempted Questions: <span class="text-green-700 font-semibold">{{ notAttemptedQuestions.length }}</span>
+      </h2>
       @for(question of notAttemptedQuestions;track notAttemptedQuestions){
         <app-question-display [question]="question" [options]="question.options" [userAnswer]="question.userAnswer"
           [answer]="question.answer"  [marks]="0"  [assignedMarks]="question.assigned_marks"
@@ -51,5 +50,4 @@
   (click)="onSubmit()" 
   [disabled]="!checkDescriptiveMarksEntered()">
 </app-button>
-</div>
 </div>

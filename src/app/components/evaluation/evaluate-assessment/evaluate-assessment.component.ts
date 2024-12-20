@@ -8,12 +8,13 @@ import { ButtonComponent } from "../../common/button/button.component";
 import { QuestionDisplayComponent } from "../question-display/question-display.component";
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { EvaluationHeaderComponent } from '../evaluation-header/evaluation-header.component';
 
 @Component({
   selector: 'app-evaluate-assessment',
   templateUrl: './evaluate-assessment.component.html',
   styleUrls: ['./evaluate-assessment.component.css'],
-  imports: [QuestionDisplayComponent, CommonModule, ButtonComponent, FormsModule],
+  imports: [QuestionDisplayComponent, CommonModule, ButtonComponent, FormsModule,EvaluationHeaderComponent],
   standalone: true,
 })
 export class EvaluateAssessmentComponent implements OnInit {
