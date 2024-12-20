@@ -25,7 +25,6 @@ import { Subscription } from 'rxjs';
     CommonModule,
     FormsModule,
     ToastrModule,
-    HeaderComponent,
     ButtonComponent,
   ],
   templateUrl: './subjecttable.component.html',
@@ -56,22 +55,25 @@ export class SubjectTableComponent  implements OnInit{
   // Action buttons for table
   buttons = [
     {
-      label: 'Edit',
-      colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white py-2 px-4 text-white rounded-md',
+      label: '',
+      icon: 'fa fa-edit',  // Font Awesome Edit Icon
+      colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white py-2 px-4 text-white rounded-md text-xl ', 
       action: (row: any) => this.editSubject(row),
-    },
+    },    
     {
-      label: 'Manage',
-      colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white py-2 px-4 text-white rounded-md',
+      label: '',
+      icon: 'fas fa-cog',  // Font Awesome Manage Icon
+      colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white py-2 px-4 text-white rounded-md text-xl',
       action: (row: any) => this.manageSubject(row),
     },
     {
-      label: 'Delete',
-      colorClass: 'bg-red-500 hover:opacity-80 transition-opacity py-2 px-4 text-white rounded-md',
+      label: '',
+      icon: 'fa fa-trash',  // Font Awesome Delete Icon
+      colorClass: 'bg-red-500 hover:opacity-80 transition-opacity py-2 px-4 text-white rounded-md text-xl',
       action: (row: any) => this.confirmDelete(row),
- 
     },
   ];
+  
 
   modaltitle: string = 'Add Subject';
  private routerSubscription!: Subscription;

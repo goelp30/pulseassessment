@@ -2,9 +2,8 @@
   [ngClass]="colorClass"
   (click)="onClick()"
   [disabled]="disabled"
-  type="button"
+  class="flex items-center space-x-2"  
 >
-<!-- Icon with spacing -->
-  <span>{{ label }}</span> <!-- Label -->
-  <i *ngIf="icon" [ngClass]="icon" class="mr-2"></i> 
+  <i *ngIf="icon" [ngClass]="icon"></i>  <!-- Icon will be placed inside the button -->
+  <span>{{ label }}</span>  <!-- Button label will be placed next to the icon -->
 </button>

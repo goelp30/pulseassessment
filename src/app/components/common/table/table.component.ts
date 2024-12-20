@@ -28,8 +28,9 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() tableData: any[] = [];
   @Input() tableColumns: string[] = [];
   @Input() columnAliases: { [key: string]: string[] } = {};
-  @Input() buttons: { label: string | ((row: any) => string); colorClass: string; action: Function }[] =
-    [];
+  @Input() buttons: { label: string | ((row: any) => string);  colorClass: string;  action: Function; icon?: string;  // New optional property for the icon class
+  }[] = [];
+  
   @Input() searchQuery: string = '';
   @Input() onSearchQueryChange: (newQuery: string) => void = () => {};
   @Input() tabs: string[] = []; // Empty array means no tabs

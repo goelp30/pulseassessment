@@ -18,7 +18,7 @@ import { Router, RouterModule } from '@angular/router';
   standalone: true,
   templateUrl: './questiontable.component.html',
   styleUrls: ['./questiontable.component.css'],
-  imports:[HeaderComponent,TableComponent,QuestionmodalComponent,CommonModule,PopupModuleComponent,ButtonComponent,RouterModule]
+  imports:[TableComponent,QuestionmodalComponent,CommonModule,PopupModuleComponent,ButtonComponent,RouterModule]
 })
 export class QuestiontableComponent implements OnInit {
 
@@ -57,15 +57,16 @@ export class QuestiontableComponent implements OnInit {
 
   buttons = [
     {
-      label: 'Edit',
-      colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white py-2 px-4 text-white rounded-md',
-      action: (row: Question) => this.editQuestion(row),
-    },
+      label: '',
+      icon: 'fa fa-edit',  // Font Awesome Edit Icon
+      colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white py-2 px-4 text-white rounded-md text-xl ', 
+      action: (row: any) => this.editQuestion(row),
+    },    
     {
-      label: 'Delete',
-      colorClass: 'bg-red-500 hover:opacity-80 transition-opacity py-2 px-4 text-white rounded-md',
+      label: '',
+      icon: 'fa fa-trash',  // Font Awesome Delete Icon
+      colorClass: 'bg-red-500 hover:opacity-80 transition-opacity py-2 px-4 text-white rounded-md text-xl',
       action: (row: any) => this.confirmDelete(row),
- 
     },
   ];
 
