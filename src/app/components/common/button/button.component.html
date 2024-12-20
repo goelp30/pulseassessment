@@ -4,6 +4,8 @@
   [disabled]="disabled"
   class="flex items-center space-x-2"  
 >
-  <i *ngIf="icon" [ngClass]="icon"></i>  <!-- Icon will be placed inside the button -->
-  <span>{{ label }}</span>  <!-- Button label will be placed next to the icon -->
+@if(icon){
+  <i [ngClass]="icon"></i> 
+ } 
+  <span>{{ label }}</span>
 </button>
