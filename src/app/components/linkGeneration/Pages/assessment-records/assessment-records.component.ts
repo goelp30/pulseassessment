@@ -21,6 +21,7 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
   selectedFilter: string = 'Search...'; // Default to 'userName'
   selectedStatus: string = '';
   filterOptions: string[] = ['userName', 'email', 'assessmentName'];
+
   statusOptions: string[] = [
     'Active',
     'Expired',
@@ -108,7 +109,6 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
           email: assessment.email || 'No email provided',
           userName: assessment.userName || 'No userName provided',
         }));
-        console.log('Processed assessments:', this.assessments);
         this.isLoading = false;
       });
   }
@@ -120,7 +120,6 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
 
     this.updateState(recordKey, { isValid: false })
       .then(() => {
-        console.log(`Successfully invalidated assessment: ${recordKey}`);
         assessment.status = 'Invalid';
       })
       .catch((error) => {
@@ -132,7 +131,6 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
     const tableName = `assessmentRecords/${recordKey}`;
     return await this.firebaseService
       .update(tableName, updates)
-      .then(() => console.log('Successfully updated:', tableName))
       .catch((error) => {
         console.error('Failed to update Firebase:', error);
         throw error;

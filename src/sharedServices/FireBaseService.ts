@@ -159,4 +159,16 @@ export class FireBaseService<T> {
     // Wait for all the updates to complete
     await Promise.all(updatePromises);
   }
+  getAssessmentNameById(assessmentId: string): Observable<string> {
+    return this.database
+      .object(`assessment/${assessmentId}`)  // Access the document by the assessmentId
+      .valueChanges()  // Get the values of the assessment document
+      .pipe(
+        map((assessmentData: any) => {
+          return assessmentData && assessmentData.assessmentName
+            ? assessmentData.assessmentName
+            : 'Unknown'; // Return 'Unknown' if no assessmentName is found
+        })
+      );
+  }
 }
