@@ -9,7 +9,7 @@ export class ToastService {
     Toastify({
       text: message,
       duration: 3000,
-      gravity: "bottom",
+      gravity: "top",
       position: "right",
       style: {
         background

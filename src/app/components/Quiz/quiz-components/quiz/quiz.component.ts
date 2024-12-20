@@ -8,12 +8,14 @@ import { QuestionNavigatorComponent } from '../question-navigator/question-navig
 import { QuizTimerComponent } from '../quiz-timer/quiz-timer.component';
 import { SubmissionModalComponent } from '../submission-modal/submission-modal.component';
 import { QuizAnswerService } from '../../services/quiz-answer.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   standalone:true,
   imports: [CommonModule, QuestionDisplayComponent, QuestionNavigatorComponent, QuizTimerComponent, SubmissionModalComponent],
   selector: 'app-quiz',
   templateUrl: './quiz.component.html',
+  styleUrl:'./quiz.component.css'
 })
 export class QuizComponent implements OnInit, OnDestroy {
   questions: Question[] = [];
@@ -28,7 +30,8 @@ export class QuizComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private quizService: QuizService,
-    private quizAnswerService: QuizAnswerService //---------
+    private quizAnswerService: QuizAnswerService, //---------
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -49,6 +52,8 @@ export class QuizComponent implements OnInit, OnDestroy {
     this.loadAssessmentData();
   }
 
+
+  
   private loadAssessmentData(): void {
     this.loading = true;
 
@@ -89,23 +94,26 @@ export class QuizComponent implements OnInit, OnDestroy {
 
 
   isNextButtonDisabled(): boolean {
-  const currentQuestionAnswer = this.quizAnswerService.getUserAnswers()[this.questions[this.currentQuestion]?.questionId];
+    const currentQuestionAnswer = this.quizAnswerService.getUserAnswers()[this.questions[this.currentQuestion]?.questionId];
+    const descriptiveAnswer = this.questions[this.currentQuestion]?.descriptiveAnswer?.trim();
+    
+    // Check if the current question is the last question
+    const isLastQuestion = this.currentQuestion === this.questions.length - 1;
   
-  // Return true if no option is selected and the question is not marked for review
-  return (
-    !this.questions[this.currentQuestion]?.isMarkedForReview &&
-    (!currentQuestionAnswer || !currentQuestionAnswer.userAnswer?.length)
-  );
-}
+    // Return true if no option is selected, the question is not marked for review, the descriptive box is empty, or if it's the last question
+    return (
+      isLastQuestion || // Disable if it's the last question
+      !this.questions[this.currentQuestion]?.isMarkedForReview &&
+      (!currentQuestionAnswer?.userAnswer?.length && !descriptiveAnswer)
+    );
+  }
+  
+
   onAnswerSelect(optionId: string) {
     // this.quizAnswerService.storeAnswer(this.currentQuestionData.questionId, false, [optionId]); //-----
     const isDescriptive = this.currentQuestionData.questionType === 'Descriptive';
     this.quizAnswerService.storeAnswer(this.currentQuestionData.questionId, isDescriptive, [optionId]);
 
-  }
-
-  onDescriptiveAnswerSelect(answer: string) {
-    this.quizAnswerService.storeAnswer(this.currentQuestionData.questionId, true, answer); // Store answer for descriptive question
   }
 
   toggleReview() {
@@ -135,6 +143,21 @@ export class QuizComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  allQuestionsVisited(): boolean {
+    // Check if all questions have been visited (i.e., answered or have a descriptive answer)
+    return this.questions.every((question) => {
+      const currentQuestionAnswer = this.quizAnswerService.getUserAnswers()[question?.questionId];
+      const descriptiveAnswer = question?.descriptiveAnswer?.trim();
+      
+      // A question is considered visited if it has an answer or descriptive text
+      // Ensure that currentQuestionAnswer and userAnswer are defined before checking length
+      return (currentQuestionAnswer?.userAnswer?.length ?? 0) > 0 || (descriptiveAnswer?.length ?? 0) > 0;
+    });
+  }
+  
+  
+
   submitQuiz() {
     console.log('Quiz submitted:', this.questions);
     console.log('User ID:', this.userId);
@@ -156,6 +179,7 @@ export class QuizComponent implements OnInit, OnDestroy {
 
     this.quizAnswerService.submitQuiz(this.questions);  
     this.showModal = false;
+    this.toastService.showSuccess('Quiz submitted successfully!');
 
   }
 
@@ -166,6 +190,7 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   handleTimeUp() {
     this.submitQuiz();
+    this.toastService.showInfo("Time's up! We'll submit your quiz now.");
   }
 
   ngOnDestroy() {
