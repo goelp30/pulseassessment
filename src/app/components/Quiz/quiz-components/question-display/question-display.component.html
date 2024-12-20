@@ -30,8 +30,10 @@
             [checked]="isOptionSelected(option.optionId)"
             class="h-4 w-4 text-blue-600 focus:ring-blue-500"
             (click)="$event.stopPropagation()"> <!-- Prevents event propagation to div -->
-          <label [for]="'option' + option.optionId" class="ml-3 cursor-pointer">
-            {{ option.optionText }}
+          <label [for]="'option' + option.optionId" class="ml-3 cursor-pointer w-full">
+            <div class="w-full">
+              {{ option.optionText }}
+            </div>
           </label>
         </div>
       </ng-container>
@@ -51,8 +53,10 @@
             [checked]="isOptionSelected(option.optionId)"
             class="h-4 w-4 text-blue-600 focus:ring-blue-500"
             (click)="$event.stopPropagation()"> <!-- Prevents event propagation to div -->
-          <label [for]="'option' + option.optionId" class="ml-3 cursor-pointer">
-            {{ option.optionText }}
+          <label [for]="'option' + option.optionId" class="ml-3 cursor-pointer w-full">
+            <div class="w-full">
+              {{ option.optionText }}
+            </div>
           </label>
         </div>
       </ng-container>
