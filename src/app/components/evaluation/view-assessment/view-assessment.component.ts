@@ -7,11 +7,12 @@ import { QuizAnswers } from '../../../models/quizAnswers';
 import { ButtonComponent } from '../../common/button/button.component';
 import { CommonModule } from '@angular/common';
 import { QuestionDisplayComponent } from '../question-display/question-display.component';
+import { EvaluationHeaderComponent } from '../evaluation-header/evaluation-header.component';
 
 @Component({
   selector: 'app-view-assessment',
   standalone: true,
-  imports: [ButtonComponent, CommonModule, QuestionDisplayComponent],
+  imports: [ButtonComponent, CommonModule, QuestionDisplayComponent,EvaluationHeaderComponent],
   templateUrl: './view-assessment.component.html',
   styleUrls: ['./view-assessment.component.css'],
 })
@@ -21,6 +22,7 @@ export class ViewAssessmentComponent implements OnInit {
   attemptedQuestions: any[] = []; // For attempted questions
   notAttemptedQuestions: any[] = []; // For not attempted questions
   quizId: string = '';
+  isLoading: boolean = true; 
 
   constructor(
     private evaluationService: EvaluationService,
@@ -89,6 +91,7 @@ export class ViewAssessmentComponent implements OnInit {
         },
         (error: any) => {
           console.error('Error fetching combined data:', error);
+          this.isLoading = false;
         }
       );
   }

@@ -4,10 +4,9 @@
     </div>
     <!-- Display Marks for Non-Descriptive Questions -->
     @if(question.questionType !== 'Descriptive'){
-
-        <div class="text-right text-gray-600 text-sm font-bold mb-0 absolute bottom-5 right-5">
+     <div class="text-right text-gray-600 text-sm font-bold mb-0 absolute bottom-5 right-5">
             Marks: 
-            <span [ngClass]="{'text-red-600': question.marks === 0, 'text-green-600': question.marks > 0}">
+            <span [ngClass]="{'text-red-600': question.marks == 0, 'text-green-600': question.marks > 0}">
                 {{ question.marks || 0 }} / {{ question.questionWeitage }}
             </span>
         </div>
@@ -67,11 +66,12 @@
     }
     @else {
         <div class="text-right text-gray-600 text-sm font-bold mb-0 absolute bottom-5 right-5">
-            Marks: <span class="text-red-600">
-               {{marks}}/ {{ question.questionWeitage }}
+            Marks: 
+            <span [ngClass]="{'text-green-700': marks > 0, 'text-red-600': marks ==0}">
+              {{ marks }} / {{ question.questionWeitage }}
             </span>
           </div>
-    }
+          }
 
     </div>}
 </div>
