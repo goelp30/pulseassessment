@@ -75,6 +75,7 @@ export class SubjectTableComponent  implements OnInit{
 
   modaltitle: string = 'Add Subject';
  private routerSubscription!: Subscription;
+addbuttonlabel:string='add';
 
   // Dependency injection
   constructor(

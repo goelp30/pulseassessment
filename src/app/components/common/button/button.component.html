@@ -2,6 +2,9 @@
   [ngClass]="colorClass"
   (click)="onClick()"
   [disabled]="disabled"
+  type="button"
 >
-  {{ label }}
+<!-- Icon with spacing -->
+  <span>{{ label }}</span> <!-- Label -->
+  <i *ngIf="icon" [ngClass]="icon" class="mr-2"></i> 
 </button>

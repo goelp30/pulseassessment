@@ -39,13 +39,21 @@
     </div>
   </div>
 </app-popup-module>
-<app-header 
-  [title]="'List of Subjects'" 
-  [subtitle]="'Manage your subjects here'"
-  [buttonLabel]="'Add Subject'"
-  [buttonClasses]="'bg-custom-blue hover:opacity-80 transition-opacity text-white text-white rounded-md px-4 py-2'"
-  (addSubjectEvent)="addSubject()">
-</app-header>
+
+
+<div class="flex justify-end">
+  <app-button
+    [icon]="'fa fa-plus pl-2'"
+    [label]="'Add'"
+    [colorClass]="'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-2'"
+    (action)="addSubject()"
+  ></app-button>
+</div>
+
+
+
+
+
 
 <app-table 
   [tableName]="tableName" 
