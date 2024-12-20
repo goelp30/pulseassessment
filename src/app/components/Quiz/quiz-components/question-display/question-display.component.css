@@ -1,0 +1,9 @@
+/* Add smooth transition for hover effect */
+  .flex.items-center:hover {
+    background-color: #45a4d6; /* Light blue background */
+    transform: scale(1.02); /* Slight scale effect on hover */
+  }
+  .flex.items-center {
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+  

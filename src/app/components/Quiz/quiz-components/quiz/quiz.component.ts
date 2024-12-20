@@ -87,6 +87,16 @@ export class QuizComponent implements OnInit, OnDestroy {
     return this.options[this.currentQuestionData?.questionId.toString()] || [];
   }
 
+
+  isNextButtonDisabled(): boolean {
+  const currentQuestionAnswer = this.quizAnswerService.getUserAnswers()[this.questions[this.currentQuestion]?.questionId];
+  
+  // Return true if no option is selected and the question is not marked for review
+  return (
+    !this.questions[this.currentQuestion]?.isMarkedForReview &&
+    (!currentQuestionAnswer || !currentQuestionAnswer.userAnswer?.length)
+  );
+}
   onAnswerSelect(optionId: string) {
     // this.quizAnswerService.storeAnswer(this.currentQuestionData.questionId, false, [optionId]); //-----
     const isDescriptive = this.currentQuestionData.questionType === 'Descriptive';
