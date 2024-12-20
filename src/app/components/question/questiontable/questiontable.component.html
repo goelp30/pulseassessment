@@ -1,20 +1,20 @@
 <div class="flex justify-between items-center mb-4">
   <!-- Back Button -->
   <app-button
-  [icon]="'fa fa-arrow-left text-2xl'"
-  [label]="label"
-  [colorClass]="backbutton.colorClass"
+  [icon]="'fa fa-arrow-left'"
+  [label]="'Back'"
+  [colorClass]="'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-2'"
   (action)="navigatetosubject()"
 ></app-button>
 
 
   <!-- Add Button -->
-  <app-button
-    [icon]="'fa fa-plus pl-2'"
-    [label]="'Add'"
-    [colorClass]="'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-2'"
-    (action)="addQuestion()"
-  ></app-button>
+    <app-button
+      [icon]="'fa fa-plus'"
+      [label]="'Add'"
+      [colorClass]="'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-2'"
+      (action)="addQuestion()"
+    ></app-button>
 </div>
 
 
