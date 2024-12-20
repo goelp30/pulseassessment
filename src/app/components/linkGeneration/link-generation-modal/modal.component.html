@@ -93,7 +93,7 @@
     id="expiryDate"
     [(ngModel)]="expiryDateTime"
     [min]="minDateTime"
-    (change)="onDateTimeChange($event)"
+    (ngModelChange)="onDateTimeChange($event)"
     class="bg-transparent text-center border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 py-2 px-2"
   />
   <!-- Send button -->
@@ -106,18 +106,12 @@
     (click)="onSend()"
   ></app-button>
 </div>
-<!-- <div class="flex justify-center">
-  @if (showPastTimeError) {
-  <span class="text-red-600 text-center"> The selected time is in the past. Please select a valid time. </span>
-  }
-</div> -->
 
-<div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+<!-- Warning if user selects time in past -->
+<div class="fixed">
   @if (showPastTimeError) {
-  <h3 class="text-center font-medium">
-    <span class="text-red-600 font-semibold">
-      The selected time is in the past. Please select a valid time
-    </span>
-  </h3>
+  <span class="text-red-600 font-semibold">
+    Please select a valid time. The chosen time must not be in the past.
+  </span>
   }
 </div>
