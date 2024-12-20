@@ -3,22 +3,26 @@ import { Router } from '@angular/router';
 import { EvaluationService } from '../service/evaluation.service';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { mergeMap, map } from 'rxjs/operators';
-import { ButtonComponent } from '../../common/button/button.component';
+import { QuizAnswers } from '../../../models/quizAnswers';
+import { ButtonComponent } from "../../common/button/button.component";
+import { QuestionDisplayComponent } from "../question-display/question-display.component";
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { QuizAnswers } from '../../../models/quizAnswers';
+
 @Component({
   selector: 'app-evaluate-assessment',
-  standalone: true,
-  imports: [CommonModule, FormsModule, ButtonComponent],
   templateUrl: './evaluate-assessment.component.html',
   styleUrls: ['./evaluate-assessment.component.css'],
+  imports: [QuestionDisplayComponent, CommonModule, ButtonComponent, FormsModule],
+  standalone: true,
 })
 export class EvaluateAssessmentComponent implements OnInit {
-  clickedData: any = {};
-  successMessage: boolean = false;
-  evaluationList: any[] = [];
-  quizId: string = ''; // Initialize quizId as a string
+  clickedData: any = {}; 
+  successMessage: boolean = false; 
+  evaluationList: any[] = []; 
+  attemptedQuestions: any[] = []; // For attempted questions
+  notAttemptedQuestions: any[] = []; // For not attempted questions
+  quizId: string = ''; 
 
   constructor(
     private evaluationService: EvaluationService,
@@ -29,22 +33,16 @@ export class EvaluateAssessmentComponent implements OnInit {
   ngOnInit(): void {
     // Listen for clicked data updates
     this.evaluationService.clickedData$.subscribe((data) => {
-      this.clickedData = data; // Store the clicked row data
-    
-    });
-
-    // Listen for quizId updates and fetch evaluation data
-    this.evaluationService.quizId$.subscribe((quizId) => {
-      if (quizId) {
-        this.quizId = quizId;
-      
-        // Fetch evaluation data when quizId is available
-        this.getEvaluationDataByQuizId(this.quizId);
-      }
-    });
-  }
-
-  getEvaluationDataByQuizId(quizId: string): void {
+      this.clickedData = data; 
+      if (this.clickedData) {
+               this.quizId = this.clickedData.quizId;
+               // Fetch evaluation data when quizId is available
+            this.getEvaluationDataByQuizId(this.clickedData.quizId);
+             }
+       });
+       
+}
+ getEvaluationDataByQuizId(quizId: string): void {
     // Fetch evaluation data from Firebase based on the quizId
     this.firebaseservice
       .getItemsByQuizId('QuizAnswer', quizId)
@@ -74,6 +72,8 @@ export class EvaluateAssessmentComponent implements OnInit {
                       options: options,
                     };
                   });
+
+                  this.categorizeQuestions(combinedData);
                   return combinedData;
                 })
               );
@@ -92,24 +92,42 @@ export class EvaluateAssessmentComponent implements OnInit {
         }
       );
   }
+  checkDescriptiveMarksEntered(): boolean {
+    // Log the attempted questions and their marks for debugging
+   
+  
+    return this.attemptedQuestions.every((question) => {
+      if (question.questionType === 'Descriptive') {
+      // Ensure marks are entered, including zero (not undefined or null)
+        return question.assigned_marks !== undefined && question.assigned_marks !== null;
+      }
+      return true; // Skip non-descriptive questions
+    });
+  }
+  
+  
+  categorizeQuestions(combinedData: any[]): void {
+    // Separate attempted and not attempted questions
+    this.attemptedQuestions = combinedData.filter((question) => this.isQuestionAttempted(question));
+    this.notAttemptedQuestions = combinedData.filter((question) => !this.isQuestionAttempted(question));
+  }
 
-  onMarksChange(question: any): void {
-    if (question.assigned_marks > question.questionWeitage) {
-      question.assigned_marks = question.questionWeitage; // Reset to max allowed marks
+  isQuestionAttempted(question: any): boolean {
+     if (question.questionType === 'Multi'||question.questionType === 'Single') {
+      return question.userAnswer && question.userAnswer.length > 0;
     }
 
     if (question.questionType === 'Descriptive') {
-      question.marks = question.assigned_marks; // Assign marks for descriptive questions
+      return question.answer && question.answer.trim() !== '';
     }
 
-    // Recalculate total marks after changes
-    this.getUserTotalMarks();
+    return false;
   }
 
   evaluateAutoScoredQuestions(): void {
     this.evaluationList.forEach((question: any) => {
       if (question.questionType === 'Single') {
-        const selectedOption = question.options.find((option: { optionId: any }) => option.optionId == question.userAnswer);
+        const selectedOption = question.options.find((option: { optionId: any }) => option.optionId ==question.userAnswer);
         question.marks = selectedOption?.isCorrectOption ? question.questionWeitage : 0;
       } else if (question.questionType === 'Multi') {
         const correctOptions = question.options
@@ -140,7 +158,11 @@ export class EvaluateAssessmentComponent implements OnInit {
 
   getUserTotalMarks(): number {
     return this.evaluationList.reduce((totalMarks, question) => {
-      return totalMarks + (question.marks || 0);
+      const questionMarks = question.questionType === 'Descriptive' 
+        ? (question.assignedMarks || 0) 
+        : (question.marks || 0); 
+  
+      return totalMarks + questionMarks;
     }, 0);
   }
 
@@ -149,73 +171,80 @@ export class EvaluateAssessmentComponent implements OnInit {
       return totalMarks + (question.questionWeitage || 0);
     }, 0);
   }
-onSubmit(): void {
-  // Ensure evaluationList is not undefined and has data
-  if (!this.evaluationList || this.evaluationList.length === 0) {
-    console.error('No evaluation questions available');
-    return; // Prevent further execution if there are no questions
-  }
 
-  // If the assessment is already evaluated, navigate to the view page
-  if (this.clickedData?.isEvaluation) {
-    this.router.navigate(['/view']);
-    return;
-  }
+  onMarksChange(question: any): void {
+    if (question.assigned_marks > question.questionWeitage) {
+      question.assigned_marks = question.questionWeitage; // Reset to max allowed marks
+    }
 
-  // Manually assign marks for descriptive questions
-  this.evaluationList.forEach((question: any) => {
     if (question.questionType === 'Descriptive') {
       question.marks = question.assigned_marks; // Assign marks for descriptive questions
     }
-  });
 
-  // Calculate the total marks
-  this.getUserTotalMarks();
-  this.successMessage = true;
+    this.getUserTotalMarks();
+  }
 
-  const updates: { [path: string]: any } = {};
-
-  // Prepare the update path for AssessmentData
-  const assessmentPath = `AssessmentData/${this.quizId}`;
-  updates[assessmentPath] = {
-    isEvaluated: true,
-    result: this.clickedData.result,
-  };
-
-  // Loop through each question in the evaluation list and prepare the updates for QuizAnswer
-  this.evaluationList.forEach((question: any) => {
-    const quizAnswerPath = `QuizAnswer/${this.quizId}/${question.questionId}`;
-
-    // Ensure that the marks are set to a valid number, default to 0 if not present
-    const marksToUpdate = Number(question.marks) || 0;
-
-    // Log the update path and marks being sent to Firebase
-    console.log(`Updating path: ${quizAnswerPath} with marks: ${marksToUpdate}`);
-
-    // Prepare the update for each question's marks
-    updates[quizAnswerPath] = {
-      marks: marksToUpdate.toString(),  // Ensure marks are stored as strings
-      userAnswer: question.userAnswer || [], // Store user answers (if any)
-      isDescriptive: question.questionType === 'Descriptive', // Store if the question is descriptive
-    };
-  });
-
-  // Log the updates object for verification before proceeding
-  console.log('Updates object:', updates);
-
-  // Perform the batch update in Firebase
-  this.firebaseservice.batchUpdate(updates)
-    .then(() => {
-      console.log('Assessment and Quiz Answers updated successfully');
-      alert('Assessment evaluated and results saved successfully.');
-
-      // Navigate to the view page after successful update
+  onSubmit(): void {
+    // Check if all descriptive questions have marks assigned
+    if (!this.checkDescriptiveMarksEntered()) {
+      alert('Please enter marks for all descriptive questions.');
+      return; // Prevent further execution if not all descriptive questions have marks
+    }
+  
+    // Proceed with submission if all checks are passed
+    if (!this.evaluationList || this.evaluationList.length === 0) {
+      console.error('No evaluation questions available');
+      return;
+    }
+  
+    // Check if the assessment is already evaluated (if applicable)
+    if (this.clickedData?.isEvaluation) {
       this.router.navigate(['/view']);
-    })
-    .catch((error) => {
-      console.error('Error updating data in Firebase:', error);
-      alert('There was an error updating the assessment data. Please try again.');
+      return;
+    }
+  
+    // Set marks for descriptive questions if not already done
+    this.evaluationList.forEach((question: any) => {
+      if (question.questionType === 'Descriptive') {
+        question.marks = question.assigned_marks; // Assign the assigned marks to question
+      }
     });
-}
-
-}
+  
+    // Calculate the total marks after setting the descriptive question marks
+    this.getUserTotalMarks();
+    this.successMessage = true;
+  
+    // Prepare updates for Firebase (or your backend system)
+    const updates: { [path: string]: any } = {};
+    const assessmentPath = `AssessmentData/${this.quizId}`;
+    updates[assessmentPath] = {
+      isEvaluated: true,
+      result: this.clickedData.result,
+    };
+  
+    // Loop through the evaluation list to update the quiz answers
+    this.evaluationList.forEach((question: any) => {
+      const quizAnswerPath = `QuizAnswer/${this.quizId}/${question.questionId}`;
+      const marksToUpdate = Number(question.marks) || 0;
+  
+      updates[quizAnswerPath] = {
+        marks: marksToUpdate.toString(),
+        userAnswer: question.userAnswer || [],
+        isDescriptive: question.questionType === 'Descriptive',
+      };
+    });
+  
+    // Update Firebase data
+    this.firebaseservice.batchUpdate(updates)
+      .then(() => {
+        console.log('Assessment and Quiz Answers updated successfully');
+        alert('Assessment evaluated and results saved successfully.');
+        this.router.navigate(['/view']);
+      })
+      .catch((error) => {
+        console.error('Error updating data in Firebase:', error);
+        alert('There was an error updating the assessment data. Please try again.');
+      });
+  }
+  
+}  
