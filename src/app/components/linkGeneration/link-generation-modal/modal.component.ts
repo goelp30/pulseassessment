@@ -22,12 +22,7 @@ import { BitlyService } from '../services/bitly.service';
 @Component({
   selector: 'app-modal',
   standalone: true,
-  imports: [
-    CommonModule,
-    SearchbarComponent,
-    FormsModule,
-    ButtonComponent,
-  ],
+  imports: [CommonModule, SearchbarComponent, FormsModule, ButtonComponent],
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.css'],
   providers: [DatePipe],
@@ -55,7 +50,6 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   minDateTime: string = '';
   sendMessage: string = 'Data has been sent successfully!';
   showPastTimeError: boolean = false; // New property to control error message visibility
-
 
   private subscription: Subscription = new Subscription();
 
@@ -86,15 +80,11 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   onDateTimeChange(event: Event): void {
     const selectedDate = new Date(this.expiryDateTime);
     const currentDate = new Date();
-    if (selectedDate < currentDate) {
-      this.showPastTimeError = true;
-
-     setTimeout(()=>{
-      this.showPastTimeError = false;
-     },2000) 
-    } else {
-        this.showPastTimeError = false; // Hide the error message
+    this.showPastTimeError = selectedDate < currentDate;
+    if(this.showPastTimeError){
+      this.isSendButtonEnabled()
     }
+  
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -286,9 +276,6 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
 
       this.firebaseService
         .create(`/assessmentRecords/${recordKey}`, record)
-        .then(() => {
-          console.log('Record saved successfully');
-        })
         .catch((error) => {
           console.error('Error saving record:', error);
         });
@@ -312,8 +299,13 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   isSendButtonEnabled(): boolean {
-    return this.selectedNames.length > 0 && this.expiryDateTime !== '' && !this.showPastTimeError;
-  }
+      return (
+        this.selectedNames.length > 0 &&
+        this.expiryDateTime !== '' &&
+        !this.showPastTimeError
+      );
+    }
+  
 
   // Helper function to build URL for a specific user based on type
   private buildUrlWithUserId(baseUrl: string, user: any): string {
@@ -333,4 +325,5 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   trackById(item: any): number {
     return item.id;
   }
+
 }
