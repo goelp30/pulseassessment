@@ -37,7 +37,7 @@
 
         <button
           (click)="nextQuestion()"
-          [disabled]="currentQuestion === questions.length - 1"
+          [disabled]="isNextButtonDisabled()"
           class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50">
           Next
         </button>

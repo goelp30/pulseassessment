@@ -19,7 +19,7 @@ export class QuestionNavigatorComponent {
 
   getButtonClass(index: number): string {
     const question = this.questions[index];
-
+  
     // If the current question is selected, highlight it as active
     if (index === this.currentQuestionIndex) {
       return 'bg-blue-500 text-white';
@@ -39,4 +39,5 @@ export class QuestionNavigatorComponent {
     // Default style for unvisited/unanswered questions
     return 'bg-gray-500 text-white';
   }
+  
 }
