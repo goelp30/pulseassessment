@@ -1,7 +1,4 @@
 <div class="relative my-6 p-6 border-1 border-blue-gray-600 rounded-lg bg-white">
-    <!-- <div class="relative my-6 p-6 border-1 border-blue-gray-600 rounded-lg bg-white shadow-sm"> -->
-        <!-- <div class="relative my-6 p-6 border-1 border-blue-gray-600 rounded-lg bg-white shadow-lg"> -->
-
     <div class="text-lg font-medium text-gray-800">
       Q .  {{ question.questionText }}
     </div>
@@ -13,8 +10,7 @@
                 {{ question.marks || 0 }} / {{ question.questionWeitage }}
             </span>
         </div>
-        
-    }
+         }
     <!-- Single-Answer Question -->
     @if(question.questionType == 'Single'){
     <div class="space-y-3">
