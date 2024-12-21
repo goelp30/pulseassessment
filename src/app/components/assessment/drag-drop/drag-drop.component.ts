@@ -11,12 +11,13 @@ import { NavigationStart, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { AssessmentService } from '../services/assessmentServices/assessment.service';
 import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';
+import { ButtonComponent } from '../../common/button/button.component';
 @Component({
   selector: 'app-drag-drop',
   standalone: true,
   templateUrl: './drag-drop.component.html',
   styleUrls: ['./drag-drop.component.css'],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule,PopupModuleComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule,PopupModuleComponent,ButtonComponent],
 })
 
 export class DragDropComponent implements AfterViewInit, OnInit {
@@ -54,7 +55,31 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     event.returnValue = message;  
     return message;               
   }
+  checkTotalQuestions(): void {
+    let totalSelected = 0;
+  
+    // Iterate through each subject and sum up the values
+    this.rightListInputs.controls.forEach((group, i) => {
+      const easyValue = group.get('easy')?.value || 0;
+      const mediumValue = group.get('medium')?.value || 0;
+      const hardValue = group.get('hard')?.value || 0;
+      const descriptiveValue = group.get('descriptive')?.value || 0;
+      totalSelected += easyValue + mediumValue + hardValue + descriptiveValue;
+    });
+  
+    // Real-time total check and warning message
+    if (totalSelected < 2) {
+      this.totalWarning = 'Please select at least 2 questions from each subject.';
+    } else {
+      this.totalWarning = '';  // Clear the warning if total is 2 or more
+    }
+  
+    // Update Save button status
+    this.updateSaveButtonStatus();
+  }
+  
   ngOnInit(): void {
+   
     window.addEventListener('beforeunload', this.handleBeforeUnload);
     this.assessmentService.assessmentId$.subscribe((assessmentId) => {
       if (assessmentId) {
@@ -72,6 +97,14 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     }
     this.subscribeToFormChanges();
     this.setupNavigationListener();
+    if(this.rightList){
+      this.rightListInputs.controls.forEach((group, i) => {
+        this.checkTotalQuestions(); // Check total selected questions on initialization
+      });
+    }
+  }
+  ngDoCheck():void{
+    this.checkTotalQuestions();
   }
   setupNavigationListener(): void {
     this.router.events.subscribe((event) => {
@@ -219,10 +252,12 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     });
   }
   disable = false;
-
+  totalWarning: string = ''; // Initialize the totalWarning variable
   onInputChange(event: Event, index: number, controlName: string, subjectId: string): void {
     const input = event.target as HTMLInputElement;
     let value = Number(input.value);
+  
+    // Validate input values (don't allow values outside of the specified range)
     this.getQuestionCountsForSubject(subjectId).then((availableCounts) => {
       let warningMessage = '';
       const countKey = `${controlName}Count` as keyof typeof availableCounts;
@@ -234,13 +269,14 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         if (value > 5) {
           warningMessage = `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} value cannot exceed 5!`;
           input.value = '5';
-          value = 5; 
-        }
-          else if (value < 0) {
+          value = 5;
+        } else if (value < 0) {
           warningMessage = `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} value cannot be less than 0!`;
-          input.value = '0'; 
-          value = 0; 
+          input.value = '0';
+          value = 0;
         }
+  
+        // Store the warning message for each input
         if (controlName === 'easy') {
           this.newValidationWarnings.easy[index] = warningMessage;
         } else if (controlName === 'medium') {
@@ -250,11 +286,36 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         } else if (controlName === 'descriptive') {
           this.newValidationWarnings.descriptive[index] = warningMessage;
         }
+  
+        // Update the form control value for the current input
+        this.rightListInputs.at(index).get(controlName)?.setValue(value);
+  
+        // Now calculate the sum of selected values for all subjects in real-time
+        let totalSelected = 0;
+  
+        // Iterate through each subject and sum up the values
+        this.rightListInputs.controls.forEach((group, i) => {
+          const easyValue = group.get('easy')?.value || 0;
+          const mediumValue = group.get('medium')?.value || 0;
+          const hardValue = group.get('hard')?.value || 0;
+          const descriptiveValue = group.get('descriptive')?.value || 0;
+          totalSelected += easyValue + mediumValue + hardValue + descriptiveValue;
+        });
+  
+        // Real-time total check and warning message
+        if (totalSelected < 2) {
+          this.totalWarning = 'Please select at least 2 questions from each subject.';
+        } else {
+          this.totalWarning = '';  // Clear the warning if total is 2 or more
+        }
+  
+        // Update Save button status
         this.updateSaveButtonStatus();
       }
-      this.rightListInputs.at(index).get(controlName)?.setValue(value);
     });
   }
+  
+  
   updateSaveButtonStatus(): void {
     const hasWarnings = this.rightList.some((subject, index) => {
       return this.newValidationWarnings.easy[index] ||
@@ -319,13 +380,18 @@ export class DragDropComponent implements AfterViewInit, OnInit {
 
     return isRightListNotEmpty;
 }
-canSave(): boolean { 
-  const isFormValid = this.rightListForm.valid;        
-  const isAssessmentTitleValid = this.assessmentTitle.trim().length > 0;         
-  const isTitleUnique = !this.assessmentTitleWarning;        
+canSave(): boolean {
+  const isFormValid = this.rightListForm.valid;
+  const isAssessmentTitleValid = this.assessmentTitle.trim().length > 0;
+  const isTitleUnique = !this.assessmentTitleWarning;
   const isAllSubjectsValid = !this.disable;
   const isRightListNotEmpty = this.checkRightList();
-  return isFormValid && isAssessmentTitleValid && isTitleUnique && isAllSubjectsValid && isRightListNotEmpty;
+
+  // Check if there's a warning about selecting at least 2 questions
+  const hasTotalSelectedWarning = this.totalWarning !== ''; // Check if totalWarning is not empty
+
+  // Disable save if there are validation warnings (including the totalSelected warning)
+  return isFormValid && isAssessmentTitleValid && isTitleUnique && isAllSubjectsValid && isRightListNotEmpty && !hasTotalSelectedWarning;
 }
 
   onSave(): void {

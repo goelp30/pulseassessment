@@ -1,13 +1,18 @@
 <div class="mx-5">
     <!-- Buttons for Reset and Back -->
-    <div class="gap-2">
-      <button class="bg-custom-blue hover:opacity-80 transition-opacity py-2 px-4 text-white rounded-md m-1" 
-              (click)="onBack()">
-        Back
-      </button>
-      <button (click)="onReset()" class="bg-custom-blue hover:opacity-80 transition-opacity py-2 px-4 text-white rounded-md m-1">
-        Reset
-      </button>
+    <div class="gap-2 flex">
+        <app-button
+        [icon]="'fa fa-arrow-left'"
+        [label]="'Back'"
+        [colorClass]="'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-2'"
+        (action)="onBack()"
+      ></app-button>
+      <app-button
+      [icon]="'rotate-right'"
+      [label]="'Reset'"
+      [colorClass]="'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-2'"
+      (action)="onReset()"
+    ></app-button>
     </div>
   
     <!-- Confirmation Popup -->
@@ -219,11 +224,12 @@
                                 {{ validationWarnings[i] }}
                             </span>
                             <!-- Show warning if right list is empty -->
-                            <div *ngIf="rightListWarning" class="warning-message">
+                            <div *ngIf="rightListWarning" class="text-red-700 mt-2">
                                 {{ rightListWarning }}
                             </div>
-                            
-
+                            <div *ngIf="totalWarning" class="text-red-700 mt-2">
+                                {{ totalWarning }}
+                              </div>
                         </div>
                     </li>
                 </ul>
