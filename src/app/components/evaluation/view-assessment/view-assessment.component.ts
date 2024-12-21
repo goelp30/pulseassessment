@@ -41,63 +41,8 @@ export class ViewAssessmentComponent implements OnInit {
       }
     });
   }
-  // getEvaluationDataByQuizId(quizId: string): void {
-  //   // Fetch evaluation data from Firebase based on the quizId
-  //   this.firebaseservice
-  //     .getItemsByQuizId('QuizAnswer', quizId)
-  //     .pipe(
-  //       mergeMap((evaluationData: any[]) => {
-  //         const questionIds = evaluationData.map((item) => item.questionId);
-  //         return this.firebaseservice
-  //           .getQuestionsFromIds('questions', questionIds)
-  //           .pipe(
-  //             mergeMap((questionData: any[]) => {
-  //               return this.firebaseservice.getAllOptions('options').pipe(
-  //                 map((optionData: any[]) => {
-  //                   const optionsMap = optionData.reduce((acc, option) => {
-  //                     if (!acc[option.questionId]) {
-  //                       acc[option.questionId] = [];
-  //                     }
-  //                     acc[option.questionId].push(option);
-  //                     return acc;
-  //                   }, {} as { [key: string]: any[] });
-
-  //                   const combinedData = evaluationData.map((item) => {
-  //                     const question = questionData.find(
-  //                       (q) => q.questionId === item.questionId
-  //                     );
-  //                     const options = optionsMap[item.questionId] || [];
-  //                     return {
-  //                       ...item,
-  //                       questionText: question?.questionText,
-  //                       questionWeitage: question?.questionWeightage,
-  //                       questionType: question?.questionType,
-  //                       options: options,
-  //                     };
-  //                   });
-
-  //                   this.categorizeQuestions(combinedData);
-  //                   return combinedData;
-  //                 })
-  //               );
-  //             })
-  //           );
-  //       })
-  //     )
-  //     .subscribe(
-  //       (combinedData: any[]) => {
-  //         console.log('Combined evaluation list:', combinedData);
-  //         this.evaluationList = combinedData;
-  //       },
-  //       (error: any) => {
-  //         console.error('Error fetching combined data:', error);
-  //         this.isLoading = false;
-  //       }
-  //     );
-  // }
   getEvaluationDataByQuizId(quizId: string): void {
-    this.isLoading = true; // Show loader
-  
+    // Fetch evaluation data from Firebase based on the quizId
     this.firebaseservice
       .getItemsByQuizId('QuizAnswer', quizId)
       .pipe(
@@ -116,7 +61,7 @@ export class ViewAssessmentComponent implements OnInit {
                       acc[option.questionId].push(option);
                       return acc;
                     }, {} as { [key: string]: any[] });
-  
+
                     const combinedData = evaluationData.map((item) => {
                       const question = questionData.find(
                         (q) => q.questionId === item.questionId
@@ -130,7 +75,7 @@ export class ViewAssessmentComponent implements OnInit {
                         options: options,
                       };
                     });
-  
+
                     this.categorizeQuestions(combinedData);
                     return combinedData;
                   })
@@ -143,15 +88,14 @@ export class ViewAssessmentComponent implements OnInit {
         (combinedData: any[]) => {
           console.log('Combined evaluation list:', combinedData);
           this.evaluationList = combinedData;
-          this.isLoading = false; // Hide loader
         },
         (error: any) => {
           console.error('Error fetching combined data:', error);
-          this.isLoading = false; // Hide loader on error
+          this.isLoading = false;
         }
       );
   }
-  
+
   categorizeQuestions(combinedData: any[]): void {
     // Separate attempted and not attempted questions
     this.attemptedQuestions = combinedData.filter((question) =>
@@ -197,6 +141,4 @@ export class ViewAssessmentComponent implements OnInit {
   onSubmit(): void {
     this.router.navigate(['/evaluation']);
   }
-
-  
 }
