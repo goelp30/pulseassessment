@@ -19,10 +19,10 @@
 /* Disabled Button Styling */
 .disabled-button {
   opacity: 0.5;
-  cursor: not-allowed; 
-  pointer-events: none; 
-  background-color: #cccccc; 
-  color: #666666; 
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #cccccc;
+  color: #666666;
   border-radius: 14%;
 }
 
@@ -30,8 +30,7 @@
 .enabled-button {
   opacity: 1;
   cursor: pointer;
-  background-color: #003e7e; 
+  background-color: #003e7e;
   color: #ffffff;
+  border-radius: 20%;
 }
-
-
