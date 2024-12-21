@@ -29,7 +29,7 @@ export class QuestionNavigatorComponent {
       return 'bg-yellow-400 text-white';
     }
     // If the question has a selected answer, highlight it as answered
-    if (question.selectedAnswer !== undefined) {
+    if (question.selectedAnswer !== undefined  || (question.descriptiveAnswer && question.descriptiveAnswer.trim() !== '')) {
       return 'bg-green-500 text-white';
     }
     // If the question is visited but unanswered, apply visited style
