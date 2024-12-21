@@ -146,14 +146,7 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   allQuestionsVisited(): boolean {
     // Check if all questions have been visited (i.e., answered or have a descriptive answer)
-    return this.questions.every((question) => {
-      const currentQuestionAnswer = this.quizAnswerService.getUserAnswers()[question?.questionId];
-      const descriptiveAnswer = question?.descriptiveAnswer?.trim();
-      
-      // A question is considered visited if it has an answer or descriptive text
-      // Ensure that currentQuestionAnswer and userAnswer are defined before checking length
-      return (currentQuestionAnswer?.userAnswer?.length ?? 0) > 0 || (descriptiveAnswer?.length ?? 0) > 0;
-    });
+    return this.questions.every((question) => question.isVisited);
   }
   
   
