@@ -1,6 +1,9 @@
-<div class="relative my-6 p-6 border border-gray-300 rounded-lg bg-white">
+<div class="relative my-6 p-6 border-1 border-blue-gray-600 rounded-lg bg-white">
+    <!-- <div class="relative my-6 p-6 border-1 border-blue-gray-600 rounded-lg bg-white shadow-sm"> -->
+        <!-- <div class="relative my-6 p-6 border-1 border-blue-gray-600 rounded-lg bg-white shadow-lg"> -->
+
     <div class="text-lg font-medium text-gray-800">
-        {{ question.questionText }}
+      Q .  {{ question.questionText }}
     </div>
     <!-- Display Marks for Non-Descriptive Questions -->
     @if(question.questionType !== 'Descriptive'){
@@ -51,16 +54,19 @@
     @if(question.questionType === 'Descriptive'){
     <div class="space-y-4 py-3">
         <div>
-            <label for="answer" class="block text-blue-800 font-semibold">User's Answer:</label>
+            <label for="answer" class="block text-blue-800 font-semibold pb-2">User's Answer:</label>
             <textarea id="answer" class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 "
                 [(ngModel)]="question.answer" readonly>
             </textarea>
+            
         </div>
 @if(!isDisabled){
         <!-- Marks for Descriptive Answer -->
-        <div class="block flex justify-end">
+        <div class="block flex justify-end ">
             <input type="number" [(ngModel)]="question.assignedMarks" placeholder="Marks"
-                [max]="question.questionWeitage" min="0" step="1" class="p-2 border border-black-700 rounded-lg"
+                [max]="question.questionWeitage" min="0" step="1" 
+                class="p-2 border-1 border-black rounded-lg"
+
                 (ngModelChange)="onMarksChange()"[disabled]="isDisabled" >
         </div>
     }

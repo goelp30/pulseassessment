@@ -1,4 +1,12 @@
-<div class="p-4 rounded-lg">
+ @if(isLoading){
+  <div class="flex justify-center items-center h-full">
+    <div class="w-8 h-8 border-4 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
+  </div>
+}
+<!-- The rest of your existing template -->
+@if(!isLoading){
+<div
+ class="p-2 rounded-lg">
   <!-- Evaluation Header -->
   <app-evaluation-header
     [assessmentName]="clickedData.assessmentName"
@@ -14,7 +22,6 @@
       <h2 class="text-lg font-semibold text-blue-800 mb-2">
         Attempted Questions: <span class="text-green-700 font-semibold">{{ attemptedQuestions.length }}</span>
       </h2>
-      <!-- Keep the @for loop as is -->
       @for(question of attemptedQuestions; track attemptedQuestions) {
         <div>
           <app-question-display
@@ -32,10 +39,9 @@
 
     <!-- Not Attempted Questions Section -->
     <div class="mb-6">
-      <h2 class="text-lg font-semibold text-blue-800 mb-2">
-        Unattempted Questions: <span class="text-green-700 font-semibold">{{ notAttemptedQuestions.length }}</span>
+      <h2 class="text-lg font-semibold text-red-500 mb-2">
+        Unattempted Questions: <span class="text-red-500 font-semibold">{{ notAttemptedQuestions.length }}</span>
       </h2>
-      <!-- Keep the @for loop as is -->
       @for(question of notAttemptedQuestions; track notAttemptedQuestions) {
         <div>
           <app-question-display
@@ -51,12 +57,13 @@
       }
     </div>
   </div>
- <!-- Submit Button Section -->
-  <div class="text-center mt-6">
+
+  <div class="flex justify-center items-center mt-6">
     <app-button
       [label]="'Back To Dashboard'"
-      [class]="'px-4 py-3 text-white bg-blue-800 border-2 border-blue-800 rounded-md transition-all duration-300 hover:bg-blue-700'"
+      [colorClass]="'px-1.5 py-3 text-white bg-blue-800 border-2 border-blue-800 rounded-md transition duration-300 hover:bg-blue-700'"
       (click)="onSubmit()">
     </app-button>
   </div>
 </div>
+}
