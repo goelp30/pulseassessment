@@ -67,3 +67,14 @@ body {
 .intra{
   background-color: rgb(37, 150, 190)
 }
+/* Add these styles to your component's CSS file (e.g., drag-drop.component.css) */
+select:disabled {
+  background-color: #e0e0e0; /* Light gray background */
+  color: #b0b0b0; /* Light gray text */
+  cursor: not-allowed; /* Show a 'not-allowed' cursor */
+}
+
+/* Optional: To make the disabled options look even more subtle */
+select:disabled option {
+  color: #b0b0b0; /* Light gray text */
+}

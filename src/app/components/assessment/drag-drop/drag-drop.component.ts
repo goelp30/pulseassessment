@@ -10,12 +10,13 @@ import { TableNames } from '../../../enums/TableName';
 import { NavigationStart, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { AssessmentService } from '../services/assessmentServices/assessment.service';
+import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';
 @Component({
   selector: 'app-drag-drop',
   standalone: true,
   templateUrl: './drag-drop.component.html',
   styleUrls: ['./drag-drop.component.css'],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule,PopupModuleComponent],
 })
 
 export class DragDropComponent implements AfterViewInit, OnInit {
@@ -28,14 +29,18 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   createdOn: string = '';
   savedFormData: any = null;
   isAutoEvaluated: boolean = true
-  rightListForm!: FormGroup; // Form to handle right list inputs
-  viewMode: 'internal' | 'external' = 'internal'; // Toggle view mode
-  validationWarnings: string[] = []; // Warnings for Formvalidation
-  assessmentTitle: string = ''; // Title for assessment
-  subject_table = TableNames.Subject; // Firebase collection name for subjects
+  rightListForm!: FormGroup; 
+  viewMode: 'internal' | 'external' = 'internal'; 
+  validationWarnings: string[] = []; 
+  assessmentTitle: string = ''; 
+  subject_table = TableNames.Subject; 
   assess_table = TableNames.Assessment;
   isModalVisible: boolean = false;
   eConfirmationVisible: boolean = false;
+  assessmentId: string = ''
+  editFlag: boolean = false;
+  warningTitle: string = '';
+
 
   constructor(
     private fb: FormBuilder,
@@ -44,27 +49,20 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     private toastr: ToastrService,
     private assessmentService: AssessmentService
   ) { }
-  assessmentId: string = ''
-  editFlag: boolean = false;
   handleBeforeUnload(event: BeforeUnloadEvent): string {
-    // You can display a custom message here or just prevent the action
     const message = "You have unsaved changes! Are you sure you want to leave?";
-    event.returnValue = message;  // Standard for most browsers
-    return message;               // For some older browsers (like IE)
+    event.returnValue = message;  
+    return message;               
   }
-  // clear ls when moving to another route
   ngOnInit(): void {
     window.addEventListener('beforeunload', this.handleBeforeUnload);
     this.assessmentService.assessmentId$.subscribe((assessmentId) => {
       if (assessmentId) {
-        // If there's an assessmentId, load the edit data
         this.assessmentId = assessmentId;
         this.editFlag = true;
         this.getEditData(this.assessmentId, this.editFlag);
       } else {
-        // If no assessmentId is provided, load data from sessionStorage
         this.editFlag = false;
-        this.loadFromSessionStorage();
       }
     });
   
@@ -72,66 +70,14 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     if (this.isBrowser()) {
       this.fetchLeftList();
     }
-  
     this.subscribeToFormChanges();
     this.setupNavigationListener();
-  }
-
-  
-  saveToSessionStorage(): void {
-    if (this.isBrowser()) {
-      sessionStorage.setItem('leftList', JSON.stringify(this.leftList));
-      sessionStorage.setItem('rightList', JSON.stringify(this.rightList));
-      sessionStorage.setItem('assessmentTitle', this.assessmentTitle);
-      sessionStorage.setItem('viewMode', this.viewMode);
-      sessionStorage.setItem('rightListForm', JSON.stringify(this.rightListForm.value));
-
-    }
   }
   setupNavigationListener(): void {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationStart) {
-        this.clearSessionStorageOnNavigation();
       }
     });
-
-    // Clear session storage and cache when the user leaves the page
-    window.addEventListener('beforeunload', () => this.clearSessionStorage());
-  }
-   clearSessionStorageOnNavigation(): void {
-    console.log('cleared');
-    this.clearSessionStorage();
-  }
-  loadFromSessionStorage(): void {
-    if (this.isBrowser()) {
-      const leftList = sessionStorage.getItem('leftList');
-      const rightList = sessionStorage.getItem('rightList');
-      const assessmentTitle = sessionStorage.getItem('assessmentTitle');
-      const viewMode = sessionStorage.getItem('viewMode');
-      const rightListForm = sessionStorage.getItem('rightListForm');
-  
-      if (leftList) this.leftList = JSON.parse(leftList);
-      if (rightList) this.rightList = JSON.parse(rightList);
-      if (assessmentTitle) this.assessmentTitle = assessmentTitle;
-      if (viewMode) this.viewMode = viewMode as 'internal' | 'external';
-      if (rightListForm) {
-        const formValue = JSON.parse(rightListForm);
-        this.rightListForm.patchValue(formValue);
-        if (formValue.rightListInputs) {
-          this.rightListForm.setControl('rightListInputs', this.fb.array(formValue.rightListInputs));
-        }
-      }
-    }
-  }
-  
-  clearSessionStorage(): void {
-    if (this.isBrowser()) {
-      sessionStorage.removeItem('leftList');
-      sessionStorage.removeItem('rightList');
-      sessionStorage.removeItem('assessmentTitle');
-      sessionStorage.removeItem('viewMode');
-      sessionStorage.removeItem('rightListForm');
-    }
   }
   toggleViewMode(mode: 'internal' | 'external'): void {
     this.viewMode = mode;
@@ -146,8 +92,6 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   get rightListInputs(): FormArray {
     return this.rightListForm.get('rightListInputs') as FormArray;
   }
-
-
   isBrowser(): boolean {
     return typeof window !== 'undefined';
   }
@@ -155,14 +99,12 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     let isAutoEvaluated = true;
     subjects.forEach(subject => {
       if (subject.descriptive > 0) {
-        isAutoEvaluated = false; // If descriptive value is greater than 0, set to false
+        isAutoEvaluated = false; 
       }
     });
     return isAutoEvaluated;
   }
-
   addAssessment(): Promise<string> {
-    
     return new Promise((resolve, reject) => {
       const uniqueId = crypto.randomUUID();
       const assessment: Assessment = {
@@ -172,9 +114,9 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         dateCreated: Date.now(),
         dateUpdated: Date.now(),
         isDisabled: false,
-        isautoEvaluated: this.isAutoEvaluated
+        isautoEvaluated: this.isAutoEvaluated,
+        isLinkGenerated:true
       };
-
       this.firebaseService.create(this.assess_table + '/' + uniqueId, assessment)
         .then(() => {
           resolve(uniqueId);
@@ -184,11 +126,6 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         });
     });
   }
-
-  closeModal(): void {
-    this.isModalVisible = false;
-    this.eConfirmationVisible = false;
-  }
   checkAssessmentTitleUniqueness(title: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
       this.firebaseService.getAllDataByFilter(this.assess_table, 'isDisabled', false).subscribe((assessments: any[]) => {
@@ -196,7 +133,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         if (existingTitles.includes(title.toLowerCase())) {
           resolve(false);
         } else {
-          resolve(true); // Title is unique
+          resolve(true); 
         }
       }, (error) => {
         reject('Failed to fetch assessment data for uniqueness check: ' + error);
@@ -207,54 +144,42 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     this.rightList = [];
     this.rightListForm.reset();
     this.initializeRightListForm();
-    this.fetchLeftList(); // Reload subjects
+    this.fetchLeftList(); 
   }
-  // trying to
   fetchLeftList(): void {
     this.firebaseService.getAllDataByFilter(this.subject_table, 'isDisabled', false).subscribe((data: any[]) => {
       this.leftList = data
         .map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName }))
-        .sort((a, b) => a.subjectName.localeCompare(b.subjectName)); // Sort subjects alphabetically
+        .sort((a, b) => a.subjectName.localeCompare(b.subjectName)); 
 
       this.subjectList = this.leftList
-        .map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName })) // Use subjectName for display in HTML
+        .map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName })) 
     });
   }
   getCurrentTimestamp(): string {
     return new Date().toISOString();
   }
   mapRightListInputs(list: any[]): any {
-    const subjects: any = {}; // Initialize an empty object to hold the subject data
-
-    // Iterate over the form inputs and the left list to map data
+    const subjects: any = {}; 
     this.rightListInputs.value.forEach((input: any) => {
-      // Find the corresponding subject from the list (the right list) based on subjectId
       const subject = list.find((item: any) => item.subjectId === input.item.subjectId);
-
-      if (subject) {
-        // Create an entry for each subject with ratings
+    if (subject) {
         subjects[subject.subjectId] = {
-          subjectId: subject.subjectId,        // Store the subjectId
-          subjectName: subject.subjectName,    // Store the subjectName
-          easy: input.easy,                     // Store the easy rating
-          medium: input.medium,                 // Store the medium rating
-          hard: input.hard,                     // Store the hard rating
-          descriptive: input.descriptive        // Store the descriptive rating
+          subjectId: subject.subjectId,       
+          subjectName: subject.subjectName,    
+          easy: input.easy,                    
+          medium: input.medium,                
+          hard: input.hard,                    
+          descriptive: input.descriptive       
         };
       }
     });
-
-    return subjects; // Return the object containing subject data
+    return subjects; 
   }
-
   onAssessmentTitleChange(): void {
-    // Only validate the title when it changes
     this.validateAssessmentTitle();
   }
-
   questionCounts: { [subjectId: string]: { easyCount: number, mediumCount: number, hardCount: number, descriptiveCount: number } } = {};
-  warningTitle: string = '';
-
   newValidationWarnings: {
     easy: string[];
     medium: string[];
@@ -266,17 +191,13 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     hard: [],
     descriptive: []
   };
-  enabledQuestions: any[] = []; // Store non-disabled questions
-  // questionCounts: any = {}; // To store counts for each subjectId
-  calculateQuestionCounts(subjectId: string): void {
+  enabledQuestions: any[] = []; 
+    calculateQuestionCounts(subjectId: string): void {
     this.firebaseService.listensToChangeWithFilter('questions', 'subjectId', subjectId).subscribe((questions: any[]) => {
-      // Initialize counters
       let easyCount = 0;
       let mediumCount = 0;
       let hardCount = 0;
       let descriptiveCount = 0;
-  
-      // Count the questions based on their levels
       questions.forEach((question: any) => {
         if (question.questionLevel.toLowerCase() === 'easy') {
           easyCount++;
@@ -289,8 +210,6 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         }
         
       });
-  
-      // Store the counts in the object for later comparison
       this.questionCounts[subjectId] = {
         easyCount,
         mediumCount,
@@ -299,40 +218,29 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       };
     });
   }
-  // fine
   disable = false;
 
   onInputChange(event: Event, index: number, controlName: string, subjectId: string): void {
     const input = event.target as HTMLInputElement;
     let value = Number(input.value);
-  
-    // Fetch the counts for the particular subject and its question types
     this.getQuestionCountsForSubject(subjectId).then((availableCounts) => {
       let warningMessage = '';
-  
-      // Dynamically determine the key for the control name (easyCount, mediumCount, etc.)
       const countKey = `${controlName}Count` as keyof typeof availableCounts;
   
       if (availableCounts) {
-        // Check if the input value exceeds the available count
         if (value > availableCounts[countKey]) {
           warningMessage = `The number of ${controlName.charAt(0).toUpperCase() + controlName.slice(1)} questions cannot exceed ${availableCounts[countKey]} for this subject.`;
         }
-  
-        // Check if the value exceeds 5 (the upper limit)
         if (value > 5) {
           warningMessage = `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} value cannot exceed 5!`;
-          input.value = '5'; // Automatically reset to 5 if the value exceeds the limit
-          value = 5; // Ensure the value is set to 5
+          input.value = '5';
+          value = 5; 
         }
-        // Check if the value is less than 0 (the lower limit)
-        else if (value < 0) {
+          else if (value < 0) {
           warningMessage = `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} value cannot be less than 0!`;
-          input.value = '0'; // Automatically reset to 0 if the value is less than 0
-          value = 0; // Ensure the value is set to 0
+          input.value = '0'; 
+          value = 0; 
         }
-  
-        // Set the warning message for the corresponding field (easy, medium, hard, descriptive)
         if (controlName === 'easy') {
           this.newValidationWarnings.easy[index] = warningMessage;
         } else if (controlName === 'medium') {
@@ -342,49 +250,36 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         } else if (controlName === 'descriptive') {
           this.newValidationWarnings.descriptive[index] = warningMessage;
         }
-        
-        // If there's any warning message, disable the save button
         this.updateSaveButtonStatus();
       }
-  
-      // Update the form control value
       this.rightListInputs.at(index).get(controlName)?.setValue(value);
     });
   }
   updateSaveButtonStatus(): void {
-    // Check if any warnings exist across all subjects
     const hasWarnings = this.rightList.some((subject, index) => {
       return this.newValidationWarnings.easy[index] ||
              this.newValidationWarnings.medium[index] ||
              this.newValidationWarnings.hard[index] ||
              this.newValidationWarnings.descriptive[index];
     });
-  
-    this.disable = hasWarnings;
+  this.disable = hasWarnings;
   }
-    
-  // New method to get counts for the subject's question types (easy, medium, hard, descriptive)
-  async getQuestionCountsForSubject(subjectId: string): Promise<any> {
-    // Create an object to store counts
+      async getQuestionCountsForSubject(subjectId: string): Promise<any> {
     let counts = {
       easyCount: 0,
       mediumCount: 0,
       hardCount: 0,
       descriptiveCount: 0
     };
-    // Use listensToChangeWithFilter to get the questions for each type
     await this.fetchQuestionCountByType(subjectId, 'Easy').then(count => counts.easyCount = count);
     await this.fetchQuestionCountByType(subjectId, 'Medium').then(count => counts.mediumCount = count);
     await this.fetchQuestionCountByType(subjectId, 'Hard').then(count => counts.hardCount = count);
     await this.fetchQuestionCountByType(subjectId, 'Descriptive').then(count => counts.descriptiveCount = count);
-  
     return counts;
   }
-  // Helper method to get the count of questions of a specific type for a subject
   fetchQuestionCountByType(subjectId: string, questionLevel: string): Promise<number> {
     return new Promise((resolve, reject) => {
       this.firebaseService.listensToChangeWithFilter('questions', 'subjectId', subjectId).subscribe((questions: any[]) => {
-        // Filter and count the questions for the specific type
         const count = questions.filter(q => q.questionLevel === questionLevel || q.questionType === questionLevel).length;
         resolve(count);
       }, error => {
@@ -393,45 +288,29 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       });
     });
   }
-  // Function to fetch question counts for each subject in the right list
   async fetchQuestionCountsForRightList(): Promise<void> {
-    // Ensure that all counts are fetched before validation
     await Promise.all(
       this.rightList.map((subject) => this.calculateQuestionCounts(subject.subjectId))
     );
   }
-  
-  
-
-  // Helper functions for warning messages
   addWarning(index: number, message: string): void {
-    // Store warning message
     this.validationWarnings[index] = message;
   }
-
   removeWarning(index: number): void {
-    // Reset warning message
     this.validationWarnings[index] = '';
   }
-
   validateAssessmentTitle(): void {
     if (this.assessmentTitle.trim().length === 0) {
-      // Title cannot be empty or just spaces
       this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
     } else if (this.assessmentTitle.length < 2) {
-      // Title must have at least 2 characters
       this.assessmentTitleWarning = "Assessment Title must be at least 2 characters long.";
     } else {
-      // Clear the warning if the title is valid
       this.assessmentTitleWarning = '';
     }
   }
   rightListWarning='';
   checkRightList(): boolean {
-    // Check if the right list is empty
     const isRightListNotEmpty = this.rightList && this.rightList.length > 0;
-    
-    // Add a warning message if the right list is empty
     if (!isRightListNotEmpty) {
         this.rightListWarning = "Right list is empty";
     } else {
@@ -440,69 +319,46 @@ export class DragDropComponent implements AfterViewInit, OnInit {
 
     return isRightListNotEmpty;
 }
-
 canSave(): boolean { 
-  // Check if the form is valid (including all nested fields like difficulty levels, etc.) 
   const isFormValid = this.rightListForm.valid;        
-  
-  // Check if the assessment title is valid (not empty or just spaces) 
-  const isAssessmentTitleValid = this.assessmentTitle.trim().length > 0;        
-  
-  // Additional condition to check if the title is unique (based on warning) 
+  const isAssessmentTitleValid = this.assessmentTitle.trim().length > 0;         
   const isTitleUnique = !this.assessmentTitleWarning;        
-  
-  // Check if the save button should be disabled (i.e., if there are any warnings) 
   const isAllSubjectsValid = !this.disable;
-  
-  // Call the new method to check if the right list is not empty
   const isRightListNotEmpty = this.checkRightList();
-  
-  // Return the final condition, including the check for right list and subject selection
   return isFormValid && isAssessmentTitleValid && isTitleUnique && isAllSubjectsValid && isRightListNotEmpty;
 }
 
   onSave(): void {
     if (!this.canSave()) {
-      // Show toast message with validation error
       this.showValidationErrorToast();
     } else {
-      // Proceed with save logic
       this.saveFormData();
     }
   }
   showValidationErrorToast(): void {
     this.toastr.warning('Please fix the validation issues before saving.',' Validation Error');
   }
-    
   navigateToAssessments() {
     this.router.navigate(['/assessment-list']);
   }
   getEditData(assessmentId: string, isEditing: boolean): void {
     if (this.assessmentId && this.editFlag) {
       console.log('We are editing');
-
-      // Use getItemsByFields to fetch the assessment data based on assessmentId
       this.firebaseService.listensToChangeWithFilter(this.assess_table, 'assessmentId', this.assessmentId).subscribe((assessments: any[]) => {
         if (assessments && assessments.length > 0) {
-          const assessment = assessments[0]; // Assuming assessmentId is unique, get the first match
-          this.assessmentTitle = assessment.assessmentName; // Populate assessmentTitle
-          this.viewMode = assessment.assessmentType; // Populate viewMode
-
-          // Fetch associated subjects and their ratings from the 'assessmentList' table
+          const assessment = assessments[0];
+          this.assessmentTitle = assessment.assessmentName;
+          this.viewMode = assessment.assessmentType;
           this.firebaseService.listensToChangeWithFilter(TableNames.AssessmentList, 'assessmentId', this.assessmentId).subscribe((assessmentLists: any[]) => {
             if (assessmentLists && assessmentLists.length > 0) {
-              const assessmentList = assessmentLists[0]; // Assuming assessmentId is unique, get the first match
-              const subjectsWithRatings = assessmentList.subjects; // subjects with ratings
-
-              // Initialize two new lists to store subject IDs and subjects with ratings
+              const assessmentList = assessmentLists[0]; 
+              const subjectsWithRatings = assessmentList.subjects; 
               const subjectIds: string[] = [];
               const subjectDetailsWithRatings: any[] = [];
-
-              // Iterate through the subjects to extract subjectId and ratings
               for (const subjectId in subjectsWithRatings) {
                 if (subjectsWithRatings.hasOwnProperty(subjectId)) {
                   const subject = subjectsWithRatings[subjectId];
-                  subjectIds.push(subject.subjectId); // Store subjectId
+                  subjectIds.push(subject.subjectId); 
                   subjectDetailsWithRatings.push({
                     subjectId: subject.subjectId,
                     subjectName: subject.subjectName,
@@ -510,20 +366,16 @@ canSave(): boolean {
                     medium: subject.medium,
                     hard: subject.hard,
                     descriptive: subject.descriptive
-                  }); // Store subject details with ratings
+                  });
                 }
               }
-
-              // Now update rightList with subject names using subjectIds
               this.rightList = subjectIds.map((subjectId) => {
                 const subject = this.subjectList.find(sub => sub.subjectId === subjectId);
                 return {
-                  subjectId: subject ? subject.subjectId : '',  // Get the correct subjectId
-                  subjectName: subject ? subject.subjectName : '', // Get the correct subjectName
+                  subjectId: subject ? subject.subjectId : '',  
+                  subjectName: subject ? subject.subjectName : '',
                 };
               });
-
-              // Update rightListInputs with ratings data using subjectDetailsWithRatings
               const rightListInputs = this.fb.array(
                 subjectDetailsWithRatings.map(subject =>
                   this.fb.group({
@@ -535,8 +387,6 @@ canSave(): boolean {
                   })
                 )
               );
-
-              // Update the form control for rightListInputs
               this.rightListForm.setControl('rightListInputs', rightListInputs);
 
             } else {
@@ -554,7 +404,6 @@ canSave(): boolean {
       });
     }
   }
-
   ngAfterViewInit(): void {
     if (this.isBrowser()) {
       const updateLists = () => {
@@ -569,19 +418,18 @@ canSave(): boolean {
         this.leftList = leftListDom.map((item) => {
           const subject = this.subjectList.find((sub) => sub.subjectName === item);
           return {
-            subjectId: subject ? subject.subjectId : '', // Get the correct subjectId
+            subjectId: subject ? subject.subjectId : '', 
             subjectName: item
           };
         });
         this.rightList = rightListDom.map((item) => {
           const subject = this.subjectList.find((sub) => sub.subjectName === item);
           return {
-            subjectId: subject ? subject.subjectId : '', // Get the correct subjectId
+            subjectId: subject ? subject.subjectId : '', 
             subjectName: item
           };
         });
         this.updateRightListForm(this.rightList);
-        this.saveToSessionStorage();
       };
       const options = {
         group: 'shared',
@@ -595,23 +443,18 @@ canSave(): boolean {
     }
   }
   ngOnDestroy(): void {
-    // Remove the event listener when the component is destroyed
-    window.removeEventListener('beforeunload', this.clearSessionStorage);
-      // Cleanup the beforeunload event listener when the component is destroyed
       window.removeEventListener('beforeunload', this.handleBeforeUnload);
   }
   subscribeToFormChanges(): void {
     this.rightListForm.valueChanges.subscribe(() => {
-      this.saveToSessionStorage();
     });
   }
   updateRightListForm(newRightList: any[]): void {
     const updatedInputs = this.fb.array(
       newRightList.map((subject) => {
-        // Find the corresponding subject in rightListInputs (existing subject ratings from the form)
         const existingSubjectInput = this.rightListInputs.controls.find((control) => {
-          const subjectControl = control.value; // Get the form control value
-          return subjectControl.item.subjectId === subject.subjectId; // Match by subjectId
+          const subjectControl = control.value; 
+          return subjectControl.item.subjectId === subject.subjectId; 
         });
         const easy = existingSubjectInput ? existingSubjectInput.value.easy : 0;
         const medium = existingSubjectInput ? existingSubjectInput.value.medium : 0;
@@ -638,13 +481,9 @@ canSave(): boolean {
       this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
       return;
     }
-
-    // If editing, skip title uniqueness check and proceed directly to save/update
     if (this.editFlag) {
-      // Update existing assessment and associated subjects
       this.updateAssessment();
     } else {
-      // Check if the title is unique when creating a new assessment
       this.checkAssessmentTitleUniqueness(this.assessmentTitle).then((isUnique) => {
         if (!isUnique) {
           this.assessmentTitleWarning = 'This assessment title already exists. Please choose a unique title.';
@@ -661,14 +500,12 @@ canSave(): boolean {
               isDisable:false,
               subjects: subjects,
             };
-
-            // Save or update assessmentList
             this.firebaseService.create('assessmentList/' + assessmentId, updatedAssessmentList)
               .then(() => {
-                this.assessmentList.unshift(updatedAssessmentList); // Update the list of assessments
+                this.assessmentList.unshift(updatedAssessmentList); 
                 this.toastr.success('Assessment Created', 'Created');
-                this.resetRightListAndForm();  // Reset the form and right list
-                this.assessmentTitle = ''; // Clear the title
+                this.resetRightListAndForm(); 
+                this.assessmentTitle = ''; 
 
               })
               .catch((error) => {
@@ -684,53 +521,43 @@ canSave(): boolean {
       });
     }
   }
-
   updateAssessment(): void {
-    // Ensure the assessmentId is available for updating
     if (this.assessmentId) {
-      // Step 1: Map the subjects and ratings from the form (right list)
       const subjects = this.mapRightListInputs(this.rightList);
-
-      // Get the original assessment details (before update) to keep the dateCreated
       const originalAssessment = this.assessmentList.find((assessment) => assessment.assessmentId === this.assessmentId);
-      const originalDateCreated = originalAssessment ? originalAssessment.dateCreated : Date.now();  // fallback to Date.now() if not found
-      // Prepare the updated AssessmentList object
+      const originalDateCreated = originalAssessment ? originalAssessment.dateCreated : Date.now(); 
       const updatedAssessmentList: AssessmentList = {
         assessmentId: this.assessmentId,
-        dateCreated: originalDateCreated,  // Keep the original dateCreated value
+        dateCreated: originalDateCreated,  
         dateUpdated: Date.now(),   
-        isDisable:false,       // Update the dateUpdated field
-        subjects: subjects,              // Update with the new subject details
+        isDisable:false,      
+        subjects: subjects,            
       };
-      // Prepare the updated Assessment object
       const updatedAssessment: Assessment = {
         assessmentId: this.assessmentId,
-        assessmentName: this.assessmentTitle,  // Update with the new title
+        assessmentName: this.assessmentTitle,
         assessmentType: this.viewMode,
-        dateCreated: originalDateCreated,     // Use the same view mode
-        dateUpdated: Date.now(),               // Update the dateUpdated field
-        isDisabled: false,                     // Ensure the assessment is not disabled
-        isautoEvaluated: this.isAutoEvaluated, // Keep the same auto evaluation status
+        dateCreated: originalDateCreated,   
+        dateUpdated: Date.now(),              
+        isDisabled: false,                    
+        isautoEvaluated: this.isAutoEvaluated,
+        isLinkGenerated:true
       };
 
-      // Step 2: Update the Assessment document
       this.firebaseService.update('assessment/' + this.assessmentId, updatedAssessment)
         .then(() => {
-          // Successfully updated the Assessment, now update the AssessmentList
           this.firebaseService.update('assessmentList/' + this.assessmentId, updatedAssessmentList)
             .then(() => {
-              // Both documents updated successfully
               this.assessmentList = this.assessmentList.map((assessment) => {
                 if (assessment.assessmentId === this.assessmentId) {
-                  return updatedAssessmentList; // Replace the old AssessmentList with the updated one
+                  return updatedAssessmentList; 
                 }
                 return assessment;
               });
-
               this.toastr.success('Assessment and Assessment List Updated successfully', 'Updated');
-              this.resetRightListAndForm();  // Reset the form and right list
-              this.assessmentTitle = '';     // Clear the title field
-              this.navigateToAssessments();  // Navigate to the assessments page
+              this.resetRightListAndForm();  
+              this.assessmentTitle = '';     
+              this.navigateToAssessments(); 
               console.log(this.updateAssessment, updatedAssessmentList);
             })
             .catch((error) => {
@@ -744,10 +571,7 @@ canSave(): boolean {
         });
     }
   }
-
-
   saveAssessmentAndSubjects(): void {
-    // Save the assessment and subject data
     this.addAssessment().then((assessmentId: string) => {
       if (this.rightListForm.valid) {
         const subjects = this.mapRightListInputs(this.rightList);
@@ -759,14 +583,13 @@ canSave(): boolean {
           subjects: subjects,
         };
 
-        // Save the assessment list
         this.firebaseService.create('assessmentList/' + assessmentId, assessmentList)
           .then(() => {
             this.assessmentList.unshift(assessmentList);
             this.fetchLeftList();
             this.toastr.success('Assessment Created successfully', 'Created');
             this.resetRightListAndForm();
-            this.assessmentTitle = '';  // Reset the title
+            this.assessmentTitle = '';  
           })
           .catch((error) => {
             console.error('Error saving data:', error);
@@ -779,26 +602,6 @@ canSave(): boolean {
       this.toastr.error('Failed to create assessment. ' + error);
     });
   }
-  resetPage(): void {
-    // Reset lists
-    this.rightList = [];
-    this.subjectList = [];
-    this.updatedList = [];
-
-    // Reset form values
-    this.rightListForm.reset();
-    this.setRightListFormControls([]);
-
-    // Reset other variables
-    this.assessmentTitle = '';
-    this.viewMode = 'internal';  // or 'external', depending on your default state
-
-    // Optionally, clear session storage (if you want to reset session data as well)
-    this.clearSessionStorage();
-
-    // Optionally, reload any other necessary data or state after reset (if required)
-    console.log('Page has been reset!');
-  }
   setRightListFormControls(controls: any[]): void {
     const rightListInputs = this.rightListForm.get('rightListInputs') as FormArray;
     while (rightListInputs.length) {
@@ -807,5 +610,30 @@ canSave(): boolean {
     controls.forEach(control => {
       rightListInputs.push(this.fb.control(control));
     });
+  }
+  closeModal() {
+    this.eConfirmationVisible = false;
+  }
+  resetPage(): void {
+    this.rightList = [];
+    this.subjectList = [];
+    this.updatedList = [];
+
+    this.rightListForm.reset();
+    this.setRightListFormControls([]);
+
+    this.assessmentTitle = '';
+    this.viewMode = 'internal';
+    console.log('Page has been reset!');
+    this.eConfirmationVisible = false;
+  }
+  actionType: 'reset' | 'navigate' = 'reset'; 
+  onReset(): void {
+    this.actionType = 'reset'; 
+    this.eConfirmationVisible = true; 
+  }
+  onBack(): void {
+    this.actionType = 'navigate'; 
+    this.eConfirmationVisible = true; 
   }
 }
