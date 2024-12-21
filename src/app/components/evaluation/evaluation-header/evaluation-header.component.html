@@ -1,34 +1,32 @@
-<h1
-  class="text-3xl font-semibold text-center p-3 rounded-t-lg bg-custom-blue text-white"
->
-  {{ assessmentName }}
-</h1>
-<!-- Marks Scored Section (Aligned to the Right) -->
-<div class="text-end p-3">
-  <div class="text-lg font-semibold">
-    <span>Marks Scored:</span>
-    <span
-      [ngClass]="{
-        'text-red-600': userMarks === 0,
-        'text-green-600': totalMarks !== 0
-      }"
-      class="font-semibold"
-    >
-      {{ userMarks || 0 }} / {{ totalMarks }}
-    </span>
-  </div>
-  <!-- Result Section (Only shown if result is provided) -->
-  @if(result) {
-    <div class="text-lg font-semibold">
-      <span>Result: </span>
-      <span
-        [ngClass]="{
-          'text-green-600': result === 'Pass',
-          'text-red-600': result === 'Fail'
-        }"
-      >
-        {{ result }}
+<div class="relative flex items-center mb-6">
+  <!-- Header Section (Centered) -->
+  <h1 class="text-blue-800 text-5xl font-bold absolute left-1/2 transform -translate-x-1/2">
+    {{ assessmentName }}
+  </h1>
+
+  <!-- Marks Scored and Result Section (Aligned to the Right) -->
+  <div class="ml-auto text-right">
+    <!-- Marks Scored Section -->
+    <div class="text-blue-800 text-lg font-semibold">
+      <span>Marks Scored:</span>
+      <span 
+        class="font-semibold text-black">
+        {{ userMarks || 0 }} / {{ totalMarks }}
       </span>
     </div>
-  }
+    <!-- Result Section -->
+    @if(result) {
+      <div class="font-bold text-2xl flex items-center justify-end mt-2">
+        <label class="text-blue-800 text-lg font-semibold mr-2">Result:</label>
+        <span 
+          class="text-lg font-semibold"
+          [ngClass]="{
+            'text-green-700': result === 'Pass',
+            'text-red-700': result === 'Fail'
+          }">
+          {{ result }}
+        </span>
+      </div>
+    }
+  </div>
 </div>

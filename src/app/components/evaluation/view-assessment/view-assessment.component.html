@@ -1,69 +1,60 @@
-@if (!isLoading) {
-<div class="min-h-screen bg-white shadow-xl rounded-xl">
+<div
+ class="p-2 rounded-lg">
   <!-- Evaluation Header -->
   <app-evaluation-header
     [assessmentName]="clickedData.assessmentName"
     [userMarks]="getUserMarks()"
     [totalMarks]="getTotalMarks()"
-    [result]="clickedData.result"
-  >
+    [result]="clickedData.result">
   </app-evaluation-header>
-  <div class="p-4">
+<!-- Questions Section -->
+  <div class="w-full max-w-6xl mx-auto p-6 rounded-xl">
     <!-- Attempted Questions Section -->
     <div class="mb-6">
-      <h2 class="text-lg font-semibold mb-2">
-        Attempted Questions:
-        <span class="text-green-600 font-semibold">{{
-          attemptedQuestions.length
-        }}</span>
+      <h2 class="text-lg font-semibold text-blue-800 mb-2">
+        Attempted Questions: <span class="text-green-700 font-semibold">{{ attemptedQuestions.length }}</span>
       </h2>
-      <!-- Keep the @for loop as is -->
       @for(question of attemptedQuestions; track attemptedQuestions) {
-      <div>
-        <app-question-display
-          [question]="question"
-          [options]="question.options"
-          [userAnswer]="question.userAnswer"
-          [answer]="question.answer"
-          [marks]="question.marks"
-          [assignedMarks]="question.assigned_marks"
-          [isDisabled]="true"
-        >
-        </app-question-display>
-      </div>
+        <div>
+          <app-question-display
+            [question]="question"
+            [options]="question.options"
+            [userAnswer]="question.userAnswer"
+            [answer]="question.answer"
+            [marks]="question.marks"
+            [assignedMarks]="question.assigned_marks"
+            [isDisabled]="true">
+          </app-question-display>
+        </div>
       }
     </div>
 
     <!-- Not Attempted Questions Section -->
     <div class="mb-6">
-      <h2 class="text-lg font-semibold mb-2">
-        Unattempted Questions:
-        <span class="text-red-600 font-semibold">{{
-          notAttemptedQuestions.length
-        }}</span>
+      <h2 class="text-lg font-semibold text-red-500 mb-2">
+        Unattempted Questions: <span class="text-red-500 font-semibold">{{ notAttemptedQuestions.length }}</span>
       </h2>
       @for(question of notAttemptedQuestions; track notAttemptedQuestions) {
-      <div>
-        <app-question-display
-          [question]="question"
-          [options]="question.options"
-          [userAnswer]="question.userAnswer"
-          [answer]="question.answer"
-          [marks]="question.marks"
-          [assignedMarks]="question.assigned_marks"
-          [isDisabled]="true"
-        >
-        </app-question-display>
-      </div>
+        <div>
+          <app-question-display
+            [question]="question"
+            [options]="question.options"
+            [userAnswer]="question.userAnswer"
+            [answer]="question.answer"
+            [marks]="question.marks"
+            [assignedMarks]="question.assigned_marks"
+            [isDisabled]="true">
+          </app-question-display>
+        </div>
       }
     </div>
   </div>
-</div>
-}
-<div class="min-h-screen">
-  @if(isLoading){
-  <div class="flex justify-center mt-4 top-0">
-    <div class="loader"></div>
+
+  <div class="flex justify-center items-center mt-6">
+    <app-button
+      [label]="'Back To Dashboard'"
+      [colorClass]="'px-1.5 py-3 text-white bg-blue-800 border-2 border-blue-800 rounded-md transition duration-300 hover:bg-blue-700'"
+      (click)="onSubmit()">
+    </app-button>
   </div>
-  }
 </div>

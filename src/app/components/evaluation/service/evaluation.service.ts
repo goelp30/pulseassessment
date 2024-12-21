@@ -5,30 +5,29 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root',
 })
 export class EvaluationService {
-  private clickedDataSubject = new BehaviorSubject<any>(this.loadClickedData()); // Initialize with stored data,
-  public clickedData$ = this.clickedDataSubject.asObservable();
+  private clickedDataSubject = new BehaviorSubject<any>(this.getSessionData() || null); // Initialize with sessionStorage if available
+  clickedData$ = this.clickedDataSubject.asObservable();
 
-  constructor() {
-    const initialData = this.loadClickedData()
-    console.log("Initial data from local Storage", initialData);
-    this.clickedDataSubject.next(initialData)
-}
-  // Set the clicked row's data directly
+  // Set the clicked row's data directly and save to sessionStorage
   setData(data: any) {
-    this.clickedDataSubject.next(data); // Store the clicked row data as an object
+    this.clickedDataSubject.next(data); // Store in BehaviorSubject
+    sessionStorage.setItem('clickedData', JSON.stringify(data)); // Store in sessionStorage
   }
 
+  // Retrieve the data from BehaviorSubject or sessionStorage
   getData(): any {
     return this.clickedDataSubject.value; // Return the data for the clicked row
   }
 
-  setClickedData(data: any) {
-    localStorage.setItem('clickedData', JSON.stringify(data));
-    this.clickedDataSubject.next(data);
+  // Method to get data from sessionStorage (if it exists)
+  private getSessionData(): any {
+    const storedData = sessionStorage.getItem('clickedData');
+    return storedData ? JSON.parse(storedData) : null; // Parse and return or null if not available
   }
 
-  loadClickedData() {
-    const storedData = localStorage.getItem('clickedData');
-    return storedData ? JSON.parse(storedData) : null;
+  // Clear session storage when needed
+  clearSessionData() {
+    sessionStorage.removeItem('clickedData');
+    this.clickedDataSubject.next(null); // Reset the BehaviorSubject
   }
 }

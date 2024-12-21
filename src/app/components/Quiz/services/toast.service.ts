@@ -8,7 +8,7 @@ export class ToastService {
   private showToast(message: string, background: string) {
     Toastify({
       text: message,
-      duration: 3000,
+      duration: 5000,
       gravity: "top",
       position: "right",
       style: {

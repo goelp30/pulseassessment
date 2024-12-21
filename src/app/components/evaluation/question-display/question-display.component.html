@@ -1,129 +1,79 @@
-<div class="relative my-6 p-6 border border-gray-300 rounded-lg bg-white">
-    <!-- Display Question Number -->
+<div class="relative my-6 p-6 border-1 border-blue-gray-600 rounded-lg bg-white">
     <div class="text-lg font-medium text-gray-800">
-     {{ question.questionText }}
+      Q .  {{ question.questionText }}
     </div>
-  <!-- Display Marks for Non-Descriptive Questions -->
-  @if(question.questionType !== 'Descriptive'){
-  <div
-    class="text-right text-gray-600 text-sm font-bold mb-0 absolute bottom-5 right-5"
-  >
-    Marks:
-    <span
-      [ngClass]="{
-        'text-red-600': question.marks == 0,
-        'text-green-600': question.marks > 0
-      }"
-    >
-      {{ question.marks || 0 }} / {{ question.questionWeitage }}
-    </span>
-  </div>
+    <!-- Display Marks for Non-Descriptive Questions -->
+    @if(question.questionType !== 'Descriptive'){
+     <div class="text-right text-gray-600 text-sm font-bold mb-0 absolute bottom-5 right-5">
+            Marks: 
+            <span [ngClass]="{'text-red-600': question.marks == 0, 'text-green-600': question.marks > 0}">
+                {{ question.marks || 0 }} / {{ question.questionWeitage }}
+            </span>
+        </div>
+         }
+    <!-- Single-Answer Question -->
+    @if(question.questionType == 'Single'){
+    <div class="space-y-3">
+        @for(option of question.options;track question.options){
+        <div class="flex items-center space-x-4">
+            <input type="radio" name="{{ question.questionId }}" class="cursor-pointer"
+                [checked]="question.userAnswer == option.optionId" disabled>
+            <label class="text-lg font-medium cursor-pointer" [ngClass]="{
+                    'text-green-700': question.userAnswer == option.optionId && option.isCorrectOption,
+                    'text-red-700': question.userAnswer ==option.optionId && !option.isCorrectOption,
+                    'text-gray-500': question.userAnswer == undefined
+                }">
+                {{ option.optionText }}
+            </label>
+        </div>
+        }
+    </div>
+    }
+    <!-- Multi-Answer Question -->
+    @if(question.questionType === 'Multi'){
+    <div class="space-y-3">
+        @for(option of question.options;track question.options){
+        <div class="flex items-center space-x-4">
+            <input type="checkbox" name="{{ question.questionId }}" class="cursor-pointer"
+                [checked]="question.userAnswer?.includes(option.optionId)" disabled>
+            <label class="text-lg font-medium cursor-pointer" [ngClass]="{
+                    'text-green-700': question.userAnswer?.includes(option.optionId) && option.isCorrectOption,
+                    'text-red-700': question.userAnswer?.includes(option.optionId) && !option.isCorrectOption,
+                    'text-gray-500': !question.userAnswer?.includes(option.optionId)
+                }">
+                {{ option.optionText }}
+            </label>
+        </div>}
+    </div>}
 
-  }
-  <!-- Single-Answer Question -->
-  @if(question.questionType == 'Single'){
-  <div class="space-y-3">
-    @for(option of question.options;track question.options){
-    <div class="flex items-center space-x-4">
-      <input
-        type="radio"
-        name="{{ question.questionId }}"
-        class="cursor-pointer"
-        [checked]="question.userAnswer == option.optionId"
-        disabled
-      />
-      <label
-        class="text-lg font-medium cursor-pointer"
-        [ngClass]="{
-          'text-green-700':
-            question.userAnswer == option.optionId && option.isCorrectOption,
-          'text-red-700':
-            question.userAnswer == option.optionId && !option.isCorrectOption,
-          'text-gray-500': question.userAnswer == undefined
-        }"
-      >
-        {{ option.optionText }}
-      </label>
-    </div>
-    }
-  </div>
-  }
-  <!-- Multi-Answer Question -->
-  @if(question.questionType === 'Multi'){
-  <div class="space-y-3">
-    @for(option of question.options;track question.options){
-    <div class="flex items-center space-x-4">
-      <input
-        type="checkbox"
-        name="{{ question.questionId }}"
-        class="cursor-pointer"
-        [checked]="question.userAnswer?.includes(option.optionId)"
-        disabled
-      />
-      <label
-        class="text-lg font-medium cursor-pointer"
-        [ngClass]="{
-          'text-green-700':
-            question.userAnswer?.includes(option.optionId) &&
-            option.isCorrectOption,
-          'text-red-700':
-            question.userAnswer?.includes(option.optionId) &&
-            !option.isCorrectOption,
-          'text-gray-500': !question.userAnswer?.includes(option.optionId)
-        }"
-      >
-        {{ option.optionText }}
-      </label>
-    </div>
-    }
-  </div>
-  }
+    <!-- Descriptive Question -->
+    @if(question.questionType === 'Descriptive'){
+    <div class="space-y-4 py-3">
+        <div>
+            <label for="answer" class="block text-blue-800 font-semibold pb-2">User's Answer:</label>
+            <textarea id="answer" class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 "
+                [(ngModel)]="question.answer" readonly>
+            </textarea>
+            
+        </div>
+@if(!isDisabled){
+        <!-- Marks for Descriptive Answer -->
+        <div class="block flex justify-end ">
+            <input type="number" [(ngModel)]="question.assignedMarks" placeholder="Marks"
+                [max]="question.questionWeitage" min="0" step="1" 
+                class="p-2 border-1 border-black rounded-lg"
 
-  <!-- Descriptive Question -->
-  @if(question.questionType === 'Descriptive'){
-  <div class="space-y-4 py-3">
-    <div>
-      <label for="answer" class="block text-blue-900 text-sm font-bold"
-        >User's Answer:</label
-      >
-      <textarea
-        id="answer"
-        class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-800"
-        [(ngModel)]="question.answer"
-        readonly
-      >
-      </textarea>
-    </div>
-    @if(!isDisabled){
-    <!-- Marks for Descriptive Answer -->
-    <div class="flex justify-end items-center space-x-2">
-        <label for="marks-input" class="text-gray-600 text-sm font-bold">Enter Marks: </label>
-        <input
-          id="marks-input"
-          type="number"
-          [(ngModel)]="question.assignedMarks"
-          [max]="question.questionWeitage"
-          min="0"
-          step="1"
-          placeholder="    /{{question.questionWeitage}}"
-          class="p-1 w-16 border border-gray-200 rounded-md bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-200"
-          (ngModelChange)="onMarksChange()"
-          [disabled]="isDisabled"
-        />
-      </div>
-      
-    } @else {
-    <div
-      class="text-right text-gray-600 text-sm font-bold mb-0 absolute bottom-5 right-5"
-    >
-      Marks:
-      <span
-        [ngClass]="{ 'text-green-700': marks > 0, 'text-red-600': marks == 0 }"
-      >
-        {{ marks }} / {{ question.questionWeitage }}
-      </span>
-    </div>
+                (ngModelChange)="onMarksChange()"[disabled]="isDisabled" >
+        </div>
     }
-  </div>
-  }
+    @else {
+        <div class="text-right text-gray-600 text-sm font-bold mb-0 absolute bottom-5 right-5">
+            Marks: 
+            <span [ngClass]="{'text-green-700': marks > 0, 'text-red-600': marks ==0}">
+              {{ marks }} / {{ question.questionWeitage }}
+            </span>
+          </div>
+          }
+
+    </div>}
 </div>
