@@ -10,8 +10,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EvaluationHeaderComponent } from '../evaluation-header/evaluation-header.component';
 import { ToastrService } from 'ngx-toastr';
-
-
 @Component({
   selector: 'app-evaluate-assessment',
   templateUrl: './evaluate-assessment.component.html',
@@ -28,12 +26,9 @@ export class EvaluateAssessmentComponent implements OnInit {
   quizId: string = ''; 
   evaluationComplete: boolean | undefined;
   isLoading: boolean = true; 
-
-
-  constructor(
+   constructor(
     private evaluationService: EvaluationService,
     private toastr: ToastrService,
-
     private router: Router,
     private firebaseservice: FireBaseService<QuizAnswers>
   ) {}
@@ -50,64 +45,7 @@ export class EvaluateAssessmentComponent implements OnInit {
        });
        
 }
-//  getEvaluationDataByQuizId(quizId: string): void {
-//   this.isLoading = true; // Show loader
-
-//    // Fetch evaluation data from Firebase based on the quizId
-//     this.firebaseservice
-//      .getItemsByQuizId('QuizAnswer', quizId)
-//       .pipe(
-//       mergeMap((evaluationData: any[]) => {
-//          const questionIds = evaluationData.map((item) => item.questionId);
-//          return this.firebaseservice.getQuestionsFromIds('questions', questionIds).pipe(
-//              mergeMap((questionData: any[]) => {
-//               return this.firebaseservice.getAllOptions('options').pipe(
-//                 map((optionData: any[]) => {      
-//                              const optionsMap = optionData.reduce((acc, option) => {
-//                   if (!acc[option.questionId]) {
-//                      acc[option.questionId] = [];
-//                    }
-//                      acc[option.questionId].push(option);
-//                      return acc;
-//                                         }, {} as { [key: string]: any[] });
-
-//                    const combinedData = evaluationData.map((item) => {
-//                     const question = questionData.find((q) => q.questionId === item.questionId);
-//                    const options = optionsMap[item.questionId] || [];
-//                    return {
-//                       ...item,
-//                        questionText: question?.questionText,
-//                      questionWeitage: question?.questionWeightage,
-//                       questionType: question?.questionType,
-//                       options: options,
-//                      };
-//                   });
-
-//                  this.categorizeQuestions(combinedData);
-//                   return combinedData;
-//                 })
-//                );
-//              })
-//           );
-//         })
-//       )
-//        .subscribe(
-//        (combinedData: any[]) => {
-//                    console.log('Combined evaluation list:', combinedData);
-//          this.evaluationList = combinedData;
-//           this.evaluateAutoScoredQuestions();
-//           this.isLoading = false; 
-//        },
-//         (error: any) => {
-//           console.error('Error fetching combined data:', error);
-//           this.isLoading = false; // Hide loader on error
-
-//        }
-//        );
-//    }
 getEvaluationDataByQuizId(quizId: string): void {
-  this.isLoading = true; // Show loader
-
   this.firebaseservice
     .getItemsByQuizId('QuizAnswer', quizId)
     .pipe(
@@ -153,20 +91,17 @@ getEvaluationDataByQuizId(quizId: string): void {
       (combinedData: any[]) => {
         console.log('Combined evaluation list:', combinedData);
         this.evaluationList = combinedData;
-        this.isLoading = false; // Hide loader
+        this.evaluateAutoScoredQuestions();
+      
       },
       (error: any) => {
         console.error('Error fetching combined data:', error);
-        this.isLoading = false; // Hide loader on error
+       
       }
     );
 }
-
-
-  checkDescriptiveMarksEntered(): boolean {
+checkDescriptiveMarksEntered(): boolean {
     // Log the attempted questions and their marks for debugging
-   
-  
     return this.attemptedQuestions.every((question) => {
       if (question.questionType === 'Descriptive') {
       // Ensure marks are entered, including zero (not undefined or null)
@@ -191,8 +126,7 @@ getEvaluationDataByQuizId(quizId: string): void {
     if (question.questionType === 'Descriptive') {
       return question.answer && question.answer.trim() !== '';
     }
-
-    return false;
+ return false;
   }
 
   evaluateAutoScoredQuestions(): void {
@@ -315,7 +249,7 @@ getEvaluationDataByQuizId(quizId: string): void {
         );
         // alert('Assessment evaluated and results saved successfully.');
         this.evaluationComplete = true; // Mark evaluation as complete
-
+        sessionStorage.removeItem('clickedData'); 
         this.router.navigate(['/view']);
       })
       .catch((error) => {
@@ -327,8 +261,4 @@ getEvaluationDataByQuizId(quizId: string): void {
         );
       });
   }
-
-  
-
-  
 }  
