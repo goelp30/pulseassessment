@@ -30,7 +30,7 @@ export class DashboardComponent implements OnInit {
     '/generatelink': 'Generate Link',
     '/assessment-list': 'Manage Assessment',
     '/assessmentrecords': 'Assessment Records',
-    '/evaluation': 'Evaluation Dashboard'
+    '/evaluation': 'Evaluate Assessments'
   };
 
   constructor(
