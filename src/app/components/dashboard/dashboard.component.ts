@@ -19,10 +19,10 @@ export class DashboardComponent implements OnInit {
 
   navItems = [
     { label: 'Manage Subjects', route: '/subjects', icon: 'fas fa-plus' },
-    { label: 'Generate Link', route: '/generatelink', icon: 'fas fas fa-link' },
     { label: 'Manage Assessment', route: '/assessment-list', icon: 'fas fa-clipboard-list' },
+    { label: 'Generate Link', route: '/generatelink', icon: 'fas fas fa-link' },
     { label: 'Assessment Records', route: '/assessmentrecords', icon: 'fas fa-history' },
-    { label: 'Evaluation dashboard ', route: '/evaluation', icon: 'fas fa-chart-line' },
+    { label: 'Evaluate Assessments ', route: '/evaluation', icon: 'fas fa-chart-line' },
   ];
   private routeLabelMap: { [key: string]: string } = {
     '/subjects': 'Manage Subjects',
