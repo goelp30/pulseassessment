@@ -5,9 +5,9 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-evaluation-header',
   standalone: true,
-  imports: [FormsModule,CommonModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './evaluation-header.component.html',
-  styleUrl: './evaluation-header.component.css'
+  styleUrl: './evaluation-header.component.css',
 })
 export class EvaluationHeaderComponent {
   @Input() assessmentName: string = '';
