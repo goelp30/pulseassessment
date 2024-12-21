@@ -1,206 +1,304 @@
 <div class="mx-5">
-    <button class="btn bg-blue-950 hover:bg-blue-950 text-white m-3" (click)="navigateToAssessments()">Back</button>
-    <button (click)="resetPage()" class="btn btn-danger">Reset</button>
-    <div class="items-center justify-center p-2">
+  <button
+    class="btn bg-blue-950 hover:bg-blue-950 text-white m-3"
+    (click)="navigateToAssessments()"
+  >
+    Back
+  </button>
+  <button (click)="resetPage()" class="btn btn-danger">Reset</button>
+  <div class="items-center justify-center p-2">
+    <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">
+      Manage Your Assessments
+    </h2>
 
-        <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">
-            Manage Your Assessments
-        </h2>
+    <div class="mb-6">
+      <label for="assessmentTitle" class="block text-gray-700 font-medium mb-2">
+        Enter Assessment Title:
+      </label>
+      <input
+        type="text"
+        required
+        id="assessmentTitle"
+        [(ngModel)]="assessmentTitle"
+        class="border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+        placeholder="Enter title here..."
+        (ngModelChange)="onAssessmentTitleChange()"
+      />
 
-
-        <div class="mb-6">
-            <label for="assessmentTitle" class="block text-gray-700 font-medium mb-2">
-                Enter Assessment Title:
-            </label>
-            <input type="text" required id="assessmentTitle" [(ngModel)]="assessmentTitle"
-                class="border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="Enter title here..." (ngModelChange)="onAssessmentTitleChange()" />
-
-            <!-- Display Warning -->
-            <div *ngIf="assessmentTitleWarning" class="warning-message text-red-900">
-                {{ assessmentTitleWarning }}
-            </div>
-        </div>
-
-        <!-- Toggle Section -->
-        <div class="flex justify-around mt-6">
-            <div class="mb-3 w-full max-w-sm">
-                <div class="flex items-center">
-                    <!-- Internal View Radio -->
-                    <label class="inline-flex items-center mr-6">
-                        <input type="radio" name="viewMode" value="internal" [(ngModel)]="viewMode"
-                            (change)="toggleViewMode('internal')"
-                            class="form-radio h-5 w-5 text-blue-500 border-gray-300 focus:ring-2 focus:ring-blue-500" />
-                        <span class="ml-2 text-gray-700">Internal View</span>
-                    </label>
-                    <!-- External View Radio -->
-                    <label class="inline-flex items-center">
-                        <input type="radio" name="viewMode" value="external" [(ngModel)]="viewMode"
-                            (change)="toggleViewMode('external')"
-                            class="form-radio h-5 w-5 text-blue-500 border-gray-300 focus:ring-2 focus:ring-blue-500" />
-                        <span class="ml-2 text-gray-700">External View</span>
-                    </label>
-                </div>
-
-                <!-- Internal View Content -->
-                <div *ngIf="viewMode === 'internal'" class="mt-4">
-                    <p class="text-gray-700">
-                        You are currently managing Internal Assessment.
-                    </p>
-                </div>
-
-                <!-- External View Content -->
-                <div *ngIf="viewMode === 'external'" class="mt-4">
-                    <p class=" text-gray-700">
-                        You are currently managing External Assessment.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Drag-and-Drop Lists Section -->
-        <div class="flex flex-col lg:flex-row gap-5 mb-6">
-            <!-- Left List -->
-            <div class="flex-1">
-                <h3 class="text-lg font-semibold mb-3">Available Subjects</h3>
-                <ul id="sortable-left"
-                    class="bg-gray-50 border rounded-lg shadow p-2 min-h-[200px] max-h-[300px] overflow-auto">
-                    <li *ngFor="let item of leftList"
-                        class="flex items-center justify-between px-4 py-2 cursor-grab hover:bg-gray-100">
-                        <span>{{ item.subjectName }}</span>
-                        <span class="text-gray-500">☰</span>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Right List -->
-            <div class="flex-1">
-                <h3 class="text-lg font-semibold mb-3">Selected Subjects</h3>
-                <ul id="sortable-right"
-                    class="bg-gray-50 border rounded-lg shadow p-2 min-h-[200px] max-h-[300px] overflow-auto">
-                    <li *ngIf="rightList.length === 0"
-                        class="text-center text-gray-500 italic py-2 flex justify-center items-center pointer-events-none">
-                        Drag your subjects here
-                    </li>
-                    <li *ngFor="let item of rightList"
-                        class="flex items-center justify-between px-4 py-2 cursor-grab hover:bg-gray-100">
-                        <span>{{ item.subjectName }}</span>
-                        <span class="text-gray-500">☰</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Form for Selected Items -->
-        <div *ngIf="rightList.length > 0">
-            <h3 class="text-lg font-semibold mb-4">Enter Details for Selected Subjects:</h3>
-            <form [formGroup]="rightListForm">
-                <ul formArrayName="rightListInputs">
-                    <li *ngFor="let group of rightListInputs.controls; let i = index" class="py-2 border-b">
-                        <div class="flex flex-col gap-2">
-                            <span class="font-bold text-xl">{{ group.value.item.subjectName | titlecase }} -
-                                {{group.value.item.subjectId}}</span>
-                            <div [formGroupName]="i" class="grid grid-cols-2 gap-3">
-                                <!-- Easy Dropdown -->
-                                <div>
-                                    <div class="flex items-center">
-                                        <label class="w-28">Easy:</label>
-                                        <div class="flex items-center">
-                                            <select formControlName="easy" class="border rounded px-2 py-1 w-32"
-                                                (change)="onInputChange($event, i, 'easy', rightList[i].subjectId)">
-                                                <option *ngFor="let option of [0, 1, 2, 3, 4, 5]" [value]="option">
-                                                    {{ option }}
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <!-- Add a container div for the warning message, ensuring it's on the next line -->
-                                    <div *ngIf="newValidationWarnings.easy[i]" class="text-red-700 mt-2">
-                                        {{ newValidationWarnings.easy[i] }}
-                                    </div>
-                                </div>
-                                <!-- Medium Dropdown -->
-                                <div>
-                                    <div class="flex items-center">
-                                        <label class="w-28">Medium:</label>
-                                        <div class="flex items-center">
-                                            <select formControlName="medium" class="border rounded px-2 py-1 w-32"
-                                                (change)="onInputChange($event, i, 'medium', rightList[i].subjectId)">
-                                                <option *ngFor="let option of [0, 1, 2, 3, 4, 5]" [value]="option">
-                                                    {{ option }}
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div *ngIf="newValidationWarnings.medium[i]" class="text-red-700 mt-2">
-                                        {{ newValidationWarnings.medium[i] }}
-                                    </div>
-                                </div>
-
-                                <!-- Hard Dropdown -->
-                                <div>
-                                    <div class="flex items-center">
-                                        <label class="w-28">Hard:</label>
-                                        <div class="flex items-center">
-                                            <select formControlName="hard" class="border rounded px-2 py-1 w-32"
-                                                (change)="onInputChange($event, i, 'hard', rightList[i].subjectId)">
-                                                <option *ngFor="let option of [0, 1, 2, 3, 4, 5]" [value]="option">
-                                                    {{ option }}
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div *ngIf="newValidationWarnings.hard[i]" class="text-red-700 mt-2">
-                                        {{ newValidationWarnings.hard[i] }}
-                                    </div>
-
-                                </div>
-
-                                <!-- Descriptive Dropdown -->
-                                <div>
-                                    <div class="flex items-center">
-                                        <label class="w-28">Descriptive:</label>
-                                        <div class="flex items-center">
-                                            <select formControlName="descriptive" class="border rounded px-2 py-1 w-32"
-                                                (change)="onInputChange($event, i, 'descriptive', rightList[i].subjectId)">
-                                                <option *ngFor="let option of [0, 1, 2, 3, 4, 5]" [value]="option">
-                                                    {{ option }}
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div *ngIf="newValidationWarnings.descriptive[i]" class="text-red-700 mt-2">
-                                        {{ newValidationWarnings.descriptive[i] }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Validation Warning -->
-                            <span *ngIf="validationWarnings[i]" class="text-red-500 text-sm">
-                                {{ validationWarnings[i] }}
-                            </span>
-                            <!-- Show warning if right list is empty -->
-                            <div *ngIf="rightListWarning" class="warning-message">
-                                {{ rightListWarning }}
-                            </div>
-                            
-
-                        </div>
-                    </li>
-                </ul>
-            </form>
-        </div>
-        <!-- Save Button -->
-        <div class="flex justify-center mt-6">
-            <button (click)="onSave()" [ngClass]="{
-                'bg-blue-950 hover:bg-blue-950': canSave(),
-                'bg-gray-400 cursor-not-allowed': !canSave()
-              }" class="text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all">
-                Save
-            </button>
-        </div>
-
+      <!-- Display Warning -->
+      <div *ngIf="assessmentTitleWarning" class="warning-message text-red-900">
+        {{ assessmentTitleWarning }}
+      </div>
     </div>
-    
-</div>
 
+    <!-- Toggle Section -->
+    <div class="flex justify-around mt-6">
+      <div class="mb-3 w-full max-w-sm">
+        <div class="flex items-center">
+          <!-- Internal View Radio -->
+          <label class="inline-flex items-center mr-20">
+            <input
+              type="radio"
+              name="viewMode"
+              value="internal"
+              [(ngModel)]="viewMode"
+              (change)="toggleViewMode('internal')"
+              class="form-radio h-5 w-5 text-blue-500 border-gray-300 focus:ring-2 focus:ring-blue-500"
+            />
+            <span class="ml-6 text-gray-700">Internal View</span>
+          </label>
+          <!-- External View Radio -->
+          <label class="inline-flex items-center ml-auto">
+            <input
+              type="radio"
+              name="viewMode"
+              value="external"
+              [(ngModel)]="viewMode"
+              (change)="toggleViewMode('external')"
+              class="form-radio h-5 w-5 text-blue-500 border-gray-300 focus:ring-2 focus:ring-blue-500"
+            />
+            <span class="ml-6 text-gray-700">External View</span>
+          </label>
+        </div>
+
+        <!-- Internal View Content -->
+        <div *ngIf="viewMode === 'internal'" class="mt-4 flex justify-end">
+          <p class="text-gray-700">
+            You are currently managing Internal Assessment.
+          </p>
+        </div>
+
+        <!-- External View Content -->
+        <div *ngIf="viewMode === 'external'" class="mt-4 flex justify-end">
+          <p class="text-gray-700">
+            You are currently managing External Assessment.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Drag-and-Drop Lists Section -->
+    <div class="flex flex-col lg:flex-row gap-5 mb-6">
+      <!-- Left List -->
+      <div class="flex-1">
+        <h3 class="text-lg font-semibold mb-3">Available Subjects</h3>
+        <ul
+          id="sortable-left"
+          class="bg-gray-50 border rounded-lg shadow p-2 min-h-[200px] max-h-[300px] overflow-auto"
+        >
+          <li
+            *ngFor="let item of leftList"
+            class="flex items-center justify-between px-4 py-2 cursor-grab hover:bg-gray-100"
+          >
+            <span>{{ item.subjectName }}</span>
+            <span class="text-gray-500">☰</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Right List -->
+      <div class="flex-1">
+        <h3 class="text-lg font-semibold mb-3">Selected Subjects</h3>
+        <ul
+          id="sortable-right"
+          class="bg-gray-50 border rounded-lg shadow p-2 min-h-[200px] max-h-[300px] overflow-auto"
+        >
+          <li
+            *ngIf="rightList.length === 0"
+            class="text-center text-gray-500 italic py-2 flex justify-center items-center pointer-events-none"
+          >
+            Drag your subjects here
+          </li>
+          <li
+            *ngFor="let item of rightList"
+            class="flex items-center justify-between px-4 py-2 cursor-grab hover:bg-gray-100"
+          >
+            <span>{{ item.subjectName }}</span>
+            <span class="text-gray-500">☰</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Form for Selected Items -->
+    <div *ngIf="rightList.length > 0">
+      <h3 class="text-lg font-semibold mb-4">
+        Enter Details for Selected Subjects:
+      </h3>
+      <form [formGroup]="rightListForm">
+        <ul formArrayName="rightListInputs">
+          <li
+            *ngFor="let group of rightListInputs.controls; let i = index"
+            class="py-2 border-b"
+          >
+            <div class="flex flex-col gap-2">
+              <span class="font-bold text-xl"
+                >{{ group.value.item.subjectName | titlecase }} -
+                {{ group.value.item.subjectId }}</span
+              >
+              <div [formGroupName]="i" class="grid grid-cols-2 gap-3">
+                <!-- Easy Dropdown -->
+                <div>
+                  <div class="flex items-center">
+                    <label class="w-28">Easy:</label>
+                    <div class="flex items-center">
+                      <select
+                        formControlName="easy"
+                        class="border rounded px-2 py-1 w-32"
+                        (change)="
+                          onInputChange(
+                            $event,
+                            i,
+                            'easy',
+                            rightList[i].subjectId
+                          )
+                        "
+                      >
+                        <option
+                          *ngFor="let option of [0, 1, 2, 3, 4, 5]"
+                          [value]="option"
+                        >
+                          {{ option }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                  <!-- Add a container div for the warning message, ensuring it's on the next line -->
+                  <div
+                    *ngIf="newValidationWarnings.easy[i]"
+                    class="text-red-700 mt-2"
+                  >
+                    {{ newValidationWarnings.easy[i] }}
+                  </div>
+                </div>
+                <!-- Medium Dropdown -->
+                <div>
+                  <div class="flex items-center">
+                    <label class="w-28">Medium:</label>
+                    <div class="flex items-center">
+                      <select
+                        formControlName="medium"
+                        class="border rounded px-2 py-1 w-32"
+                        (change)="
+                          onInputChange(
+                            $event,
+                            i,
+                            'medium',
+                            rightList[i].subjectId
+                          )
+                        "
+                      >
+                        <option
+                          *ngFor="let option of [0, 1, 2, 3, 4, 5]"
+                          [value]="option"
+                        >
+                          {{ option }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                  <div
+                    *ngIf="newValidationWarnings.medium[i]"
+                    class="text-red-700 mt-2"
+                  >
+                    {{ newValidationWarnings.medium[i] }}
+                  </div>
+                </div>
+
+                <!-- Hard Dropdown -->
+                <div>
+                  <div class="flex items-center">
+                    <label class="w-28">Hard:</label>
+                    <div class="flex items-center">
+                      <select
+                        formControlName="hard"
+                        class="border rounded px-2 py-1 w-32"
+                        (change)="
+                          onInputChange(
+                            $event,
+                            i,
+                            'hard',
+                            rightList[i].subjectId
+                          )
+                        "
+                      >
+                        <option
+                          *ngFor="let option of [0, 1, 2, 3, 4, 5]"
+                          [value]="option"
+                        >
+                          {{ option }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                  <div
+                    *ngIf="newValidationWarnings.hard[i]"
+                    class="text-red-700 mt-2"
+                  >
+                    {{ newValidationWarnings.hard[i] }}
+                  </div>
+                </div>
+
+                <!-- Descriptive Dropdown -->
+                <div>
+                  <div class="flex items-center">
+                    <label class="w-28">Descriptive:</label>
+                    <div class="flex items-center">
+                      <select
+                        formControlName="descriptive"
+                        class="border rounded px-2 py-1 w-32"
+                        (change)="
+                          onInputChange(
+                            $event,
+                            i,
+                            'descriptive',
+                            rightList[i].subjectId
+                          )
+                        "
+                      >
+                        <option
+                          *ngFor="let option of [0, 1, 2, 3, 4, 5]"
+                          [value]="option"
+                        >
+                          {{ option }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                  <div
+                    *ngIf="newValidationWarnings.descriptive[i]"
+                    class="text-red-700 mt-2"
+                  >
+                    {{ newValidationWarnings.descriptive[i] }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Validation Warning -->
+              <span *ngIf="validationWarnings[i]" class="text-red-500 text-sm">
+                {{ validationWarnings[i] }}
+              </span>
+              <!-- Show warning if right list is empty -->
+              <div *ngIf="rightListWarning" class="warning-message">
+                {{ rightListWarning }}
+              </div>
+            </div>
+          </li>
+        </ul>
+      </form>
+    </div>
+    <!-- Save Button -->
+    <div class="flex justify-center mt-6">
+      <button
+        (click)="onSave()"
+        [ngClass]="{
+          'bg-blue-950 hover:bg-blue-950': canSave(),
+          'bg-gray-400 cursor-not-allowed': !canSave()
+        }"
+        class="text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all"
+      >
+        Save
+      </button>
+    </div>
+  </div>
+</div>
