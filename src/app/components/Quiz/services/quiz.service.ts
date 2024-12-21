@@ -109,4 +109,83 @@ export class QuizService {
     }
     return array;
   }
+
+  evaluateAutoScoredQuestions(question: Question, options: Option[], userAnswer: any): number {
+    let marks = 0;
+
+    if (question.questionType === 'Single') {
+      const selectedOptionId = Array.isArray(userAnswer) ? userAnswer[0] : userAnswer;
+      const selectedOption = options.find(option => option.optionId === selectedOptionId);
+      marks = selectedOption?.isCorrectOption ? question.questionWeightage : 0;
+
+      console.log('Single Choice Question Marks:', {
+        questionId: question.questionId,
+        questionText: question.questionText,
+        selectedAnswer: selectedOptionId,
+        correctOption: options.find(opt => opt.isCorrectOption)?.optionId,
+        isCorrect: selectedOption?.isCorrectOption,
+        marksAwarded: marks
+      });
+    } 
+    else if (question.questionType === 'Multi') {
+      const correctOptions = options
+        .filter(option => option.isCorrectOption)
+        .map(option => option.optionId);
+      
+      let selectedAnswers = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
+      
+      let correctCount = 0;
+      selectedAnswers.forEach((answerId: string) => {
+        if (correctOptions.includes(answerId)) {
+          correctCount++;
+        }
+      });
+
+      const marksPerCorrectAnswer = question.questionWeightage / correctOptions.length;
+      marks = correctCount * marksPerCorrectAnswer;
+
+      let penalty = 0;
+      const extraAnswersSelected = selectedAnswers.length - correctOptions.length;
+      if (extraAnswersSelected > 0) {
+        const penaltyPerExtraAnswer = question.questionWeightage / correctOptions.length;
+        penalty = extraAnswersSelected * penaltyPerExtraAnswer;
+        marks -= penalty;
+        if (marks < 0) marks = 0;
+      }
+
+      console.log('Multi Choice Question Marks:', {
+        questionId: question.questionId,
+        questionText: question.questionText,
+        selectedAnswers,
+        correctOptions,
+        correctCount,
+        marksPerCorrect: marksPerCorrectAnswer,
+        penalty: penalty,
+        finalMarks: marks
+      });
+    }
+    else if (question.questionType === 'Descriptive') {
+      marks = 0;
+    }
+
+    return marks;
+  }
+
+  calculateTotalMarks(questions: Question[], options: { [key: string]: Option[] }, userAnswers: { [key: string]: any }): number {
+    return questions.reduce((total, question) => {
+      if (question.questionType === 'Descriptive') {
+        return total;
+      }
+
+      const questionOptions = options[question.questionId] || [];
+      const userAnswer = userAnswers[question.questionId];
+      
+      if (!userAnswer) {
+        return total;
+      }
+
+      const marks = this.evaluateAutoScoredQuestions(question, questionOptions, userAnswer);
+      return total + marks;
+    }, 0);
+  }
 }

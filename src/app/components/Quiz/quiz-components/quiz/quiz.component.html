@@ -67,4 +67,13 @@
    (onConfirm)="submitQuiz()"
    (onCancel)="showModal = false">
  </app-submission-modal>
+
+ <!-- Reload Warning Modal -->
+ <div *ngIf="showReloadWarningModal" class="modal-overlay">
+  <div class="modal-content warning-modal">
+    <h2>⚠️ Warning</h2>
+    <p>Please do not refresh the page during the quiz. Refreshing again will terminate your quiz session.</p>
+    <button (click)="closeReloadWarning()" class="btn btn-warning">I Understand</button>
+  </div>
+</div>
 </div>

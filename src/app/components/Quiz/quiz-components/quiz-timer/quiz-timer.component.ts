@@ -12,7 +12,7 @@ export class QuizTimerComponent implements OnInit, OnDestroy {
   @Input() totalTime: number = 0;
   @Output() timeUp = new EventEmitter<void>();
   @Output() timerClassChanged = new EventEmitter<string>(); // Emit background color change
-  timerClass: string = 'bg-green-300';
+  timerClass: string = 'bg-gradient-to-r from-green-400 via-teal-500 to-blue-500';
 
   private timer?: any;
   totalSeconds = 0;
@@ -62,7 +62,7 @@ export class QuizTimerComponent implements OnInit, OnDestroy {
     if (this.totalSeconds <= 180) {
       this.timerClassChanged.emit("bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 text-white p-6 rounded-xl shadow-lg"); 
     } else {
-      this.timerClassChanged.emit('bg-gradient-to-r from-green-400 via-teal-500 to-blue-500'); 
+      this. timerClass; 
     }
   }
 

@@ -9,6 +9,7 @@ import { QuizTimerComponent } from '../quiz-timer/quiz-timer.component';
 import { SubmissionModalComponent } from '../submission-modal/submission-modal.component';
 import { QuizAnswerService } from '../../services/quiz-answer.service';
 import { ToastService } from '../../services/toast.service';
+import { Router } from '@angular/router';
 
 @Component({
   standalone:true,
@@ -26,13 +27,50 @@ export class QuizComponent implements OnInit, OnDestroy {
   assessmentId: string = '';
   showModal = false; 
   totalQuestionTime: number = 0; // New property to store total question time
+  reloadCount = 0;
+  showReloadWarningModal = false;
+  private beforeUnloadListener: any;
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private quizService: QuizService,
-    private quizAnswerService: QuizAnswerService, //---------
+    private quizAnswerService: QuizAnswerService,
     private toastService: ToastService
-  ) {}
+  ) {
+    this.handlePageReload();
+    this.setupBeforeUnloadListener();
+  }
+
+  private setupBeforeUnloadListener(): void {
+    this.beforeUnloadListener = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = ''; // This is required for Chrome
+      return ''; // This is required for other browsers
+    };
+    window.addEventListener('beforeunload', this.beforeUnloadListener);
+  }
+
+  private handlePageReload(): void {
+    const storedCount = sessionStorage.getItem('quizReloadCount');
+    this.reloadCount = storedCount ? parseInt(storedCount, 10) : 0;
+
+    if (performance.navigation.type === 1) {
+      this.reloadCount++;
+      sessionStorage.setItem('quizReloadCount', this.reloadCount.toString());
+
+      if (this.reloadCount === 1) {
+        this.showReloadWarningModal = true;
+      } else if (this.reloadCount >= 2) {
+        this.router.navigate(['/invalid']);
+        this.toastService.showError('Quiz terminated due to multiple page refreshes');
+      }
+    }
+  }
+
+  closeReloadWarning(): void {
+    this.showReloadWarningModal = false;
+  }
 
   ngOnInit(): void {
     const state = window.history.state;
@@ -110,10 +148,28 @@ export class QuizComponent implements OnInit, OnDestroy {
   
 
   onAnswerSelect(optionId: string) {
-    // this.quizAnswerService.storeAnswer(this.currentQuestionData.questionId, false, [optionId]); //-----
-    const isDescriptive = this.currentQuestionData.questionType === 'Descriptive';
-    this.quizAnswerService.storeAnswer(this.currentQuestionData.questionId, isDescriptive, [optionId]);
+    // Calculate marks immediately when an answer is selected
+    let marks = '0';
+    if (this.currentQuestionData.questionType !== 'Descriptive') {
+      marks = this.quizService.evaluateAutoScoredQuestions(
+        this.currentQuestionData,
+        this.currentQuestionOptions,
+        optionId  // Pass the optionId directly
+      ).toString();
+      console.log('Answer Selected:', {
+        questionId: this.currentQuestionData.questionId,
+        selectedOption: optionId,
+        calculatedMarks: marks
+      });
+    }
 
+    this.quizAnswerService.storeAnswer(
+      this.currentQuestionData.questionId,
+      this.currentQuestionData.questionType === 'Descriptive',
+      [optionId],
+      marks,
+      ''
+    );
   }
 
   toggleReview() {
@@ -161,26 +217,57 @@ export class QuizComponent implements OnInit, OnDestroy {
   submitQuiz() {
     console.log('Quiz submitted:', this.questions);
     console.log('User ID:', this.userId);
-    // Ensure all questions are saved, attempted or not
-  this.questions.forEach((question) => {
-    const answer = this.quizAnswerService.getUserAnswers()[question.questionId];
-    if (answer) {
-      // If there is an answer, store it (either descriptive or not)
+
+    // Calculate marks for auto-scored questions
+    const userAnswers = this.quizAnswerService.getUserAnswers();
+    let totalMarks = 0;
+    
+    console.log('Starting marks calculation for all questions...');
+    
+    // Store answers and calculate marks for each question
+    this.questions.forEach((question) => {
+      const answer = userAnswers[question.questionId];
+      let marks = '0';
+
+      if (answer && question.questionType !== 'Descriptive') {
+        // Pass the userAnswer array directly
+        marks = this.quizService.evaluateAutoScoredQuestions(
+          question,
+          this.options[question.questionId] || [],
+          answer.userAnswer  // Pass the userAnswer array directly
+        ).toString();
+        totalMarks += Number(marks);
+
+        console.log('Question Evaluation:', {
+          questionId: question.questionId,
+          questionType: question.questionType,
+          userAnswer: answer.userAnswer,
+          calculatedMarks: marks
+        });
+      }
+
+      // Store the answer with calculated marks
       this.quizAnswerService.storeAnswer(
         question.questionId,
-        answer.isDescriptive,
-        answer.userAnswer || answer.answer || []  // Ensure that it never passes undefined
+        question.questionType === 'Descriptive',
+        answer?.userAnswer || [],
+        marks,
+        answer?.answer || ''
       );
-    } else {
-      // For non-attempted questions, save a placeholder or empty answer
-      this.quizAnswerService.storeAnswer(question.questionId, false, []);  // Empty array for non-attempted questions
-    }
-  });
+    });
 
-    this.quizAnswerService.submitQuiz(this.questions);  
+    console.log('Final Quiz Results:', {
+      totalMarks,
+      totalQuestions: this.questions.length,
+      userAnswers: userAnswers,
+      allQuestions: this.questions,
+      allOptions: this.options
+    });
+
+    // Submit the quiz with the calculated marks
+    this.quizAnswerService.submitQuiz(this.questions, totalMarks);
     this.showModal = false;
     this.toastService.showSuccess('Quiz submitted successfully!');
-
   }
 
   submitFinalQuiz() {
@@ -190,10 +277,12 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   handleTimeUp() {
     this.submitQuiz();
-    this.toastService.showInfo("Time's up! We'll submit your quiz now.");
+    this.toastService.showInfo("Time's up!.");
   }
 
   ngOnDestroy() {
-    // Cleanup if needed
+    sessionStorage.removeItem('quizReloadCount');
+    // Remove the event listener when component is destroyed
+    window.removeEventListener('beforeunload', this.beforeUnloadListener);
   }
 }

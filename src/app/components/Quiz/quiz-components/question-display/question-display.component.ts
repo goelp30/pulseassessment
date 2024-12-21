@@ -20,6 +20,7 @@ onDescriptiveAnswerChange($event: string) {
   @Input() questionNumber!: number;
   @Input() totalQuestions!: number;
   @Output() answerSelect = new EventEmitter<string>();
+  @Output() descriptiveAnswerChange = new EventEmitter<string>();
   @Output() reviewToggle = new EventEmitter<void>();
 
   onAnswerSelect(optionId: string): void {
