@@ -205,13 +205,51 @@ export class TableComponent implements OnInit, OnChanges {
     this.generatePagination();
   }
 
+
   generatePagination(): void {
     const totalPages = this.totalPages;
-    const pages = [];
-    for (let i = 1; i <= totalPages; i++) {
-      pages.push(i);
+    let pages: (number | '...')[] = [];
+
+    if (totalPages <= 5) {
+      // If total pages are 5 or less, display all
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Display first page
+      pages.push(1);
+
+      //Logic to show ellipsis when needed and not add duplicate elements 
+      if(this.currentPage > 3){
+          pages.push('...');
+      }
+      // Display current page, the one before and the one after if inside boundaries
+      if (this.currentPage > 2) {
+          pages.push(this.currentPage - 1);
+      }
+      if(this.currentPage > 1 && this.currentPage <= totalPages)
+      {
+          pages.push(this.currentPage);
+      }
+       if(this.currentPage < totalPages - 1){
+          pages.push(this.currentPage + 1);
+      }
+      if(this.currentPage < totalPages - 2){
+          pages.push('...');
+      }
+
+
+      // Display last page
+      if(totalPages !==1){
+      pages.push(totalPages);
+      }
+
+      // Filter out potential duplicate "..."
+      pages = pages.filter((item,index, arr)=> arr.indexOf(item) === index);
+
     }
-    this.pageNumbers = pages;
+
+    this.pageNumbers = pages as number[];
   }
 
   getButtonLabel(button: any, row: any): string {
