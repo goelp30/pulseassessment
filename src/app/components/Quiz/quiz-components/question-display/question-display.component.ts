@@ -1,14 +1,24 @@
-import { Component, Input, Output, EventEmitter, ViewChildren, QueryList, ElementRef, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ViewChildren,
+  QueryList,
+  ElementRef,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Option, Question } from '../../../../models/question';
+import { MonacoEditorComponent } from '../monaco-editor/monaco-editor.component';
 
 @Component({
   selector: 'app-question-display',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MonacoEditorComponent],
   templateUrl: './question-display.component.html',
-  styleUrls: ['./question-display.component.css']
+  styleUrls: ['./question-display.component.css'],
 })
 export class QuestionDisplayComponent implements OnInit {
   @ViewChildren('radioInput') radioInputs!: QueryList<ElementRef>;
@@ -24,6 +34,31 @@ export class QuestionDisplayComponent implements OnInit {
 
   descriptiveAnswer: string = '';
 
+  answerType: 'code' | 'text' = 'text'; // Default to text
+
+  editorOptions = {
+    language: 'javascript',
+    theme: 'vs-dark',
+    automaticLayout: true,
+    minimap: { enabled: false },
+    fontSize: 14,
+    scrollBeyondLastLine: false,
+    lineNumbers: 'on',
+    roundedSelection: true,
+    cursorStyle: 'line',
+    padding: { top: 10 },
+  };
+
+  languages = [
+    { value: 'javascript', label: 'JavaScript' },
+    { value: 'typescript', label: 'TypeScript' },
+    { value: 'python', label: 'Python' },
+    { value: 'java', label: 'Java' },
+    { value: 'csharp', label: 'C#' },
+  ];
+
+  selectedLanguage = 'javascript';
+
   ngOnInit() {
     this.clearSavedAnswer();
   }
@@ -31,7 +66,8 @@ export class QuestionDisplayComponent implements OnInit {
   clearSavedAnswer(): void {
     const key = `question_${this.question.questionId}`;
     localStorage.removeItem(key);
-    this.question.selectedAnswer = this.question.questionType === 'Multi' ? [] : null;
+    this.question.selectedAnswer =
+      this.question.questionType === 'Multi' ? [] : null;
     this.descriptiveAnswer = '';
   }
 
@@ -73,5 +109,28 @@ export class QuestionDisplayComponent implements OnInit {
       this.descriptiveAnswer = event.target.value;
       this.descriptiveAnswerChange.emit(event.target.value);
     }
+  }
+
+  handleEditorChange(value: string | undefined) {
+    if (value !== undefined) {
+      this.descriptiveAnswer = value;
+      this.descriptiveAnswerChange.emit(value);
+    }
+  }
+
+  onLanguageChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    this.selectedLanguage = select.value;
+    this.editorOptions = {
+      ...this.editorOptions,
+      language: select.value,
+    };
+  }
+
+  toggleAnswerType(): void {
+    this.answerType = this.answerType === 'text' ? 'code' : 'text';
+    // Clear answer when switching types
+    this.descriptiveAnswer = '';
+    this.descriptiveAnswerChange.emit('');
   }
 }

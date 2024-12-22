@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastService } from '../../services/toast.service';
 
@@ -17,9 +24,7 @@ export class QuizTimerComponent implements OnInit, OnDestroy {
   private timer?: any;
   totalSeconds = 0;
 
-
-  constructor(private toastService: ToastService)
-  { }
+  constructor(private toastService: ToastService) {}
 
   ngOnInit() {
     this.calculateTotalTime();
@@ -60,9 +65,9 @@ export class QuizTimerComponent implements OnInit, OnDestroy {
 
   private emitTimerClass() {
     if (this.totalSeconds <= 300) {
-      this.timerClassChanged.emit("bg-red-400"); 
+      this.timerClassChanged.emit('bg-red-400');
     } else {
-      this.timerClass; 
+      this.timerClass;
     }
   }
 
@@ -70,6 +75,8 @@ export class QuizTimerComponent implements OnInit, OnDestroy {
     const hours = Math.floor(this.totalSeconds / 3600);
     const minutes = Math.floor((this.totalSeconds % 3600) / 60);
     const seconds = this.totalSeconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return `${hours.toString().padStart(2, '0')}:${minutes
+      .toString()
+      .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 }

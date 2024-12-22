@@ -1,14 +1,11 @@
 <div class="bg-white rounded-xl shadow-lg p-6">
-  <div class="flex justify-between items-start mb-6">
-    <h2 class="text-xl">
-      <span class="text-gray-600">Question {{ questionNumber }} of {{ totalQuestions }}:</span>
-      <span class="ml-2 font-medium">{{ question.questionText }}</span>
+  <div class="flex justify-between items-start mb-8">
+    <h2 class="text-xl font-medium">
+      Question {{ questionNumber }} of {{ totalQuestions }}:
+      <span class="ml-2">{{ question.questionText }}</span>
     </h2>
-    <button 
-      (click)="onReviewToggle()"
-      class="px-6 py-2 rounded-full text-white text-sm"
-      [class.bg-yellow-400]="question.isMarkedForReview"
-      [class.bg-blue-500]="!question.isMarkedForReview">
+    <button (click)="onReviewToggle()" class="px-6 py-2 rounded-full text-white text-sm ml-4"
+      [class.bg-yellow-400]="question.isMarkedForReview" [class.bg-blue-500]="!question.isMarkedForReview">
       Mark for Review
     </button>
   </div>
@@ -17,61 +14,106 @@
     <ng-container [ngSwitch]="question.questionType">
       <!-- Single Choice -->
       <ng-container *ngSwitchCase="'Single'">
-        <div 
-          *ngFor="let option of options"
-          class="flex items-center p-4 bg-white rounded-lg border cursor-pointer transition-colors hover:bg-blue-100"
-          [class.border-blue-500]="isOptionSelected(option.optionId)"
-          (click)="selectOption(option.optionId, $event)">
-          <input 
-            #radioInput
-            type="radio" 
-            [id]="'option' + option.optionId" 
-            [name]="'question' + question.questionId" 
-            [value]="option.optionId" 
-            [checked]="isOptionSelected(option.optionId)"
+        <div *ngFor="let option of options"
+          class="flex items-center p-4 rounded-lg border border-gray-200 cursor-pointer transition-all duration-200 mb-3 hover:border-blue-300"
+          [ngClass]="{
+            'bg-blue-50 border-blue-300': isOptionSelected(option.optionId)
+          }" (click)="selectOption(option.optionId, $event)">
+          <input #radioInput type="radio" [id]="'option' + option.optionId" [name]="'question' + question.questionId"
+            [value]="option.optionId" [checked]="isOptionSelected(option.optionId)"
             class="h-4 w-4 text-blue-600 focus:ring-blue-500 cursor-pointer"
             (change)="selectOption(option.optionId, $event)">
-          <label [for]="'option' + option.optionId" class="ml-3 cursor-pointer w-full">
-            <div class="w-full">
-              {{ option.optionText }}
-            </div>
+          <label [for]="'option' + option.optionId" class="ml-3 cursor-pointer w-full text-gray-700">
+            {{ option.optionText }}
           </label>
         </div>
       </ng-container>
 
-      <!-- Multi Choice -->
+      <!-- Multi Choice (similar styling) -->
       <ng-container *ngSwitchCase="'Multi'">
-        <div 
-          *ngFor="let option of options"
-          class="flex items-center p-4 bg-white rounded-lg border cursor-pointer transition-colors hover:bg-blue-100"
-          [class.border-blue-500]="isOptionSelected(option.optionId)"
-          (click)="selectOption(option.optionId, $event)">
-          <input 
-            #checkboxInput
-            type="checkbox" 
-            [id]="'option' + option.optionId" 
-            [name]="'question' + question.questionId" 
-            [value]="option.optionId" 
+        <div *ngFor="let option of options"
+          class="flex items-center p-4 rounded-lg border border-gray-200 cursor-pointer transition-all duration-200 mb-3 hover:border-blue-300"
+          [ngClass]="{
+            'bg-blue-50 border-blue-300': isOptionSelected(option.optionId)
+          }" (click)="selectOption(option.optionId, $event)">
+          <input #checkboxInput type="checkbox" [id]="'option' + option.optionId"
+            [name]="'question' + question.questionId" [value]="option.optionId"
             [checked]="isOptionSelected(option.optionId)"
             class="h-4 w-4 text-blue-600 focus:ring-blue-500 cursor-pointer"
             (change)="selectOption(option.optionId, $event)">
-          <label [for]="'option' + option.optionId" class="ml-3 cursor-pointer w-full">
-            <div class="w-full">
-              {{ option.optionText }}
-            </div>
+          <label [for]="'option' + option.optionId" class="ml-3 cursor-pointer w-full text-gray-700">
+            {{ option.optionText }}
           </label>
         </div>
       </ng-container>
 
       <!-- Descriptive -->
       <ng-container *ngSwitchCase="'Descriptive'">
-        <textarea
-          [(ngModel)]="descriptiveAnswer"
-          (ngModelChange)="onDescriptiveAnswerChange($event)"
-          rows="6"
-          class="w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Type your answer here...">
-        </textarea>
+        <div class="space-y-4">
+          <!-- Answer Type Selector -->
+          <div class="flex items-center gap-4 mb-4">
+            <label class="text-gray-700 font-medium">Answer Type:</label>
+            <div class="flex items-center gap-2">
+              <span [class.text-gray-500]="answerType === 'code'" [class.text-blue-600]="answerType === 'text'">Text</span>
+              <button 
+                type="button"
+                (click)="toggleAnswerType()"
+                class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                [class.bg-blue-600]="answerType === 'code'"
+                [class.bg-gray-200]="answerType === 'text'"
+                role="switch"
+                [attr.aria-checked]="answerType === 'code'">
+                <span
+                  class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                  [class.translate-x-5]="answerType === 'code'"
+                  [class.translate-x-0]="answerType === 'text'">
+                </span>
+              </button>
+              <span [class.text-blue-600]="answerType === 'code'" [class.text-gray-500]="answerType === 'text'">Code</span>
+            </div>
+          </div>
+
+          <!-- Code Answer Section -->
+          <ng-container *ngIf="answerType === 'code'">
+            <!-- Language selector -->
+            <div class="flex items-center gap-4 mb-4">
+              <label class="text-gray-700 font-medium">Programming Language:</label>
+              <select [(ngModel)]="selectedLanguage" (change)="onLanguageChange($event)"
+                class="form-select rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                <option *ngFor="let lang of languages" [value]="lang.value">
+                  {{ lang.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Code Editor -->
+            <div class="h-[400px] border rounded-lg overflow-hidden">
+              <app-monaco-editor [options]="editorOptions" [(code)]="descriptiveAnswer"
+                (codeChange)="onDescriptiveAnswerChange($event)">
+              </app-monaco-editor>
+            </div>
+
+            <!-- Coding Guidelines -->
+            <div class="bg-blue-50 p-4 rounded-lg mt-4">
+              <h3 class="text-blue-700 font-semibold mb-2">Coding Guidelines:</h3>
+              <ul class="list-disc list-inside space-y-1 text-sm text-blue-600">
+                <li>Write clean and well-documented code</li>
+                <li>Follow proper indentation and formatting</li>
+                <li>Include comments to explain complex logic</li>
+                <li>Handle edge cases appropriately</li>
+                <li>Use meaningful variable and function names</li>
+              </ul>
+            </div>
+          </ng-container>
+
+          <!-- Text Answer Section -->
+          <ng-container *ngIf="answerType === 'text'">
+            <textarea [(ngModel)]="descriptiveAnswer" (ngModelChange)="onDescriptiveAnswerChange($event)" rows="10"
+              class="w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-300 transition-colors duration-200"
+              placeholder="Type your answer here...">
+            </textarea>
+          </ng-container>
+        </div>
       </ng-container>
     </ng-container>
   </div>

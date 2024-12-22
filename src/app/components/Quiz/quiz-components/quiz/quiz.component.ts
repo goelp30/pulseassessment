@@ -10,13 +10,20 @@ import { SubmissionModalComponent } from '../submission-modal/submission-modal.c
 import { QuizAnswerService } from '../../services/quiz-answer.service';
 import { ToastService } from '../../services/toast.service';
 import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
+import { RouterLink } from '@angular/router';
 
 @Component({
-  standalone:true,
-  imports: [CommonModule, QuestionDisplayComponent, QuestionNavigatorComponent, QuizTimerComponent, SubmissionModalComponent],
+  standalone: true,
+  imports: [
+    CommonModule,
+    QuestionDisplayComponent,
+    QuestionNavigatorComponent,
+    QuizTimerComponent,
+    SubmissionModalComponent,
+  ],
   selector: 'app-quiz',
   templateUrl: './quiz.component.html',
-  styleUrl:'./quiz.component.css'
+  styleUrl: './quiz.component.css',
 })
 export class QuizComponent implements OnInit, OnDestroy {
   questions: Question[] = [];
@@ -25,7 +32,7 @@ export class QuizComponent implements OnInit, OnDestroy {
   loading = true;
   userId: string = '';
   assessmentId: string = '';
-  showModal = false; 
+  showModal = false;
   totalQuestionTime: number = 0; // New property to store total question time
   reloadCount = 0;
   showReloadWarningModal = false;
@@ -64,7 +71,9 @@ export class QuizComponent implements OnInit, OnDestroy {
         this.showReloadWarningModal = true;
       } else if (this.reloadCount >= 2) {
         this.router.navigate(['/invalid']);
-        this.toastService.showError('Quiz terminated due to multiple page refreshes');
+        this.toastService.showError(
+          'Quiz terminated due to multiple page refreshes'
+        );
       }
     }
   }
@@ -77,50 +86,56 @@ export class QuizComponent implements OnInit, OnDestroy {
     const state = window.history.state;
     if (state?.assessmentId) {
       this.assessmentId = state.assessmentId;
-      this.quizAnswerService.setAssessmentId(this.assessmentId);  // Set userId in the service
+      this.quizAnswerService.setAssessmentId(this.assessmentId); // Set userId in the service
       console.log('Assessment ID from state:', this.assessmentId);
     } else {
       console.error('Assessment ID not found in router state');
       return;
     }
-    if (state?.userId) { //--------
+    if (state?.userId) {
+      //--------
       this.userId = state.userId;
-      this.quizAnswerService.setUserId(this.userId);  // Set userId in the service  
+      this.quizAnswerService.setUserId(this.userId); // Set userId in the service
     }
 
     this.loadAssessmentData();
   }
 
-
-  
   private loadAssessmentData(): void {
     this.loading = true;
 
-    this.quizService.getAssessmentById(this.assessmentId).subscribe((assessment) => {
-      if (assessment) {
-        console.log('Found assessment:', assessment);
-        this.quizService.getQuestionsBySubjects(Object.keys(assessment.subjects)).subscribe(
-          (questions) => {
-            this.questions = this.quizService.filterQuestionsByDifficulty(
-              questions,
-              assessment
-            );
+    this.quizService
+      .getAssessmentById(this.assessmentId)
+      .subscribe((assessment) => {
+        if (assessment) {
+          console.log('Found assessment:', assessment);
+          this.quizService
+            .getQuestionsBySubjects(Object.keys(assessment.subjects))
+            .subscribe((questions) => {
+              this.questions = this.quizService.filterQuestionsByDifficulty(
+                questions,
+                assessment
+              );
 
-            // Calculate total question time
-            this.totalQuestionTime = this.questions.reduce((total, question) => total + question.questionTime, 0);
+              // Calculate total question time
+              this.totalQuestionTime = this.questions.reduce(
+                (total, question) => total + question.questionTime,
+                0
+              );
 
-            const questionIds = this.questions.map((q) => q.questionId);
-            this.quizService.getOptionsForQuestions(questionIds).subscribe((options) => {
-              this.options = options;
-              this.loading = false;
+              const questionIds = this.questions.map((q) => q.questionId);
+              this.quizService
+                .getOptionsForQuestions(questionIds)
+                .subscribe((options) => {
+                  this.options = options;
+                  this.loading = false;
+                });
             });
-          }
-        );
-      } else {
-        console.error('Assessment not found!');
-        this.loading = false;
-      }
-    });
+        } else {
+          console.error('Assessment not found!');
+          this.loading = false;
+        }
+      });
   }
 
   get currentQuestionData(): Question {
@@ -131,38 +146,44 @@ export class QuizComponent implements OnInit, OnDestroy {
     return this.options[this.currentQuestionData?.questionId.toString()] || [];
   }
 
-
   isNextButtonDisabled(): boolean {
-    const currentQuestionAnswer = this.quizAnswerService.getUserAnswers()[this.questions[this.currentQuestion]?.questionId];
-    const descriptiveAnswer = this.questions[this.currentQuestion]?.descriptiveAnswer?.trim();
-    
+    const currentQuestionAnswer =
+      this.quizAnswerService.getUserAnswers()[
+        this.questions[this.currentQuestion]?.questionId
+      ];
+    const descriptiveAnswer =
+      this.questions[this.currentQuestion]?.descriptiveAnswer?.trim();
+
     // Check if the current question is the last question
     const isLastQuestion = this.currentQuestion === this.questions.length - 1;
-  
+
     // Return true if no option is selected, the question is not marked for review, the descriptive box is empty, or if it's the last question
     return (
       isLastQuestion || // Disable if it's the last question
-      !this.questions[this.currentQuestion]?.isMarkedForReview &&
-      (!currentQuestionAnswer?.userAnswer?.length && !descriptiveAnswer)
+      (!this.questions[this.currentQuestion]?.isMarkedForReview &&
+        !currentQuestionAnswer?.userAnswer?.length &&
+        !descriptiveAnswer)
     );
   }
-  
 
   onAnswerSelect(optionId: string) {
     // Calculate marks immediately when an answer is selected
     let marks = '0';
-    const isDescriptive = this.currentQuestionData.questionType === 'Descriptive';
+    const isDescriptive =
+      this.currentQuestionData.questionType === 'Descriptive';
 
     if (!isDescriptive) {
-      marks = this.quizService.evaluateAutoScoredQuestions(
-        this.currentQuestionData,
-        this.currentQuestionOptions,
-        optionId  // Pass the optionId directly
-      ).toString();
+      marks = this.quizService
+        .evaluateAutoScoredQuestions(
+          this.currentQuestionData,
+          this.currentQuestionOptions,
+          optionId // Pass the optionId directly
+        )
+        .toString();
       console.log('Answer Selected:', {
         questionId: this.currentQuestionData.questionId,
         selectedOption: optionId,
-        calculatedMarks: marks
+        calculatedMarks: marks,
       });
     }
 
@@ -206,25 +227,28 @@ export class QuizComponent implements OnInit, OnDestroy {
     }
   }
 
-
   allQuestionsVisited(): boolean {
     return this.questions.every((question) => {
       if (question.isVisited) return true;
-      
-      const currentQuestionAnswer = this.quizAnswerService.getUserAnswers()[question?.questionId];
+
+      const currentQuestionAnswer =
+        this.quizAnswerService.getUserAnswers()[question?.questionId];
       const descriptiveAnswer = question?.descriptiveAnswer?.trim();
-      
-      return (currentQuestionAnswer?.userAnswer?.length ?? 0) > 0 || 
-             (descriptiveAnswer?.length ?? 0) > 0;
+
+      return (
+        (currentQuestionAnswer?.userAnswer?.length ?? 0) > 0 ||
+        (descriptiveAnswer?.length ?? 0) > 0
+      );
     });
   }
-  
-  
 
   onDescriptiveAnswerChange(answer: string) {
     console.log('Descriptive answer received:', answer);
-    
-    if (this.currentQuestionData && this.currentQuestionData.questionType === 'Descriptive') {
+
+    if (
+      this.currentQuestionData &&
+      this.currentQuestionData.questionType === 'Descriptive'
+    ) {
       // Store descriptive answer
       this.quizAnswerService.storeAnswer(
         this.currentQuestionData.questionId,
@@ -241,7 +265,7 @@ export class QuizComponent implements OnInit, OnDestroy {
       console.log('Descriptive Answer Stored:', {
         questionId: this.currentQuestionData.questionId,
         answer: answer,
-        question: this.currentQuestionData
+        question: this.currentQuestionData,
       });
     }
   }
@@ -262,11 +286,11 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   submitQuiz() {
     console.log('Quiz submitted:', this.questions);
-    
+
     const userAnswers = this.quizAnswerService.getUserAnswers();
     let totalMarks = 0;
     let hasDescriptiveAnswers = false;
-    
+
     this.questions.forEach((question) => {
       const answer = userAnswers[question.questionId];
       let marks = '0';
@@ -276,9 +300,9 @@ export class QuizComponent implements OnInit, OnDestroy {
           hasDescriptiveAnswers = true;
           console.log('Descriptive answer found:', {
             questionId: question.questionId,
-            answer: answer.answer
+            answer: answer.answer,
           });
-          
+
           // Store descriptive answer for evaluation
           this.quizAnswerService.storeAnswer(
             question.questionId,
@@ -290,11 +314,13 @@ export class QuizComponent implements OnInit, OnDestroy {
         }
       } else if (answer) {
         // Handle non-descriptive questions as before
-        marks = this.quizService.evaluateAutoScoredQuestions(
-          question,
-          this.options[question.questionId] || [],
-          answer.userAnswer
-        ).toString();
+        marks = this.quizService
+          .evaluateAutoScoredQuestions(
+            question,
+            this.options[question.questionId] || [],
+            answer.userAnswer
+          )
+          .toString();
         totalMarks += Number(marks);
 
         this.quizAnswerService.storeAnswer(
@@ -311,23 +337,27 @@ export class QuizComponent implements OnInit, OnDestroy {
       totalMarks,
       totalQuestions: this.questions.length,
       hasDescriptiveAnswers,
-      userAnswers
+      userAnswers,
     });
 
     // Submit the quiz with the calculated marks
     this.quizAnswerService.submitQuiz(this.questions, totalMarks);
-    
+
     if (hasDescriptiveAnswers) {
-      this.toastService.showInfo('Quiz submitted successfully! Descriptive answers will be evaluated by the examiner.');
+      this.toastService.showInfo(
+        'Quiz submitted successfully! Descriptive answers will be evaluated by the examiner.'
+      );
     } else {
       this.toastService.showSuccess('Quiz submitted successfully!');
     }
     this.updateAssessmentRecord();
     this.showModal = false;
+
+    // Navigate to thank you page
+    this.router.navigate(['/thank-you']);
   }
 
   submitFinalQuiz() {
-    
     this.showModal = true;
   }
 

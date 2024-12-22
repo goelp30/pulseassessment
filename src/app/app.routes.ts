@@ -24,21 +24,67 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   // Link Generation Routes
-  { path: 'generatelink', component: LinkGenerationComponent,canActivate: [authGuard] },
-  { path: 'assessmentrecords', component: AssessmentRecordsComponent,canActivate: [authGuard] },
+  {
+    path: 'generatelink',
+    component: LinkGenerationComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'assessmentrecords',
+    component: AssessmentRecordsComponent,
+    canActivate: [authGuard],
+  },
   { path: 'linkexpired', component: LinkExpiredComponent },
   { path: 'alreadyattended', component: AlreadyAttendedComponent },
   { path: 'invalid', component: InvalidComponent },
-  { path: 'termsandconditions/:assessmentId/:userId', component: TermsConditionsComponent, canActivate: [LinkStatusGuard],  },
-  { path: 'assessment-list', component: AssessmentListComponent, canActivate: [authGuard] },
-  { path: 'drag-and-drop', component: DragDropComponent, canActivate: [authGuard] },
-  { path: 'subjects', component: SubjectlistComponent, canActivate: [authGuard] },
-  { path: 'questions', component: QuestionlistComponent, canActivate: [authGuard] },
-  { path: 'app-quiz', component: QuizComponent},
+  {
+    path: 'termsandconditions/:assessmentId/:userId',
+    component: TermsConditionsComponent,
+    canActivate: [LinkStatusGuard],
+  },
+  {
+    path: 'assessment-list',
+    component: AssessmentListComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'drag-and-drop',
+    component: DragDropComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'subjects',
+    component: SubjectlistComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'questions',
+    component: QuestionlistComponent,
+    canActivate: [authGuard],
+  },
+  { path: 'app-quiz', component: QuizComponent },
   //evaluate module routes
-  { path: 'evaluation', component: EvaluationDashboardComponent,canActivate: [authGuard] },
-  { path: 'evaluate', component: EvaluateAssessmentComponent,canActivate: [authGuard] },
-  { path: 'view', component: ViewAssessmentComponent,canActivate: [authGuard] },
+  {
+    path: 'evaluation',
+    component: EvaluationDashboardComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'evaluate',
+    component: EvaluateAssessmentComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'view',
+    component: ViewAssessmentComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'thank-you',
+    loadComponent: () =>
+      import(
+        './components/Quiz/quiz-components/thank-you/thank-you.component'
+      ).then((m) => m.ThankYouComponent),
+  },
   { path: '**', component: DashboardComponent, canActivate: [authGuard] },
-
 ];

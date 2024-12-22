@@ -15,30 +15,34 @@ export class SubmissionModalComponent {
   @Output() onConfirm = new EventEmitter<void>();
   @Output() onCancel = new EventEmitter<void>();
 
-  // Method to count attempted questions
-  getAttemptedCount(): number {
-    return this.questions.filter(q => 
-      q.selectedAnswer !== undefined || 
-      (q.questionType === 'descriptive' && !!q.descriptiveAnswer?.trim())
-    ).length;
-  }
-
   // Method to count marked questions for review
   getMarkedForReviewCount(): number {
     return this.questions.filter(q => q.isMarkedForReview).length;
   }
 
-  // Method to count unanswered questions
-  getNotAttemptedCount(): number {
+  // Method to count attempted questions (excluding marked for review)
+  getAttemptedCount(): number {
     return this.questions.filter(q => 
-      q.selectedAnswer === undefined && 
-      (q.questionType !== 'descriptive' || !q.descriptiveAnswer?.trim()) &&
-      !q.isMarkedForReview
+      !q.isMarkedForReview && 
+      (q.selectedAnswer !== undefined || 
+      (q.questionType === 'descriptive' && !!q.descriptiveAnswer?.trim()))
     ).length;
   }
 
-  // Method to check if all questions have been attempted
+  // Method to count unanswered questions (excluding marked for review)
+  getNotAttemptedCount(): number {
+    return this.questions.filter(q => 
+      !q.isMarkedForReview && 
+      q.selectedAnswer === undefined && 
+      (q.questionType !== 'descriptive' || !q.descriptiveAnswer?.trim())
+    ).length;
+  }
+
+  // Method to check if all questions have been attempted or marked for review
   isSubmitDisabled(): boolean {
-    return this.getAttemptedCount() !== this.questions.length;
+    const totalQuestions = this.questions.length;
+    const markedForReviewCount = this.getMarkedForReviewCount();
+    const attemptedCount = this.getAttemptedCount();
+    return (markedForReviewCount + attemptedCount) !== totalQuestions;
   }
 }
