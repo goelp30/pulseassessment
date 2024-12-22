@@ -20,6 +20,9 @@ export class QuestionDisplayComponent implements OnInit {
   @Input() totalQuestions!: number;
   @Output() answerSelect = new EventEmitter<string>();
   @Output() reviewToggle = new EventEmitter<void>();
+  @Output() descriptiveAnswerChange = new EventEmitter<string>();
+
+  descriptiveAnswer: string = '';
 
   ngOnInit() {
     this.clearSavedAnswer();
@@ -29,7 +32,7 @@ export class QuestionDisplayComponent implements OnInit {
     const key = `question_${this.question.questionId}`;
     localStorage.removeItem(key);
     this.question.selectedAnswer = this.question.questionType === 'Multi' ? [] : null;
-    this.question.descriptiveAnswer = '';
+    this.descriptiveAnswer = '';
   }
 
   selectOption(optionId: string, event: Event): void {
@@ -62,8 +65,13 @@ export class QuestionDisplayComponent implements OnInit {
     return this.question.selectedAnswer === optionId;
   }
 
-  onDescriptiveAnswerChange(newAnswer: string): void {
-    this.question.descriptiveAnswer = newAnswer;
-    this.answerSelect.emit(newAnswer);
+  onDescriptiveAnswerChange(event: any): void {
+    if (typeof event === 'string') {
+      this.descriptiveAnswer = event;
+      this.descriptiveAnswerChange.emit(event);
+    } else if (event?.target?.value !== undefined) {
+      this.descriptiveAnswer = event.target.value;
+      this.descriptiveAnswerChange.emit(event.target.value);
+    }
   }
 }
