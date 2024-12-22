@@ -56,30 +56,29 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     return message;               
   }
   checkTotalQuestions(): void {
-    let totalSelected = 0;
-  
-    // Iterate through each subject and sum up the values
     this.rightListInputs.controls.forEach((group, i) => {
       const easyValue = group.get('easy')?.value || 0;
       const mediumValue = group.get('medium')?.value || 0;
       const hardValue = group.get('hard')?.value || 0;
       const descriptiveValue = group.get('descriptive')?.value || 0;
-      totalSelected += easyValue + mediumValue + hardValue + descriptiveValue;
-    });
+      const totalSelectedForSubject = easyValue + mediumValue + hardValue + descriptiveValue;
   
-    // Real-time total check and warning message
-    if (totalSelected < 2) {
-      this.totalWarning = 'Please select at least 2 questions from each subject.';
-    } else {
-      this.totalWarning = '';  // Clear the warning if total is 2 or more
-    }
+      // Check for each subject individually if it has at least 2 questions selected
+      if (totalSelectedForSubject < 2) {
+        // Set the warning message for the specific subject
+        this.totalWarning = `Please select at least 2 questions for each subject.`;
+      } else {
+        // Clear the warning message for this subject if it's fine
+        this.totalWarning = '';  
+      }
+    });
   
     // Update Save button status
     this.updateSaveButtonStatus();
   }
   
   ngOnInit(): void {
-   
+  //  try
     window.addEventListener('beforeunload', this.handleBeforeUnload);
     this.assessmentService.assessmentId$.subscribe((assessmentId) => {
       if (assessmentId) {
@@ -88,6 +87,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         this.getEditData(this.assessmentId, this.editFlag);
       } else {
         this.editFlag = false;
+        this.fetchLeftList(); // Fetch all subjects if not editing
       }
     });
   
@@ -181,12 +181,16 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   }
   fetchLeftList(): void {
     this.firebaseService.getAllDataByFilter(this.subject_table, 'isDisabled', false).subscribe((data: any[]) => {
-      this.leftList = data
+      const allSubjects = data
         .map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName }))
-        .sort((a, b) => a.subjectName.localeCompare(b.subjectName)); 
+        .sort((a, b) => a.subjectName.localeCompare(b.subjectName));
 
-      this.subjectList = this.leftList
-        .map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName })) 
+      // Filter out subjects that are already in the right list
+      this.leftList = allSubjects.filter(subject => 
+        !this.rightList.some(rightSubject => rightSubject.subjectId === subject.subjectId)
+      );
+
+      this.subjectList = allSubjects; // Keep all subjects in subjectList for reference
     });
   }
   getCurrentTimestamp(): string {
@@ -393,7 +397,6 @@ canSave(): boolean {
   // Disable save if there are validation warnings (including the totalSelected warning)
   return isFormValid && isAssessmentTitleValid && isTitleUnique && isAllSubjectsValid && isRightListNotEmpty && !hasTotalSelectedWarning;
 }
-
   onSave(): void {
     if (!this.canSave()) {
       this.showValidationErrorToast();
@@ -419,31 +422,14 @@ canSave(): boolean {
             if (assessmentLists && assessmentLists.length > 0) {
               const assessmentList = assessmentLists[0]; 
               const subjectsWithRatings = assessmentList.subjects; 
-              const subjectIds: string[] = [];
-              const subjectDetailsWithRatings: any[] = [];
-              for (const subjectId in subjectsWithRatings) {
-                if (subjectsWithRatings.hasOwnProperty(subjectId)) {
-                  const subject = subjectsWithRatings[subjectId];
-                  subjectIds.push(subject.subjectId); 
-                  subjectDetailsWithRatings.push({
-                    subjectId: subject.subjectId,
-                    subjectName: subject.subjectName,
-                    easy: subject.easy,
-                    medium: subject.medium,
-                    hard: subject.hard,
-                    descriptive: subject.descriptive
-                  });
-                }
-              }
-              this.rightList = subjectIds.map((subjectId) => {
-                const subject = this.subjectList.find(sub => sub.subjectId === subjectId);
-                return {
-                  subjectId: subject ? subject.subjectId : '',  
-                  subjectName: subject ? subject.subjectName : '',
-                };
-              });
+              
+              this.rightList = Object.values(subjectsWithRatings).map((subject: any) => ({
+                subjectId: subject.subjectId,
+                subjectName: subject.subjectName
+              }));
+
               const rightListInputs = this.fb.array(
-                subjectDetailsWithRatings.map(subject =>
+                Object.values(subjectsWithRatings).map((subject: any) =>
                   this.fb.group({
                     item: [subject],
                     easy: [subject.easy, [Validators.min(0), Validators.max(5)]],
@@ -455,13 +441,14 @@ canSave(): boolean {
               );
               this.rightListForm.setControl('rightListInputs', rightListInputs);
 
+              // After setting the right list, fetch the left list to exclude selected subjects
+              this.fetchLeftList();
             } else {
               console.error('No matching assessmentList found for the given assessmentId');
             }
           }, (error) => {
             console.error('Error fetching assessmentList data:', error);
           });
-
         } else {
           console.error('Assessment not found in Firebase');
         }
@@ -496,7 +483,13 @@ canSave(): boolean {
           };
         });
         this.updateRightListForm(this.rightList);
+        
+        // Update left list to exclude items in the right list
+        this.leftList = this.subjectList.filter(subject => 
+          !this.rightList.some(rightSubject => rightSubject.subjectId === subject.subjectId)
+        );
       };
+
       const options = {
         group: 'shared',
         animation: 150,

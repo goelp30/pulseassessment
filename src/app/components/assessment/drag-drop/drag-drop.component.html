@@ -227,25 +227,24 @@
                             <div *ngIf="rightListWarning" class="text-red-700 mt-2">
                                 {{ rightListWarning }}
                             </div>
-                            <div *ngIf="totalWarning" class="text-red-700 mt-2">
-                                {{ totalWarning }}
-                              </div>
                         </div>
+                       
                     </li>
                 </ul>
             </form>
         </div>
+        <div *ngIf="totalWarning" class="text-red-700 mt-2">
+            {{ totalWarning }}
+          </div>
         <!-- Save Button -->
         <div class="flex justify-center mt-6">
             <button (click)="onSave()" [ngClass]="{
                 'bg-blue-950 hover:bg-blue-950': canSave(),
                 'bg-gray-400 cursor-not-allowed': !canSave()
-              }" class="text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all">
-                Save
+            }" class="text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all">
+                {{ editFlag ? 'Update' : 'Save' }}
             </button>
         </div>
-
+        
     </div>
-    
-</div>
-
+</div>         
