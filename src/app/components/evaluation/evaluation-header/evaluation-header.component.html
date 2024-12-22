@@ -22,13 +22,13 @@
     <div class="text-lg font-semibold">
       <span>Result: </span>
       <span
-        [ngClass]="{
-          'text-green-600': result === 'Pass',
-          'text-red-600': result === 'Fail'
-        }"
-      >
-        {{ result }}
-      </span>
+      [ngClass]="{
+        'text-green-600': calculateResult() === 'Pass',
+        'text-red-600': calculateResult() === 'Fail'
+      }"
+    >
+      {{ calculateResult() }}
+    </span>
     </div>
   }
 </div>
