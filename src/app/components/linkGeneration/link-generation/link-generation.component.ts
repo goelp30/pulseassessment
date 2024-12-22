@@ -32,6 +32,7 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
   filteredAssessments: Assessment[] = [];
   selectedLink: string = '';
   isModalVisible: boolean = false;
+  isLinkGenerated?: boolean;
   tableName: string = TableNames.Assessment;
   tableColumns: string[] = ['assessmentName', 'assessmentType'];
   columnAliases: { [key: string]: string[] } = {
