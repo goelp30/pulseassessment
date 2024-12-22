@@ -54,22 +54,19 @@
           <div class="flex items-center gap-4 mb-4">
             <label class="text-gray-700 font-medium">Answer Type:</label>
             <div class="flex items-center gap-2">
-              <span [class.text-gray-500]="answerType === 'code'" [class.text-blue-600]="answerType === 'text'">Text</span>
-              <button 
-                type="button"
-                (click)="toggleAnswerType()"
+              <span [class.text-gray-500]="answerType === 'code'"
+                [class.text-blue-600]="answerType === 'text'">Text</span>
+              <button type="button" (click)="toggleAnswerType()"
                 class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
-                [class.bg-blue-600]="answerType === 'code'"
-                [class.bg-gray-200]="answerType === 'text'"
-                role="switch"
+                [class.bg-blue-600]="answerType === 'code'" [class.bg-gray-200]="answerType === 'text'" role="switch"
                 [attr.aria-checked]="answerType === 'code'">
                 <span
                   class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                  [class.translate-x-5]="answerType === 'code'"
-                  [class.translate-x-0]="answerType === 'text'">
+                  [class.translate-x-5]="answerType === 'code'" [class.translate-x-0]="answerType === 'text'">
                 </span>
               </button>
-              <span [class.text-blue-600]="answerType === 'code'" [class.text-gray-500]="answerType === 'text'">Code</span>
+              <span [class.text-blue-600]="answerType === 'code'"
+                [class.text-gray-500]="answerType === 'text'">Code</span>
             </div>
           </div>
 
