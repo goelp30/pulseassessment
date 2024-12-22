@@ -227,14 +227,15 @@
                             <div *ngIf="rightListWarning" class="text-red-700 mt-2">
                                 {{ rightListWarning }}
                             </div>
-                            <div *ngIf="totalWarning" class="text-red-700 mt-2">
-                                {{ totalWarning }}
-                              </div>
                         </div>
+                       
                     </li>
                 </ul>
             </form>
         </div>
+        <div *ngIf="totalWarning" class="text-red-700 mt-2">
+            {{ totalWarning }}
+          </div>
         <!-- Save Button -->
         <div class="flex justify-center mt-6">
             <button (click)="onSave()" [ngClass]="{

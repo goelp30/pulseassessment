@@ -56,23 +56,22 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     return message;               
   }
   checkTotalQuestions(): void {
-    let totalSelected = 0;
-  
-    // Iterate through each subject and sum up the values
     this.rightListInputs.controls.forEach((group, i) => {
       const easyValue = group.get('easy')?.value || 0;
       const mediumValue = group.get('medium')?.value || 0;
       const hardValue = group.get('hard')?.value || 0;
       const descriptiveValue = group.get('descriptive')?.value || 0;
-      totalSelected += easyValue + mediumValue + hardValue + descriptiveValue;
-    });
+      const totalSelectedForSubject = easyValue + mediumValue + hardValue + descriptiveValue;
   
-    // Real-time total check and warning message
-    if (totalSelected < 2) {
-      this.totalWarning = 'Please select at least 2 questions from each subject.';
-    } else {
-      this.totalWarning = '';  // Clear the warning if total is 2 or more
-    }
+      // Check for each subject individually if it has at least 2 questions selected
+      if (totalSelectedForSubject < 2) {
+        // Set the warning message for the specific subject
+        this.totalWarning = `Please select at least 2 questions for each subject.`;
+      } else {
+        // Clear the warning message for this subject if it's fine
+        this.totalWarning = '';  
+      }
+    });
   
     // Update Save button status
     this.updateSaveButtonStatus();
@@ -256,12 +255,21 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   onInputChange(event: Event, index: number, controlName: string, subjectId: string): void {
     const input = event.target as HTMLInputElement;
     let value = Number(input.value);
-  
+    
     // Validate input values (don't allow values outside of the specified range)
     this.getQuestionCountsForSubject(subjectId).then((availableCounts) => {
       let warningMessage = '';
       const countKey = `${controlName}Count` as keyof typeof availableCounts;
+      
+      // Disable the control if the available count is 0 for that control
+      const control = this.rightListInputs.at(index).get(controlName);
+      if (availableCounts && availableCounts[countKey] === 0) {
+        control?.disable();  // Disable the control if available count is 0
+      } else {
+        control?.enable();  // Enable the control if available count is not 0
+      }
   
+      // Apply validation and other logic
       if (availableCounts) {
         if (value > availableCounts[countKey]) {
           warningMessage = `The number of ${controlName.charAt(0).toUpperCase() + controlName.slice(1)} questions cannot exceed ${availableCounts[countKey]} for this subject.`;
@@ -275,7 +283,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
           input.value = '0';
           value = 0;
         }
-  
+        
         // Store the warning message for each input
         if (controlName === 'easy') {
           this.newValidationWarnings.easy[index] = warningMessage;
@@ -290,30 +298,13 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         // Update the form control value for the current input
         this.rightListInputs.at(index).get(controlName)?.setValue(value);
   
-        // Now calculate the sum of selected values for all subjects in real-time
-        let totalSelected = 0;
-  
-        // Iterate through each subject and sum up the values
-        this.rightListInputs.controls.forEach((group, i) => {
-          const easyValue = group.get('easy')?.value || 0;
-          const mediumValue = group.get('medium')?.value || 0;
-          const hardValue = group.get('hard')?.value || 0;
-          const descriptiveValue = group.get('descriptive')?.value || 0;
-          totalSelected += easyValue + mediumValue + hardValue + descriptiveValue;
-        });
-  
-        // Real-time total check and warning message
-        if (totalSelected < 2) {
-          this.totalWarning = 'Please select at least 2 questions from each subject.';
-        } else {
-          this.totalWarning = '';  // Clear the warning if total is 2 or more
-        }
-  
-        // Update Save button status
-        this.updateSaveButtonStatus();
+        // Recalculate the total selected for this subject (not globally)
+        this.checkTotalQuestions();
       }
     });
   }
+  
+  
   
   
   updateSaveButtonStatus(): void {

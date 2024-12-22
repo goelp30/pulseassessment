@@ -71,7 +71,7 @@ export class AssessTableComponent  {
   ];
   isEditDisabled(row: any): boolean {
     // Disable the button if the row has isLinkGenerated set to true
-    return row.isLinkGenerated === true;
+    return row.isLinkGenerated;
   }
   
   constructor(
