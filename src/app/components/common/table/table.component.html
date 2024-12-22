@@ -127,7 +127,7 @@
                 [ngClass]="
                   column === 'status' ? getStatusClass(row[column]) : ''
                 "
-                (click)="copyToClipboard(row[column])"
+                (click)="column === 'url' ? copyToClipboard(row[column],row) : null"
                 style="cursor: pointer"
               >
                 {{
@@ -137,7 +137,7 @@
                 }}
               </p>
               <!-- Popup Notification -->
-              @if (showAdditionalFilters && isPopupVisible && column === 'url')
+              @if (showAdditionalFilters && isPopupVisible && column === 'url' && copiedRow === row)
               {
               <div class="link_copy">Link copied!</div>
               }

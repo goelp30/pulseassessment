@@ -30,9 +30,13 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() tableData: any[] = [];
   @Input() tableColumns: string[] = [];
   @Input() columnAliases: { [key: string]: string[] } = {};
-  @Input() buttons: { label: string | ((row: any) => string);  colorClass: string;  action: Function; icon?: string;  // New optional property for the icon class
+  @Input() buttons: {
+    label: string | ((row: any) => string);
+    colorClass: string;
+    action: Function;
+    icon?: string; // New optional property for the icon class
   }[] = [];
-  
+
   @Input() searchQuery: string = '';
   @Input() onSearchQueryChange: (newQuery: string) => void = () => {};
   @Input() tabs: string[] = []; // Empty array means no tabs
@@ -62,7 +66,7 @@ export class TableComponent implements OnInit, OnChanges {
   pageNumbers: number[] = [];
   isLoading: boolean = true;
   isPopupVisible: boolean = false;
-
+  copiedRow: any = null; // Track the copied row
   constructor(private fireBaseService: FireBaseService<any>) {}
 
   ngOnInit(): void {
@@ -205,7 +209,6 @@ export class TableComponent implements OnInit, OnChanges {
     this.generatePagination();
   }
 
-
   generatePagination(): void {
     const totalPages = this.totalPages;
     let pages: (number | '...')[] = [];
@@ -219,34 +222,31 @@ export class TableComponent implements OnInit, OnChanges {
       // Display first page
       pages.push(1);
 
-      //Logic to show ellipsis when needed and not add duplicate elements 
-      if(this.currentPage > 3){
-          pages.push('...');
+      //Logic to show ellipsis when needed and not add duplicate elements
+      if (this.currentPage > 3) {
+        pages.push('...');
       }
       // Display current page, the one before and the one after if inside boundaries
       if (this.currentPage > 2) {
-          pages.push(this.currentPage - 1);
+        pages.push(this.currentPage - 1);
       }
-      if(this.currentPage > 1 && this.currentPage <= totalPages)
-      {
-          pages.push(this.currentPage);
+      if (this.currentPage > 1 && this.currentPage <= totalPages) {
+        pages.push(this.currentPage);
       }
-       if(this.currentPage < totalPages - 1){
-          pages.push(this.currentPage + 1);
+      if (this.currentPage < totalPages - 1) {
+        pages.push(this.currentPage + 1);
       }
-      if(this.currentPage < totalPages - 2){
-          pages.push('...');
+      if (this.currentPage < totalPages - 2) {
+        pages.push('...');
       }
-
 
       // Display last page
-      if(totalPages !==1){
-      pages.push(totalPages);
+      if (totalPages !== 1) {
+        pages.push(totalPages);
       }
 
       // Filter out potential duplicate "..."
-      pages = pages.filter((item,index, arr)=> arr.indexOf(item) === index);
-
+      pages = pages.filter((item, index, arr) => arr.indexOf(item) === index);
     }
 
     this.pageNumbers = pages as number[];
@@ -272,18 +272,34 @@ export class TableComponent implements OnInit, OnChanges {
     return false;
   }
 
-  copyToClipboard(content: string | undefined): void {
+  // copyToClipboard(content: string | undefined): void {
+  //   if (!content) return;
+
+  //   navigator.clipboard
+  //     .writeText(content)
+  //     .then(() => {
+  //       this.isPopupVisible = true;
+
+  //       setTimeout(() => {
+  //         this.isPopupVisible = false;
+  //       }, 1000);
+  //     })
+  //     .catch((err) => console.error('Failed to copy text:', err));
+  // }
+
+  copyToClipboard(content: string | undefined,row:any): void {
     if (!content) return;
+   navigator.clipboard
+     .writeText(content)
+     .then(() => {
+       this.isPopupVisible = true;
+       this.copiedRow = row;
 
-    navigator.clipboard
-      .writeText(content)
-      .then(() => {
-        this.isPopupVisible = true;
-
-        setTimeout(() => {
-          this.isPopupVisible = false;
-        }, 1000);
-      })
-      .catch((err) => console.error('Failed to copy text:', err));
-  }
+       setTimeout(() => {
+         this.isPopupVisible = false;
+         this.copiedRow = null; // Clear the copied row after timeout
+       }, 1000);
+     })
+     .catch((err) => console.error('Failed to copy text:', err));
+ }
 }
