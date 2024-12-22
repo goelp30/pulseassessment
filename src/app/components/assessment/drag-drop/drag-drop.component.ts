@@ -260,26 +260,34 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   onInputChange(event: Event, index: number, controlName: string, subjectId: string): void {
     const input = event.target as HTMLInputElement;
     let value = Number(input.value);
-  
-    // Validate input values (don't allow values outside of the specified range)
+
     this.getQuestionCountsForSubject(subjectId).then((availableCounts) => {
       let warningMessage = '';
       const countKey = `${controlName}Count` as keyof typeof availableCounts;
-  
+
       if (availableCounts) {
-        if (value > availableCounts[countKey]) {
-          warningMessage = `The number of ${controlName.charAt(0).toUpperCase() + controlName.slice(1)} questions cannot exceed ${availableCounts[countKey]} for this subject.`;
+        if (availableCounts[countKey] === 0) {
+          // Disable the input if the count is 0
+          this.rightListInputs.at(index).get(controlName)?.disable();
+          warningMessage = `No ${controlName} questions available for this subject.`;
+        } else {
+          // Enable the input if it was previously disabled
+          this.rightListInputs.at(index).get(controlName)?.enable();
+
+          if (value > availableCounts[countKey]) {
+            warningMessage = `Available ${controlName.charAt(0).toUpperCase() + controlName.slice(1)} questions : ${availableCounts[countKey]}`;
+          }
+          if (value > 5) {
+            warningMessage = `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} value cannot exceed 5!`;
+            input.value = '5';
+            value = 5;
+          } else if (value < 0) {
+            warningMessage = `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} value cannot be less than 0!`;
+            input.value = '0';
+            value = 0;
+          }
         }
-        if (value > 5) {
-          warningMessage = `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} value cannot exceed 5!`;
-          input.value = '5';
-          value = 5;
-        } else if (value < 0) {
-          warningMessage = `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} value cannot be less than 0!`;
-          input.value = '0';
-          value = 0;
-        }
-  
+
         // Store the warning message for each input
         if (controlName === 'easy') {
           this.newValidationWarnings.easy[index] = warningMessage;
@@ -290,36 +298,13 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         } else if (controlName === 'descriptive') {
           this.newValidationWarnings.descriptive[index] = warningMessage;
         }
-  
+
         // Update the form control value for the current input
         this.rightListInputs.at(index).get(controlName)?.setValue(value);
-  
-        // Now calculate the sum of selected values for all subjects in real-time
-        let totalSelected = 0;
-  
-        // Iterate through each subject and sum up the values
-        this.rightListInputs.controls.forEach((group, i) => {
-          const easyValue = group.get('easy')?.value || 0;
-          const mediumValue = group.get('medium')?.value || 0;
-          const hardValue = group.get('hard')?.value || 0;
-          const descriptiveValue = group.get('descriptive')?.value || 0;
-          totalSelected += easyValue + mediumValue + hardValue + descriptiveValue;
-        });
-  
-        // Real-time total check and warning message
-        if (totalSelected < 2) {
-          this.totalWarning = 'Please select at least 2 questions from each subject.';
-        } else {
-          this.totalWarning = '';  // Clear the warning if total is 2 or more
-        }
-  
-        // Update Save button status
-        this.updateSaveButtonStatus();
       }
     });
   }
-  
-  
+
   updateSaveButtonStatus(): void {
     const hasWarnings = this.rightList.some((subject, index) => {
       return this.newValidationWarnings.easy[index] ||
@@ -411,52 +396,32 @@ canSave(): boolean {
     this.router.navigate(['/assessment-list']);
   }
   getEditData(assessmentId: string, isEditing: boolean): void {
+    this.assessmentId = assessmentId;
+    this.editFlag = isEditing;
     if (this.assessmentId && this.editFlag) {
-      console.log('We are editing');
-      this.firebaseService.listensToChangeWithFilter(this.assess_table, 'assessmentId', this.assessmentId).subscribe((assessments: any[]) => {
-        if (assessments && assessments.length > 0) {
-          const assessment = assessments[0];
-          this.assessmentTitle = assessment.assessmentName;
-          this.viewMode = assessment.assessmentType;
-          this.firebaseService.listensToChangeWithFilter(TableNames.AssessmentList, 'assessmentId', this.assessmentId).subscribe((assessmentLists: any[]) => {
-            if (assessmentLists && assessmentLists.length > 0) {
-              const assessmentList = assessmentLists[0]; 
-              const subjectsWithRatings = assessmentList.subjects; 
-              
-              this.rightList = Object.values(subjectsWithRatings).map((subject: any) => ({
-                subjectId: subject.subjectId,
-                subjectName: subject.subjectName
-              }));
+      this.firebaseService.listensToChangeWithFilter(TableNames.AssessmentList, 'assessmentId', this.assessmentId).subscribe((assessmentLists: any[]) => {
+        if (assessmentLists && assessmentLists.length > 0) {
+          const assessmentList = assessmentLists[0];
+          const subjectsWithRatings = assessmentList.subjects;
 
-              const rightListInputs = this.fb.array(
-                Object.values(subjectsWithRatings).map((subject: any) =>
-                  this.fb.group({
-                    item: [subject],
-                    easy: [subject.easy, [Validators.min(0), Validators.max(5)]],
-                    medium: [subject.medium, [Validators.min(0), Validators.max(5)]],
-                    hard: [subject.hard, [Validators.min(0), Validators.max(5)]],
-                    descriptive: [subject.descriptive, [Validators.min(0), Validators.max(5)]],
-                  })
-                )
-              );
-              this.rightListForm.setControl('rightListInputs', rightListInputs);
+          this.rightList = Object.values(subjectsWithRatings).map((subject: any) => ({
+            subjectId: subject.subjectId,
+            subjectName: subject.subjectName
+          }));
 
-              // After setting the right list, fetch the left list to exclude selected subjects
-              this.fetchLeftList();
-            } else {
-              console.error('No matching assessmentList found for the given assessmentId');
-            }
-          }, (error) => {
-            console.error('Error fetching assessmentList data:', error);
-          });
+          // Use updateRightListForm to set up the form controls
+          this.updateRightListForm(this.rightList);
+
+          this.fetchLeftList();
         } else {
-          console.error('Assessment not found in Firebase');
+          console.error('No matching assessmentList found for the given assessmentId');
         }
       }, (error) => {
-        console.error('Error fetching assessment data:', error);
+        console.error('Error fetching assessmentList data:', error);
       });
     }
   }
+
   ngAfterViewInit(): void {
     if (this.isBrowser()) {
       const updateLists = () => {
@@ -471,21 +436,23 @@ canSave(): boolean {
         this.leftList = leftListDom.map((item) => {
           const subject = this.subjectList.find((sub) => sub.subjectName === item);
           return {
-            subjectId: subject ? subject.subjectId : '', 
+            subjectId: subject ? subject.subjectId : '',
             subjectName: item
           };
         });
         this.rightList = rightListDom.map((item) => {
           const subject = this.subjectList.find((sub) => sub.subjectName === item);
           return {
-            subjectId: subject ? subject.subjectId : '', 
+            subjectId: subject ? subject.subjectId : '',
             subjectName: item
           };
         });
+
+        // Call updateRightListForm immediately when the lists are updated
         this.updateRightListForm(this.rightList);
-        
+
         // Update left list to exclude items in the right list
-        this.leftList = this.subjectList.filter(subject => 
+        this.leftList = this.subjectList.filter(subject =>
           !this.rightList.some(rightSubject => rightSubject.subjectId === subject.subjectId)
         );
       };
@@ -510,7 +477,7 @@ canSave(): boolean {
   }
   updateRightListForm(newRightList: any[]): void {
     const updatedInputs = this.fb.array(
-      newRightList.map((subject) => {
+      newRightList.map((subject, index) => {
         const existingSubjectInput = this.rightListInputs.controls.find((control) => {
           const subjectControl = control.value; 
           return subjectControl.item.subjectId === subject.subjectId; 
@@ -519,17 +486,32 @@ canSave(): boolean {
         const medium = existingSubjectInput ? existingSubjectInput.value.medium : 0;
         const hard = existingSubjectInput ? existingSubjectInput.value.hard : 0;
         const descriptive = existingSubjectInput ? existingSubjectInput.value.descriptive : 0;
-        return this.fb.group({
-          item: [subject], // The subject is passed as is.
+        
+        const group = this.fb.group({
+          item: [subject],
           easy: [easy, [Validators.min(0), Validators.max(5)]],
           medium: [medium, [Validators.min(0), Validators.max(5)]],
           hard: [hard, [Validators.min(0), Validators.max(5)]],
           descriptive: [descriptive, [Validators.min(0), Validators.max(5)]],
         });
+
+        this.getQuestionCountsForSubject(subject.subjectId).then((counts) => {
+          (['easy', 'medium', 'hard', 'descriptive'] as const).forEach((type) => {
+            const countKey = `${type}Count` as keyof typeof counts;
+            if (counts[countKey] === 0) {
+              group.get(type)?.disable();
+              // this.newValidationWarnings[type][index] = `No ${type} questions available for ${subject.subjectName}.`;
+            }
+          });
+        });
+
+        return group;
       })
     );
     this.rightListForm.setControl('rightListInputs', updatedInputs);
   }
+  
+
   saveFormData(): void {
     this.fetchQuestionCountsForRightList();
     const hasDescriptiveGreaterThanZero = this.rightListInputs.controls.some((group) => {

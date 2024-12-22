@@ -233,9 +233,10 @@
                 </ul>
             </form>
         </div>
-        <div *ngIf="totalWarning" class="text-red-700 mt-2">
+        <div *ngIf="totalWarning && rightList.length > 0" class="text-red-700 mt-2">
             {{ totalWarning }}
           </div>
+          
         <!-- Save Button -->
         <div class="flex justify-center mt-6">
             <button (click)="onSave()" [ngClass]="{
@@ -247,4 +248,4 @@
         </div>
         
     </div>
-</div>         
+</div>
