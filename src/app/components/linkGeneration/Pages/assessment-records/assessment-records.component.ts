@@ -69,7 +69,7 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
     Expired: 'text-red-600 font-semibold',
     'In Progress': 'text-yellow-600 font-semibold',
     Completed: 'text-blue-600 font-semibold',
-    Invalid: 'text-blue-900 font-semibold',
+    Invalid: 'text-red-600 font-semibold',
   };
 
   private destroy$ = new Subject<void>(); // Subject to manage subscriptions
