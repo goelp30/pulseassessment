@@ -20,6 +20,7 @@ export interface AssessmentData {
   submittedAt: string;
   totalMarks: string;
   maxMarks: string;
+  percentage: string;
 }
 
 export interface QuizAnswers {

@@ -15,30 +15,35 @@ export class SubmissionModalComponent {
   @Output() onConfirm = new EventEmitter<void>();
   @Output() onCancel = new EventEmitter<void>();
 
-  // Method to count attempted questions
   getAttemptedCount(): number {
-    return this.questions.filter(q => 
-      q.selectedAnswer !== undefined || 
-      (q.questionType === 'descriptive' && !!q.descriptiveAnswer?.trim())
-    ).length;
+    return this.questions.reduce((count, question) => {
+      // Check if question is attempted based on type
+      if (question.questionType === 'Descriptive') {
+        // Count descriptive questions with non-empty answers
+        return question.descriptiveAnswer?.trim() ? count + 1 : count;
+      } else {
+        // For MCQ/Single choice, check selectedAnswer
+        return question.selectedAnswer && 
+               (Array.isArray(question.selectedAnswer) ? 
+                question.selectedAnswer.length > 0 : 
+                question.selectedAnswer !== null) ? count + 1 : count;
+      }
+    }, 0);
   }
 
-  // Method to count marked questions for review
   getMarkedForReviewCount(): number {
     return this.questions.filter(q => q.isMarkedForReview).length;
   }
 
-  // Method to count unanswered questions
   getNotAttemptedCount(): number {
-    return this.questions.filter(q => 
-      q.selectedAnswer === undefined && 
-      (q.questionType !== 'descriptive' || !q.descriptiveAnswer?.trim()) &&
-      !q.isMarkedForReview
-    ).length;
+    return this.questions.length - this.getAttemptedCount();
   }
 
-  // Method to check if all questions have been attempted
-  isSubmitDisabled(): boolean {
-    return this.getAttemptedCount() !== this.questions.length;
+  cancel() {
+    this.onCancel.emit();
+  }
+
+  confirm() {
+    this.onConfirm.emit();
   }
 }

@@ -32,51 +32,34 @@ export class QuizAnswerService {
       this.userAnswers[this.quizId] = {};
     }
 
-    if (isDescriptive) {
-      // For descriptive questions
-      const quizAnswer: QuizAnswer = {
-        questionId: questionId,
-        quizId: this.quizId,
-        isDescriptive: true,
-        marks: '0',
-        userAnswer: [],
-        answer: descriptiveAnswer,
-        questionType: 'Descriptive',
-        isEvaluated: false,
-        evaluatedAt: ''
-      };
-      this.userAnswers[this.quizId][questionId] = quizAnswer;
-    } else {
-      // For MCQ/Single choice questions
-      const existingAnswer = this.userAnswers[this.quizId][questionId];
-      
-      // Combine existing answers with new ones for multiple choice
-      let combinedAnswers = userAnswer;
-      if (existingAnswer?.userAnswer && existingAnswer.userAnswer.length > 0) {
-        combinedAnswers = [...new Set([...existingAnswer.userAnswer, ...userAnswer])];
-      }
-      
-      const quizAnswer: QuizAnswer = {
-        questionId: questionId,
-        quizId: this.quizId,
-        isDescriptive: false,
-        marks: marks,
-        userAnswer: combinedAnswers,
-        answer: '',
-        questionType: 'Multi',
-        isEvaluated: true,
-        evaluatedAt: new Date().toISOString()
-      };
-      this.userAnswers[this.quizId][questionId] = quizAnswer;
-    }
+    // Create new answer object
+    const quizAnswer: QuizAnswer = {
+      questionId: questionId,
+      quizId: this.quizId,
+      isDescriptive: isDescriptive,
+      marks: marks,
+      userAnswer: userAnswer, // This will override previous answers
+      answer: descriptiveAnswer,
+      questionType: isDescriptive ? 'Descriptive' : 'Single',
+      isEvaluated: !isDescriptive,
+      evaluatedAt: !isDescriptive ? new Date().toISOString() : ''
+    };
 
-    console.log('Stored Answer:', {
-      questionId,
-      isDescriptive,
-      marks,
-      userAnswer: this.userAnswers[this.quizId][questionId].userAnswer,
-      descriptiveAnswer: this.userAnswers[this.quizId][questionId].answer
-    });
+    // Override the previous answer in memory
+    this.userAnswers[this.quizId][questionId] = quizAnswer;
+
+    // Immediately update in Firebase
+    this.fireBaseService.update(`/QuizAnswer/${this.quizId}/${questionId}`, quizAnswer)
+      .then(() => {
+        console.log('Answer updated in Firebase:', {
+          questionId,
+          userAnswer,
+          marks
+        });
+      })
+      .catch(error => {
+        console.error('Error updating answer in Firebase:', error);
+      });
   }
 
   getUserAnswers() {
@@ -85,16 +68,20 @@ export class QuizAnswerService {
 
   submitQuiz(questions: Question[], totalMarks: number) {
     const hasDescriptiveQuestions = questions.some(q => q.questionType === 'Descriptive');
+    const maxMarks = questions.reduce((sum, q) => sum + (q.questionWeightage || 0), 0).toString();
+    const percentage = (totalMarks / parseInt(maxMarks)) * 100;
+    const result = percentage >= 70 ? 'Pass' : 'Fail';
     
     const assessmentData: AssessmentData = {
       assessmentID: this.assessmentID,
       quizId: this.quizId,
       isEvaluated: !hasDescriptiveQuestions,
       userId: this.userId,
-      result: totalMarks.toString(),
+      result: hasDescriptiveQuestions ? 'Pending' : result,
       submittedAt: new Date().toISOString(),
       totalMarks: totalMarks.toString(),
-      maxMarks: questions.reduce((sum, q) => sum + (q.questionWeightage || 0), 0).toString()
+      maxMarks: maxMarks,
+      percentage: percentage.toFixed(2)
     };
 
     this.fireBaseService.create(`/AssessmentData/${this.quizId}`, assessmentData)

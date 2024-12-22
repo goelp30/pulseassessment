@@ -18,6 +18,7 @@
         [totalQuestions]="questions.length"
         (answerSelect)="onAnswerSelect($event)"
         (descriptiveAnswerChange)="onDescriptiveAnswerChange($event)"
+        (textAreaTouched)="onDescriptiveQuestionTouched()"
         (reviewToggle)="toggleReview()">
       </app-question-display>
 
