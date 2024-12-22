@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { QuizAnswer, QuizAnswers } from '../../../models/quizAnswers';
+import { QuizAnswer, QuizAnswers, AssessmentData } from '../../../models/quizAnswers';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
+import { Question } from '../../../models/question';
 
 @Injectable({
   providedIn: 'root',
@@ -20,85 +21,130 @@ export class QuizAnswerService {
     this.assessmentID = assessmentID;
   }
 
-  storeAnswer(questionId: string, isDescriptive: boolean, answer: string | string[]) {
-    console.log('Received answer:', answer);
-    console.log('Is Descriptive:', isDescriptive);
-    // Define the base quizAnswer object
-    const quizAnswer: QuizAnswer = {
-      isDescriptive: isDescriptive,
-      questionId: questionId,
-      quizId: this.quizId,
-      marks: '', 
-    };
-  
-    if (isDescriptive) {
-      // Ensure descriptive answer is stored as a string
-      quizAnswer.answer = String(answer);
-      console.log('Descriptive answer:', String(answer));
-    } else {
-      // Handle non-descriptive answer
-      if (Array.isArray(answer)) {
-        console.log('Option answers:', answer);
-      if (this.userAnswers[this.quizId] && this.userAnswers[this.quizId][questionId]) {
-        const existingAnswers = this.userAnswers[this.quizId][questionId].userAnswer || [];
-        // Append new selected options to the existing userAnswer array
-        quizAnswer.userAnswer = [
-          ...new Set([
-            ...existingAnswers, 
-            ...answer
-          ])
-        ];
-        console.log('Updated userAnswer (after append):', quizAnswer.userAnswer);
-      } else {
-        // If no previous answers, just store the selected options
-        // quizAnswer.userAnswer = [String(answer)];
-        quizAnswer.userAnswer = [...answer];
-      }
-
-      } else {
-        console.log('Single option answer:', String(answer));
-        quizAnswer.userAnswer = [String(answer)];
-      }
-    }
-  
+  storeAnswer(
+    questionId: string, 
+    isDescriptive: boolean, 
+    userAnswer: string[], 
+    marks: string = '0', 
+    descriptiveAnswer: string = ''
+  ) {
     if (!this.userAnswers[this.quizId]) {
       this.userAnswers[this.quizId] = {};
     }
-  
-    this.userAnswers[this.quizId][questionId] = quizAnswer;
-    console.log('Stored userAnswers:', this.userAnswers);
+
+    if (isDescriptive) {
+      // For descriptive questions
+      const quizAnswer: QuizAnswer = {
+        questionId: questionId,
+        quizId: this.quizId,
+        isDescriptive: true,
+        marks: '0',
+        userAnswer: [],
+        answer: descriptiveAnswer,
+        questionType: 'Descriptive',
+        isEvaluated: false,
+        evaluatedAt: ''
+      };
+      this.userAnswers[this.quizId][questionId] = quizAnswer;
+    } else {
+      // For MCQ/Single choice questions
+      const existingAnswer = this.userAnswers[this.quizId][questionId];
+      
+      // Combine existing answers with new ones for multiple choice
+      let combinedAnswers = userAnswer;
+      if (existingAnswer?.userAnswer && existingAnswer.userAnswer.length > 0) {
+        combinedAnswers = [...new Set([...existingAnswer.userAnswer, ...userAnswer])];
+      }
+      
+      const quizAnswer: QuizAnswer = {
+        questionId: questionId,
+        quizId: this.quizId,
+        isDescriptive: false,
+        marks: marks,
+        userAnswer: combinedAnswers,
+        answer: '',
+        questionType: 'Multi',
+        isEvaluated: true,
+        evaluatedAt: new Date().toISOString()
+      };
+      this.userAnswers[this.quizId][questionId] = quizAnswer;
+    }
+
+    console.log('Stored Answer:', {
+      questionId,
+      isDescriptive,
+      marks,
+      userAnswer: this.userAnswers[this.quizId][questionId].userAnswer,
+      descriptiveAnswer: this.userAnswers[this.quizId][questionId].answer
+    });
   }
-  
+
   getUserAnswers() {
     return this.userAnswers[this.quizId] || {};
   }
 
-  submitQuiz(questions: any[]) {
-    const assessmentData = {
+  submitQuiz(questions: Question[], totalMarks: number) {
+    const hasDescriptiveQuestions = questions.some(q => q.questionType === 'Descriptive');
+    
+    const assessmentData: AssessmentData = {
       assessmentID: this.assessmentID,
       quizId: this.quizId,
-      isEvaluated: questions.some(q => q.questionType && q.questionType.toLowerCase() === 'descriptive') ? false : true,  
+      isEvaluated: !hasDescriptiveQuestions,
       userId: this.userId,
-      result: '', 
+      result: totalMarks.toString(),
+      submittedAt: new Date().toISOString(),
+      totalMarks: totalMarks.toString(),
+      maxMarks: questions.reduce((sum, q) => sum + (q.questionWeightage || 0), 0).toString()
     };
 
-    this.fireBaseService.create(`/AssessmentData/${this.quizId}`, assessmentData).then(() => {
-      console.log('Assessment Data saved successfully!');
-    }).catch(error => {
-      console.error('Error saving assessment data:', error);
-    });
+    this.fireBaseService.create(`/AssessmentData/${this.quizId}`, assessmentData)
+      .then(() => {
+        console.log('Assessment Data saved successfully:', assessmentData);
+        
+        const quizAnswers = this.getUserAnswers();
+        const batchUpdate: { [key: string]: QuizAnswer } = {};
 
-    const quizAnswers = this.getUserAnswers();
-    const batchUpdate: any = {};
+        Object.keys(quizAnswers).forEach(questionId => {
+          const answer = quizAnswers[questionId];
+          const question = questions.find(q => q.questionId === questionId);
+          
+          if (question?.questionType === 'Descriptive') {
+            batchUpdate[`/QuizAnswer/${this.quizId}/${questionId}`] = {
+              questionId: answer.questionId,
+              quizId: this.quizId,
+              isDescriptive: true,
+              marks: '0',
+              userAnswer: [],
+              answer: answer.answer || '',
+              maxMarks: question.questionWeightage?.toString() || '0',
+              questionType: 'Descriptive',
+              isEvaluated: false,
+              evaluatedAt: ''
+            };
+          } else {
+            batchUpdate[`/QuizAnswer/${this.quizId}/${questionId}`] = {
+              questionId: answer.questionId,
+              quizId: this.quizId,
+              isDescriptive: false,
+              marks: answer.marks,
+              userAnswer: answer.userAnswer || [],
+              answer: '',
+              maxMarks: question?.questionWeightage?.toString() || '0',
+              questionType: question?.questionType || '',
+              isEvaluated: true,
+              evaluatedAt: new Date().toISOString()
+            };
+          }
+        });
 
-    Object.keys(quizAnswers).forEach(questionId => {
-      batchUpdate[`/QuizAnswer/${this.quizId}/${questionId}`] = quizAnswers[questionId];
-    });
-
-    this.fireBaseService.batchUpdate(batchUpdate).then(() => {
-      console.log('Quiz Answer data saved successfully!');
-    }).catch(error => {
-      console.error('Error saving quiz answers:', error);
-    });
+        console.log('Saving quiz answers to Firebase:', batchUpdate);
+        return this.fireBaseService.batchUpdate(batchUpdate);
+      })
+      .then(() => {
+        console.log('Quiz Answer data saved successfully with marks!');
+      })
+      .catch(error => {
+        console.error('Error saving quiz data:', error);
+      });
   }
 }
