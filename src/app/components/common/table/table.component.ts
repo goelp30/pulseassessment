@@ -272,34 +272,19 @@ export class TableComponent implements OnInit, OnChanges {
     return false;
   }
 
-  // copyToClipboard(content: string | undefined): void {
-  //   if (!content) return;
-
-  //   navigator.clipboard
-  //     .writeText(content)
-  //     .then(() => {
-  //       this.isPopupVisible = true;
-
-  //       setTimeout(() => {
-  //         this.isPopupVisible = false;
-  //       }, 1000);
-  //     })
-  //     .catch((err) => console.error('Failed to copy text:', err));
-  // }
-
-  copyToClipboard(content: string | undefined,row:any): void {
+  copyToClipboard(content: string | undefined, row: any): void {
     if (!content) return;
-   navigator.clipboard
-     .writeText(content)
-     .then(() => {
-       this.isPopupVisible = true;
-       this.copiedRow = row;
+    navigator.clipboard
+      .writeText(content)
+      .then(() => {
+        this.isPopupVisible = true;
+        this.copiedRow = row;
 
-       setTimeout(() => {
-         this.isPopupVisible = false;
-         this.copiedRow = null; // Clear the copied row after timeout
-       }, 1000);
-     })
-     .catch((err) => console.error('Failed to copy text:', err));
- }
+        setTimeout(() => {
+          this.isPopupVisible = false;
+          this.copiedRow = null; // Clear the copied row after timeout
+        }, 1000);
+      })
+      .catch((err) => console.error('Failed to copy text:', err));
+  }
 }

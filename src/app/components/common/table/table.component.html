@@ -128,7 +128,7 @@
                   column === 'status' ? getStatusClass(row[column]) : ''
                 "
                 (click)="column === 'url' ? copyToClipboard(row[column],row) : null"
-                style="cursor: pointer"
+                style="cursor: pointer;"
               >
                 {{
                   row[column]?.length > 50
