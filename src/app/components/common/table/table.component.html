@@ -111,6 +111,7 @@
             }
             <th
               class="px-4 sm:px-6 py-3 text-center text-white font-semibold border-b"
+              [style.width]="getActionColumnWidth()"
             >
               Action
             </th>
@@ -144,7 +145,7 @@
             </td>
             }
             <td class="px-4 sm:px-6 py-3 border-b">
-              <div class="flex justify-center gap-3">
+              <div class="flex justify-center gap-3 flex-wrap">
                 @for(button of buttons; track button){
                   <app-button
                   [label]="getButtonLabel(button, row)"
@@ -152,6 +153,7 @@
                   [icon]="button.icon" 
                   (action)="button.action(row)"
                   [disabled]="isButtonDisabled(button, row)"
+                  class="whitespace-nowrap"
                 ></app-button>
                 }
               </div>
@@ -217,3 +219,4 @@
     }
   </div>
 </div>
+

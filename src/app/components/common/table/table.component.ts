@@ -30,25 +30,28 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() tableData: any[] = [];
   @Input() tableColumns: string[] = [];
   @Input() columnAliases: { [key: string]: string[] } = {};
-  @Input() buttons: { label: string | ((row: any) => string);  colorClass: string;  action: Function; icon?: string;  // New optional property for the icon class
+  @Input() buttons: { 
+    label: string | ((row: any) => string);  
+    colorClass: string;  
+    action: Function; 
+    icon?: string;
+    customClassFunction?: (row: any) => string;
+    disableFunction?: (row: any) => boolean;
   }[] = [];
   
   @Input() searchQuery: string = '';
   @Input() onSearchQueryChange: (newQuery: string) => void = () => {};
-  @Input() tabs: string[] = []; // Empty array means no tabs
+  @Input() tabs: string[] = [];
   @Input() filterKey: string = '';
   @Input() tabAliases: { [key: string]: string } = {};
   @Input() searchPlaceholder: string = 'Search';
 
-  // Input properties for assessmentRecord filters
   @Input() filterOptions: string[] = [];
   @Input() statusOptions: string[] = [];
   @Input() showAdditionalFilters: boolean = false;
 
-  // New Input for handling status display
   @Input() statusMapping: { [key: string]: string } = {};
 
-  // new input for custom button display
   @Input() customButtonDisplay: { [key: string]: any } = {};
 
   selectedFilter: string = '';
@@ -72,7 +75,7 @@ export class TableComponent implements OnInit, OnChanges {
         .getAllDataByFilter(this.tableName, 'isDisabled', false)
         .subscribe((res) => {
           this.tableData = res;
-          this.filterData(); // Initial filter to include tab and other filters
+          this.filterData();
           this.totalPages = Math.ceil(
             this.tableData.length / this.itemsPerPage
           );
@@ -146,7 +149,6 @@ export class TableComponent implements OnInit, OnChanges {
     this.currentPage = 1;
   }
 
-  // Method to Apply additional filters
   applyAdditionalFilters(data: any[]): any[] {
     let filteredData = [...data];
     if (this.selectedFilter) {
@@ -167,7 +169,6 @@ export class TableComponent implements OnInit, OnChanges {
     return filteredData;
   }
 
-  // Function to get the CSS classes for status display
   getStatusClass(status: string): string {
     return this.statusMapping[status] || '';
   }
@@ -220,6 +221,7 @@ export class TableComponent implements OnInit, OnChanges {
     }
     return button.label;
   }
+
   getCustomButtonClasses(button: any, row: any) {
     if (button.customClassFunction) {
       return button.customClassFunction(row);
@@ -248,4 +250,13 @@ export class TableComponent implements OnInit, OnChanges {
       })
       .catch((err) => console.error('Failed to copy text:', err));
   }
+
+  getActionColumnWidth(): string {
+    const buttonCount = this.buttons.length;
+    const minWidth = 120; // Minimum width for the action column
+    const estimatedButtonWidth = 150; // Estimated average width for a button
+    const totalWidth = Math.max(minWidth, buttonCount * estimatedButtonWidth);
+    return `${totalWidth}px`;
+  }
 }
+

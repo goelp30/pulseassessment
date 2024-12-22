@@ -53,25 +53,27 @@ export class AssessTableComponent  {
 // disableFunction: (row: any) => this.isEditDisabled(row),
   buttons = [
     {
-      label: 'Edit',
-      colorClass: 'bg-blue-500 py-2 px-4 text-white rounded-md',
+      label: '',
+      icon: 'fa fa-pen  pl-3 text-xl ',  // Font Awesome Edit Icon
+      colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-3 py-1 ',
       action: (row: any) => this.editAssessment(row),
       customClassFunction: (row: any) => {
         return row.isLinkGenerated
-          ? 'bg-gray-500 py-2 px-4 text-gray-800 rounded-md  cursor-not-allowed'
+          ? 'bg-gray-500 py-2 px-4 text-gray-300 rounded-md  cursor-not-allowed'
           : 'bg-custom-blue hover:opacity-80 transition-opacity text-white py-2 px-4 text-white rounded-md';
       },
       disableFunction: (row: any) => this.isEditDisabled(row),
     },
     {
-      label: 'Delete',
-      colorClass: 'bg-red-500 py-2 px-4 text-white rounded-md',
+      label: '',
+      icon: 'fa fa-trash pl-3 text-xl',  // Font Awesome Delete Icon
+      colorClass: 'bg-red-500 hover:opacity-80 transition-opacity text-white rounded-md px-3 py-2',
       action: (row: any) => this.confirmDelete(row),
     },
   ];
   isEditDisabled(row: any): boolean {
     // Disable the button if the row has isLinkGenerated set to true
-    return row.isLinkGenerated === true;
+    return row.isLinkGenerated;
   }
   
   constructor(
@@ -124,7 +126,7 @@ export class AssessTableComponent  {
             Promise.all(updatePromises)
               .then(() => {
                 // Show success toast only once after everything is updated
-                this.toastr.success('Assessment deleted successfully', 'Deleted');
+                this.toastr.error('Assessment deleted successfully', 'Deleted');
                 this.eConfirmationVisible = false;  // Close the modal
                 this.getAssessments();  // Refresh the assessments list after deletion
               })
@@ -133,7 +135,6 @@ export class AssessTableComponent  {
                 this.toastr.error('Failed to update related records', 'Error');
               });
           });
-  
         })
         .catch((error) => {
           console.error('Error deleting assessment:', error);
