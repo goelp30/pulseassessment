@@ -95,7 +95,7 @@ export class ViewAssessmentComponent implements OnInit {
         }
       );
   }
-
+  
   categorizeQuestions(combinedData: any[]): void {
     // Separate attempted and not attempted questions
     this.attemptedQuestions = combinedData.filter((question) =>
@@ -139,6 +139,7 @@ export class ViewAssessmentComponent implements OnInit {
   }
 
   onSubmit(): void {
+    sessionStorage.removeItem('clickedData');  
     this.router.navigate(['/evaluation']);
   }
 }

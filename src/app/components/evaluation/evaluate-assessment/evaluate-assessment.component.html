@@ -1,53 +1,92 @@
 <div class="p-2 rounded-lg">
-   <!-- Evaluation Header -->
-   <app-evaluation-header
-   [assessmentName]="clickedData.assessmentName"
-   [userMarks]="getUserTotalMarks()"
-   [totalMarks]="getTotalMarks()"
-   [result]="clickedData.result">
- </app-evaluation-header>
-  
-<div class="w-full max-w-6xl mx-auto p-6 rounded-xl">
-      <div>
-        <h2 class="text-lg font-semibold text-blue-800">
-          Attempted Questions: <span class="text-green-700 font-semibold">{{ attemptedQuestions.length }}</span>
-        </h2>
-        @for(question of attemptedQuestions;track attemptedQuestions){
-      <app-question-display [question]="question" [options]="question.options" [userAnswer]="question.userAnswer"
-        [answer]="question.answer" [marks]="question.marks"  [assignedMarks]="question.assigned_marks" 
-        (marksChanged)="onMarksChange($event)">
-      </app-question-display>}
-    </div>
+  <!-- Evaluation Header -->
+  <app-evaluation-header
+    [assessmentName]="clickedData.assessmentName"
+    [userMarks]="getUserTotalMarks()"
+    [totalMarks]="getTotalMarks()"
+    [result]="clickedData.result"
+  >
+  </app-evaluation-header>
+
+  <div class="w-full max-w-6xl mx-auto p-6 rounded-xl">
     <div>
       <h2 class="text-lg font-semibold text-blue-800">
-        Unattempted Questions: <span class="text-green-700 font-semibold">{{ notAttemptedQuestions.length }}</span>
+        Attempted Questions:
+        <span class="text-green-700 font-semibold">{{
+          attemptedQuestions.length
+        }}</span>
+      </h2>
+      @for(question of attemptedQuestions;track attemptedQuestions){
+      <app-question-display
+        [question]="question"
+        [options]="question.options"
+        [userAnswer]="question.userAnswer"
+        [answer]="question.answer"
+        [marks]="question.marks"
+        [assignedMarks]="question.assigned_marks"
+        (marksChanged)="onMarksChange($event)"
+      >
+      </app-question-display
+      >}
+    </div>
+    <div>
+     <h2 class="text-lg font-semibold text-red-500">
+        Unattempted Questions:
+        <span class="text-red-500 font-semibold"
+          >{{ notAttemptedQuestions.length }}
+        </span>
       </h2>
       @for(question of notAttemptedQuestions;track notAttemptedQuestions){
-        <app-question-display [question]="question" [options]="question.options" [userAnswer]="question.userAnswer"
-          [answer]="question.answer"  [marks]="0"  [assignedMarks]="question.assigned_marks"
-          (marksChanged)="onMarksChange($event)" [isDisabled]="true" >
-        </app-question-display>}
-      </div>
+      <app-question-display
+        [question]="question"
+        [options]="question.options"
+        [userAnswer]="question.userAnswer"
+        [answer]="question.answer"
+        [marks]="0"
+        [assignedMarks]="question.assigned_marks"
+        (marksChanged)="onMarksChange($event)"
+        [isDisabled]="true"
+      >
+      </app-question-display
+      >}
     </div>
   </div>
+</div>
 <!-- Conditional rendering of radio buttons for pass/fail -->
-  <div class="font-bold text-2xl flex justify-center items-center h-full">
-    <div class="flex space-x-4 items-center">
-      <label class="text-gray-700 text-xl">Pass</label>
-      <input type="radio" name="evaluation" value="Pass" class="mr-4 w-6 h-6" [(ngModel)]="clickedData.result" [disabled]="!checkDescriptiveMarksEntered()">
-      <label class="text-gray-700 text-xl">Fail</label>
-      <input type="radio" name="evaluation" value="Fail" class="w-6 h-6" [(ngModel)]="clickedData.result" [disabled]="!checkDescriptiveMarksEntered()">
-    </div>
- </div>
+<div class="font-bold text-2xl flex justify-center items-center h-full">
+  <div class="flex space-x-4 items-center">
+    <label class="text-gray-700 text-xl">Pass</label>
+    <input
+      type="radio"
+      name="evaluation"
+      value="Pass"
+      class="mr-4 w-6 h-6"
+      [(ngModel)]="clickedData.result"
+      [disabled]="!checkDescriptiveMarksEntered()"
+    />
+    <label class="text-gray-700 text-xl">Fail</label>
+    <input
+      type="radio"
+      name="evaluation"
+      value="Fail"
+      class="w-6 h-6"
+      [(ngModel)]="clickedData.result"
+      [disabled]="!checkDescriptiveMarksEntered()"
+    />
+  </div>
+</div>
 <!-- Submit Button -->
-  <div class="text-center m-6">
-    <app-button 
-  [label]="'Complete Evaluation'"
-  [class]="
-    checkDescriptiveMarksEntered() 
-      ? 'px-1.5 py-3 text-white bg-blue-800 border-2 border-blue-800 rounded-md transition-all duration-300 hover:bg-blue-700 cursor-pointer' 
-      : 'px-1.5 py-3 text-white bg-gray-400  text-gray-300 rounded-md cursor-not-allowed opacity-50'"
-  (click)="onSubmit()" 
-  [disabled]="!checkDescriptiveMarksEntered()">
-</app-button>
+
+<div class="flex justify-center items-center m-6">
+  <app-button
+    [label]="'Complete Evaluation'"
+    [colorClass]="
+      checkDescriptiveMarksEntered()
+        ? 'px-1.5 py-3 text-white bg-blue-800 border-2 border-blue-800 rounded-md transition-all duration-300 hover:bg-blue-700 cursor-pointer'
+        : 'px-1.5 py-3 text-white bg-gray-400 text-gray-300 rounded-md cursor-not-allowed opacity-50'
+    "
+    (action)="onSubmit()"
+    [disabled]="!checkDescriptiveMarksEntered()"
+  >
+  </app-button>
 </div>

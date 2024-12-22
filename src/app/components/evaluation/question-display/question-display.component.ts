@@ -2,6 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule, NgModel } from '@angular/forms';
 
+
+
+
 @Component({
   selector: 'app-question-display',
   standalone: true,
@@ -18,6 +21,8 @@ export class QuestionDisplayComponent {
   @Input() assignedMarks: number=0;
   @Input() isDisabled: boolean = false;// Ensure this is defined as an Input
   @Output() marksChanged = new EventEmitter<any>();
+
+
 onMarksChange(): void {
     this.question.assigned_marks = this.question.assignedMarks;
     this.marksChanged.emit(this.question); // Emit the question when marks change

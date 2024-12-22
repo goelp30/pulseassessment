@@ -9,7 +9,7 @@ import { QuestionDisplayComponent } from "../question-display/question-display.c
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EvaluationHeaderComponent } from '../evaluation-header/evaluation-header.component';
-
+import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-evaluate-assessment',
   templateUrl: './evaluate-assessment.component.html',
@@ -24,9 +24,11 @@ export class EvaluateAssessmentComponent implements OnInit {
   attemptedQuestions: any[] = []; // For attempted questions
   notAttemptedQuestions: any[] = []; // For not attempted questions
   quizId: string = ''; 
-
-  constructor(
+  evaluationComplete: boolean | undefined;
+  isLoading: boolean = true; 
+   constructor(
     private evaluationService: EvaluationService,
+    private toastr: ToastrService,
     private router: Router,
     private firebaseservice: FireBaseService<QuizAnswers>
   ) {}
@@ -43,14 +45,15 @@ export class EvaluateAssessmentComponent implements OnInit {
        });
        
 }
- getEvaluationDataByQuizId(quizId: string): void {
-    // Fetch evaluation data from Firebase based on the quizId
-    this.firebaseservice
-      .getItemsByQuizId('QuizAnswer', quizId)
-      .pipe(
-        mergeMap((evaluationData: any[]) => {
-          const questionIds = evaluationData.map((item) => item.questionId);
-          return this.firebaseservice.getQuestionsFromIds('questions', questionIds).pipe(
+getEvaluationDataByQuizId(quizId: string): void {
+  this.firebaseservice
+    .getItemsByQuizId('QuizAnswer', quizId)
+    .pipe(
+      mergeMap((evaluationData: any[]) => {
+        const questionIds = evaluationData.map((item) => item.questionId);
+        return this.firebaseservice
+          .getQuestionsFromIds('questions', questionIds)
+          .pipe(
             mergeMap((questionData: any[]) => {
               return this.firebaseservice.getAllOptions('options').pipe(
                 map((optionData: any[]) => {
@@ -63,7 +66,9 @@ export class EvaluateAssessmentComponent implements OnInit {
                   }, {} as { [key: string]: any[] });
 
                   const combinedData = evaluationData.map((item) => {
-                    const question = questionData.find((q) => q.questionId === item.questionId);
+                    const question = questionData.find(
+                      (q) => q.questionId === item.questionId
+                    );
                     const options = optionsMap[item.questionId] || [];
                     return {
                       ...item,
@@ -80,23 +85,23 @@ export class EvaluateAssessmentComponent implements OnInit {
               );
             })
           );
-        })
-      )
-      .subscribe(
-        (combinedData: any[]) => {
-          console.log('Combined evaluation list:', combinedData);
-          this.evaluationList = combinedData;
-          this.evaluateAutoScoredQuestions();
-        },
-        (error: any) => {
-          console.error('Error fetching combined data:', error);
-        }
-      );
-  }
-  checkDescriptiveMarksEntered(): boolean {
+      })
+    )
+    .subscribe(
+      (combinedData: any[]) => {
+        console.log('Combined evaluation list:', combinedData);
+        this.evaluationList = combinedData;
+        this.evaluateAutoScoredQuestions();
+      
+      },
+      (error: any) => {
+        console.error('Error fetching combined data:', error);
+       
+      }
+    );
+}
+checkDescriptiveMarksEntered(): boolean {
     // Log the attempted questions and their marks for debugging
-   
-  
     return this.attemptedQuestions.every((question) => {
       if (question.questionType === 'Descriptive') {
       // Ensure marks are entered, including zero (not undefined or null)
@@ -121,8 +126,7 @@ export class EvaluateAssessmentComponent implements OnInit {
     if (question.questionType === 'Descriptive') {
       return question.answer && question.answer.trim() !== '';
     }
-
-    return false;
+ return false;
   }
 
   evaluateAutoScoredQuestions(): void {
@@ -239,13 +243,22 @@ export class EvaluateAssessmentComponent implements OnInit {
     this.firebaseservice.batchUpdate(updates)
       .then(() => {
         console.log('Assessment and Quiz Answers updated successfully');
-        alert('Assessment evaluated and results saved successfully.');
+        this.toastr.success(
+          'Assessment evaluated and results saved successfully.',
+          'Success'
+        );
+        // alert('Assessment evaluated and results saved successfully.');
+        this.evaluationComplete = true; // Mark evaluation as complete
+        sessionStorage.removeItem('clickedData'); 
         this.router.navigate(['/view']);
       })
       .catch((error) => {
         console.error('Error updating data in Firebase:', error);
-        alert('There was an error updating the assessment data. Please try again.');
+        // alert('There was an error updating the assessment data. Please try again.');
+        this.toastr.error(
+          'There was an error updating the assessment data. Please try again.',
+          'Error'
+        );
       });
   }
-  
 }  
