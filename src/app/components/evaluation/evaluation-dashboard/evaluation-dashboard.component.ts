@@ -37,7 +37,7 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
   buttons = [
     {
       label: (row: any) => this.getButtonLabel(row),
-      colorClass: 'bg-custom-blue text-white py-2 px-4 rounded-md',
+      colorClass: 'bg-custom-blue text-white rounded-md inline-flex items-center justify-center h-10 w-24 px-4 box-border text-center whitespace-nowrap overflow-hidden text-ellipsis', 
       action: (row: any) => this.handleButtonClick(row),
     },
   ];
