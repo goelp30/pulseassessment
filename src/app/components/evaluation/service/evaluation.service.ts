@@ -5,29 +5,25 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root',
 })
 export class EvaluationService {
-  private clickedDataSubject = new BehaviorSubject<any>(this.getSessionData() || null); // Initialize with sessionStorage if available
+  private clickedDataSubject = new BehaviorSubject<any>(this.getSessionData() || null); 
   clickedData$ = this.clickedDataSubject.asObservable();
 
-  // Set the clicked row's data directly and save to sessionStorage
   setData(data: any) {
-    this.clickedDataSubject.next(data); // Store in BehaviorSubject
-    sessionStorage.setItem('clickedData', JSON.stringify(data)); // Store in sessionStorage
+    this.clickedDataSubject.next(data); 
+    sessionStorage.setItem('clickedData', JSON.stringify(data)); 
   }
 
-  // Retrieve the data from BehaviorSubject or sessionStorage
   getData(): any {
-    return this.clickedDataSubject.value; // Return the data for the clicked row
+    return this.clickedDataSubject.value; 
   }
 
-  // Method to get data from sessionStorage (if it exists)
   private getSessionData(): any {
     const storedData = sessionStorage.getItem('clickedData');
-    return storedData ? JSON.parse(storedData) : null; // Parse and return or null if not available
+    return storedData ? JSON.parse(storedData) : null; 
   }
 
-  // Clear session storage when needed
   clearSessionData() {
     sessionStorage.removeItem('clickedData');
-    this.clickedDataSubject.next(null); // Reset the BehaviorSubject
+    this.clickedDataSubject.next(null); 
   }
 }
