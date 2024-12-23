@@ -7,6 +7,4 @@ import { Component } from '@angular/core';
   templateUrl: './already-attended.component.html',
   styleUrl: './already-attended.component.css'
 })
-export class AlreadyAttendedComponent {
-
-}
+export class AlreadyAttendedComponent {}

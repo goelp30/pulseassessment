@@ -104,7 +104,7 @@
           <tr>
             @for(column of tableColumns; track column){
             <th
-              class="px-4 sm:px-6 py-3 text-left text-white font-semibold border-b"
+              class="px-2 sm:px-6 py-3 text-left text-white font-semibold border-b"
             >
               {{ getColumnAliases(column)[0] || column }}
             </th>
@@ -122,7 +122,7 @@
           row){
           <tr class="even:bg-gray-50">
             @for(column of tableColumns; track column){
-            <td class="px-4 sm:px-6 py-3 border-b">
+            <td class="px-2 sm:px-6 py-3 border-b">
               <p
                 class="text-blue-gray-900"
                 [ngClass]="
@@ -135,7 +135,7 @@
               >
                 {{
                   row[column]?.length > 50
-                    ? (row[column] | titlecase | slice : 0 :10) + "..."
+                    ? (row[column] | titlecase | slice : 0 :15) + "..."
                     : (row[column] | titlecase)
                 }}
               </p>
@@ -146,7 +146,7 @@
               }
             </td>
             }
-            <td class="px-4 sm:px-6 py-3 border-b">
+            <td class="px-2 sm:px-6 py-3 border-b">
               <div class="flex justify-center gap-3">
                 @for(button of buttons; track button){
                   <app-button
