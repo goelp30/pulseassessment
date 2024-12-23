@@ -62,7 +62,7 @@ export class QuizTimerComponent implements OnInit, OnDestroy {
     if (this.totalSeconds <= 300) {
       this.timerClassChanged.emit("bg-red-400"); 
     } else {
-      this.timerClassChanged.emit('bg-green-500'); 
+      this.timerClass; 
     }
   }
 
