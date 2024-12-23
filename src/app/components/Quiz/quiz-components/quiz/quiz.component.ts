@@ -133,50 +133,73 @@ export class QuizComponent implements OnInit, OnDestroy {
 
 
   isNextButtonDisabled(): boolean {
-    const currentQuestionAnswer = this.quizAnswerService.getUserAnswers()[this.questions[this.currentQuestion]?.questionId];
-    const descriptiveAnswer = this.questions[this.currentQuestion]?.descriptiveAnswer?.trim();
+    const currentQuestion = this.questions[this.currentQuestion];
+    const currentQuestionAnswer = this.quizAnswerService.getUserAnswers()[currentQuestion?.questionId];
     
     // Check if the current question is the last question
     const isLastQuestion = this.currentQuestion === this.questions.length - 1;
   
-    // Return true if no option is selected, the question is not marked for review, the descriptive box is empty, or if it's the last question
-    return (
-      isLastQuestion || // Disable if it's the last question
-      !this.questions[this.currentQuestion]?.isMarkedForReview &&
-      (!currentQuestionAnswer?.userAnswer?.length && !descriptiveAnswer)
-    );
+    if (isLastQuestion) {
+      return true;
+    }
+
+    // If question is marked for review, enable Next button
+    if (currentQuestion?.isMarkedForReview) {
+      return false;
+    }
+
+    // For descriptive questions, enable Next if visited
+    if (currentQuestion?.questionType === 'Descriptive') {
+      return !currentQuestion.isVisited;
+    }
+
+    // For other question types, check for answers
+    return !currentQuestionAnswer?.userAnswer?.length;
   }
   
 
   onAnswerSelect(optionId: string) {
-    // Calculate marks immediately when an answer is selected
-    let marks = '0';
     const isDescriptive = this.currentQuestionData.questionType === 'Descriptive';
+    let marks = '0';
+    let userAnswers: string[] = [];
 
     if (!isDescriptive) {
+      if (this.currentQuestionData.questionType === 'Single') {
+        // For single choice, always override with new selection
+        userAnswers = [optionId];
+        
+        // Update the question's selected answer
+        this.questions[this.currentQuestion].selectedAnswer = optionId;
+      } else {
+        // For multi choice, get current state from the question component
+        userAnswers = Array.isArray(this.questions[this.currentQuestion].selectedAnswer) ? 
+                     [...this.questions[this.currentQuestion].selectedAnswer] : [];
+      }
+
       marks = this.quizService.evaluateAutoScoredQuestions(
         this.currentQuestionData,
         this.currentQuestionOptions,
-        optionId  // Pass the optionId directly
+        userAnswers
       ).toString();
-      console.log('Answer Selected:', {
+
+      console.log('Answer Updated:', {
         questionId: this.currentQuestionData.questionId,
-        selectedOption: optionId,
+        userAnswers,
         calculatedMarks: marks
       });
+
+      // Store and override the answer in Firebase
+      this.quizAnswerService.storeAnswer(
+        this.currentQuestionData.questionId,
+        isDescriptive,
+        userAnswers,
+        marks,
+        ''
+      );
+
+      // Mark question as visited
+      this.questions[this.currentQuestion].isVisited = true;
     }
-
-    // Store the answer
-    this.quizAnswerService.storeAnswer(
-      this.currentQuestionData.questionId,
-      isDescriptive,
-      [optionId],
-      marks,
-      ''
-    );
-
-    // Mark question as visited
-    this.questions[this.currentQuestion].isVisited = true;
   }
 
   toggleReview() {
@@ -221,27 +244,30 @@ export class QuizComponent implements OnInit, OnDestroy {
   
   
 
-  onDescriptiveAnswerChange(answer: string) {
-    console.log('Descriptive answer received:', answer);
+  onDescriptiveAnswerChange(answerData: { questionId: string, answer: string }) {
+    console.log('Descriptive answer received:', answerData);
     
     if (this.currentQuestionData && this.currentQuestionData.questionType === 'Descriptive') {
       // Store descriptive answer
       this.quizAnswerService.storeAnswer(
-        this.currentQuestionData.questionId,
-        true, // isDescriptive
-        [], // empty userAnswer array for descriptive
-        '0', // initial marks
-        answer.trim() // Store the descriptive answer
+        answerData.questionId,
+        true,
+        [],
+        '0',
+        answerData.answer.trim()
       );
 
       // Mark question as visited
-      this.questions[this.currentQuestion].isVisited = true;
-      this.questions[this.currentQuestion].descriptiveAnswer = answer.trim();
+      const questionIndex = this.questions.findIndex(q => q.questionId === answerData.questionId);
+      if (questionIndex !== -1) {
+        this.questions[questionIndex].isVisited = true;
+        this.questions[questionIndex].descriptiveAnswer = answerData.answer.trim();
+      }
 
       console.log('Descriptive Answer Stored:', {
-        questionId: this.currentQuestionData.questionId,
-        answer: answer,
-        question: this.currentQuestionData
+        questionId: answerData.questionId,
+        answer: answerData.answer,
+        question: this.questions[questionIndex]
       });
     }
   }
@@ -320,8 +346,9 @@ export class QuizComponent implements OnInit, OnDestroy {
     if (hasDescriptiveAnswers) {
       this.toastService.showInfo('Quiz submitted successfully! Descriptive answers will be evaluated by the examiner.');
     } else {
-      this.toastService.showSuccess('Quiz submitted successfully!');
+      this.toastService.showSuccess('Quiz submitted successfully! You will receive your results shortly.');
     }
+    
     this.updateAssessmentRecord();
     this.showModal = false;
   }
@@ -339,5 +366,11 @@ export class QuizComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     sessionStorage.removeItem('quizReloadCount');
     window.removeEventListener('beforeunload', this.beforeUnloadListener);
+  }
+
+  onDescriptiveQuestionTouched(): void {
+    if (this.currentQuestionData?.questionType === 'Descriptive') {
+      this.questions[this.currentQuestion].isVisited = true;
+    }
   }
 }
