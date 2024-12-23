@@ -20,25 +20,10 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
   selectedFilter: string = 'Search...'; // Default to 'userName'
   selectedStatus: string = '';
   filterOptions: string[] = ['userName', 'email', 'assessmentName'];
-
-  statusOptions: string[] = [
-    'Active',
-    'Expired',
-    'In Progress',
-    'Completed',
-    'Invalid',
-  ];
   isLoading: boolean = true;
-
   tableName: string = TableNames.Assessment;
-  tableColumns: string[] = [
-    'assessmentName',
-    'userName',
-    'email',
-    'status',
-    'url',
-  ];
-
+  statusOptions: string[] = ['Active','Expired','In Progress','Completed','Invalid',];
+  tableColumns: string[] = [ 'assessmentName', 'userName', 'email', 'status', 'url', ];
   columnAliases: { [key: string]: string[] } = {
     assessmentName: ['Assessment Name'],
     userName: ['User Name'],
@@ -46,9 +31,7 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
     status: ['Status'],
     url: ['Url'],
   };
-
   searchPlaceholder: string = this.selectedFilter;
-
   buttons = [
     {
       label: ' Invalid',
@@ -72,7 +55,7 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
     Invalid: 'text-red-600 font-semibold',
   };
 
-  private destroy$ = new Subject<void>(); // Subject to manage subscriptions
+  private destroy$ = new Subject<void>(); 
   constructor(
     private firebaseService: FireBaseService<any>,
     private router: Router
@@ -80,11 +63,10 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.fetchAssessments();
-
     this.router.events
       .pipe(
         filter((event) => event instanceof NavigationEnd),
-        takeUntil(this.destroy$) // Unsubscribe when component is destroyed
+        takeUntil(this.destroy$) 
       )
       .subscribe(() => {
         this.fetchAssessments();
@@ -92,8 +74,8 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next(); // Emit value to complete all subscriptions
-    this.destroy$.complete(); // Complete the subject
+    this.destroy$.next(); 
+    this.destroy$.complete(); 
   }
 
   fetchAssessments() {
@@ -116,7 +98,6 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
     if (this.isInvalidDisabled(assessment)) return;
     const recordKey = `${assessment.assessmentId}_${assessment.userId}`;
     assessment.isValid = false;
-
     this.updateState(recordKey, { isValid: false })
       .then(() => {
         assessment.status = 'Invalid';
@@ -139,7 +120,6 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
   getStatus(assessment: assessmentRecords): string {
     const currentDate = new Date();
     const expiryDate = new Date(assessment.expiryDate);
-
     if (assessment.isValid === false) return 'Invalid';
     if (!assessment.isAccessed && expiryDate < currentDate) {
       return 'Expired';
