@@ -78,3 +78,77 @@ select:disabled {
 select:disabled option {
   color: #b0b0b0; /* Light gray text */
 }
+/* Custom styling for the select dropdown */
+.custom-select {
+    width: 100%;
+    max-height: 150px; /* Limit the height of the dropdown */
+    overflow-y: auto; /* Enable scrolling when options exceed max height */
+    border-radius: 0.375rem; /* Rounded corners for the dropdown */
+    padding: 0.5rem; /* Padding inside the select */
+    font-size: 1rem; /* Set font size */
+}
+
+/* Custom Scrollbar */
+.custom-select::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+}
+
+/* Styling for the track (background of the scrollbar) */
+.custom-select::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px; /* Rounded track */
+}
+
+/* Styling for the thumb (scroll handle) */
+.custom-select::-webkit-scrollbar-thumb {
+    background: #888; /* Thumb color */
+    border-radius: 10px;
+}
+
+/* Hover effect on the scrollbar */
+.custom-select::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Darker thumb on hover */
+}
+
+/* Optional: Add focus ring for better accessibility */
+.custom-select:focus {
+    outline: 2px solid #4c51bf; /* Focus outline color */
+    box-shadow: 0 0 0 2px rgba(76, 81, 191, 0.4); /* Box shadow for focus */
+}
+/* Custom styling for the select dropdown */
+.custom-select {
+  width: 100%;
+  max-height: 70px !important; /* Set max height to show 5-6 items */
+  overflow-y: auto;  /* Enable vertical scrolling */
+  border-radius: 0.375rem; /* Rounded corners for the dropdown */
+  padding: 0.5rem; /* Padding inside the select */
+  font-size: 1rem; /* Set font size */
+}
+
+/* Custom Scrollbar */
+.custom-select::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+/* Styling for the track (background of the scrollbar) */
+.custom-select::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px; /* Rounded track */
+}
+
+/* Styling for the thumb (scroll handle) */
+.custom-select::-webkit-scrollbar-thumb {
+  background: #888; /* Thumb color */
+  border-radius: 10px;
+}
+
+/* Hover effect on the scrollbar */
+.custom-select::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Darker thumb on hover */
+}
+
+/* Optional: Add focus ring for better accessibility */
+.custom-select:focus {
+  outline: 2px solid #4c51bf; /* Focus outline color */
+  box-shadow: 0 0 0 2px rgba(76, 81, 191, 0.4); /* Box shadow for focus */
+}
