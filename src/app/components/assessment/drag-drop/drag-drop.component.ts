@@ -148,7 +148,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         dateUpdated: Date.now(),
         isDisabled: false,
         isautoEvaluated: this.isAutoEvaluated,
-        isLinkGenerated:true
+        isLinkGenerated:false
       };
       this.firebaseService.create(this.assess_table + '/' + uniqueId, assessment)
         .then(() => {
@@ -396,31 +396,99 @@ canSave(): boolean {
     this.router.navigate(['/assessment-list']);
   }
   getEditData(assessmentId: string, isEditing: boolean): void {
-    this.assessmentId = assessmentId;
-    this.editFlag = isEditing;
     if (this.assessmentId && this.editFlag) {
-      this.firebaseService.listensToChangeWithFilter(TableNames.AssessmentList, 'assessmentId', this.assessmentId).subscribe((assessmentLists: any[]) => {
-        if (assessmentLists && assessmentLists.length > 0) {
-          const assessmentList = assessmentLists[0];
-          const subjectsWithRatings = assessmentList.subjects;
-
-          this.rightList = Object.values(subjectsWithRatings).map((subject: any) => ({
-            subjectId: subject.subjectId,
-            subjectName: subject.subjectName
-          }));
-
-          // Use updateRightListForm to set up the form controls
-          this.updateRightListForm(this.rightList);
-
-          this.fetchLeftList();
+      console.log('We are editing');
+      this.firebaseService.listensToChangeWithFilter(this.assess_table, 'assessmentId', this.assessmentId).subscribe((assessments: any[]) => {
+        if (assessments && assessments.length > 0) {
+          const assessment = assessments[0];
+          this.assessmentTitle = assessment.assessmentName;
+          this.viewMode = assessment.assessmentType;
+          this.firebaseService.listensToChangeWithFilter(TableNames.AssessmentList, 'assessmentId', this.assessmentId).subscribe((assessmentLists: any[]) => {
+            if (assessmentLists && assessmentLists.length > 0) {
+              const assessmentList = assessmentLists[0]; 
+              const subjectsWithRatings = assessmentList.subjects; 
+              const subjectIds: string[] = [];
+              const subjectDetailsWithRatings: any[] = [];
+              
+              // Get the details for subjects that are selected in the rightList
+              for (const subjectId in subjectsWithRatings) {
+                if (subjectsWithRatings.hasOwnProperty(subjectId)) {
+                  const subject = subjectsWithRatings[subjectId];
+                  subjectIds.push(subject.subjectId); 
+                  subjectDetailsWithRatings.push({
+                    subjectId: subject.subjectId,
+                    subjectName: subject.subjectName,
+                    easy: subject.easy,
+                    medium: subject.medium,
+                    hard: subject.hard,
+                    descriptive: subject.descriptive
+                  });
+                }
+              }
+  
+              // Set the rightList for editing
+              this.rightList = subjectIds.map((subjectId) => {
+                const subject = this.subjectList.find(sub => sub.subjectId === subjectId);
+                return {
+                  subjectId: subject ? subject.subjectId : '',  
+                  subjectName: subject ? subject.subjectName : '',
+                };
+              });
+  
+              // Filter out subjects already present in the rightList from the leftList
+              const availableSubjects = this.subjectList.filter(sub => 
+                !this.rightList.some(rightSub => rightSub.subjectId === sub.subjectId)
+              );
+  
+              // Now update the leftList with the filtered subjects
+              this.leftList = availableSubjects;
+  
+              const rightListInputs = this.fb.array(
+                subjectDetailsWithRatings.map(subject =>
+                  this.fb.group({
+                    item: [subject],
+                    easy: [subject.easy, [Validators.min(0), Validators.max(5)]],
+                    medium: [subject.medium, [Validators.min(0), Validators.max(5)]],
+                    hard: [subject.hard, [Validators.min(0), Validators.max(5)]],
+                    descriptive: [subject.descriptive, [Validators.min(0), Validators.max(5)]],
+                  })
+                )
+              );
+              this.rightListForm.setControl('rightListInputs', rightListInputs);
+  
+              // Validation: Ensure each subject has at least 2 questions selected
+              this.rightListInputs.controls.forEach((group, i) => {
+                const easyValue = group.get('easy')?.value || 0;
+                const mediumValue = group.get('medium')?.value || 0;
+                const hardValue = group.get('hard')?.value || 0;
+                const descriptiveValue = group.get('descriptive')?.value || 0;
+                const totalSelectedForSubject = easyValue + mediumValue + hardValue + descriptiveValue;
+  
+                if (totalSelectedForSubject < 2) {
+                  // Set the warning message for the specific subject
+                  this.totalWarning = `Please select at least 2 questions for each subject.`;
+                } else {
+                  // Clear the warning message if all subjects have at least 2 questions
+                  this.totalWarning = '';  
+                }
+              });
+  
+            } else {
+              console.error('No matching assessmentList found for the given assessmentId');
+            }
+          }, (error) => {
+            console.error('Error fetching assessmentList data:', error);
+          });
+  
         } else {
-          console.error('No matching assessmentList found for the given assessmentId');
+          console.error('Assessment not found in Firebase');
         }
       }, (error) => {
-        console.error('Error fetching assessmentList data:', error);
+        console.error('Error fetching assessment data:', error);
       });
     }
   }
+  
 
   ngAfterViewInit(): void {
     if (this.isBrowser()) {
@@ -582,7 +650,7 @@ canSave(): boolean {
         dateUpdated: Date.now(),              
         isDisabled: false,                    
         isautoEvaluated: this.isAutoEvaluated,
-        isLinkGenerated:true
+        isLinkGenerated:false
       };
 
       this.firebaseService.update('assessment/' + this.assessmentId, updatedAssessment)

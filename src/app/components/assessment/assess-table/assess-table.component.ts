@@ -55,7 +55,7 @@ export class AssessTableComponent  {
     {
       label: '',
       icon: 'fa fa-pen  pl-3 text-xl ',  // Font Awesome Edit Icon
-      colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-3 py-1 ',
+      colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-2 py-1 ',
       action: (row: any) => this.editAssessment(row),
       customClassFunction: (row: any) => {
         return row.isLinkGenerated
@@ -106,34 +106,39 @@ export class AssessTableComponent  {
     if (this.selectedAssessmentToDelete) {
       const assessmentToDelete = this.selectedAssessmentToDelete;
       assessmentToDelete.isDisabled = true; // Mark as disabled in the Assessment table
-    
+  
       // First, update the 'Assessment' table to mark it as disabled
       this.fireBaseService.update(`${this.tableName}/${assessmentToDelete.assessmentId}`, assessmentToDelete)
         .then(() => {
           // Once the assessment is marked as disabled, update the related AssessmentList entries
-  
-          // Get all AssessmentList entries and update the ones that reference this assessmentId
           this.fireBaseService.getAllDataByFilter(this.assessmentListTable, 'isDisable', false).subscribe((assessmentList: AssessmentList[]) => {
             const assessmentsToUpdate = assessmentList.filter((entry) => entry.assessmentId === assessmentToDelete.assessmentId);
   
-            // For each AssessmentList entry related to the deleted assessment
-            const updatePromises = assessmentsToUpdate.map((assessment) => {
-              assessment.isDisable = true; // Mark as disabled in the AssessmentList table
-              return this.fireBaseService.update(`${this.assessmentListTable}/${assessment.assessmentId}`, assessment);
-            });
-  
-            // Wait for all updates to be completed
-            Promise.all(updatePromises)
-              .then(() => {
-                // Show success toast only once after everything is updated
-                this.toastr.error('Assessment deleted successfully', 'Deleted');
-                this.eConfirmationVisible = false;  // Close the modal
-                this.getAssessments();  // Refresh the assessments list after deletion
-              })
-              .catch((error) => {
-                console.error('Error updating AssessmentList entries:', error);
-                this.toastr.error('Failed to update related records', 'Error');
+            // If there are related assessments to update
+            if (assessmentsToUpdate.length > 0) {
+              const updatePromises = assessmentsToUpdate.map((assessment) => {
+                assessment.isDisable = true; // Mark as disabled in the AssessmentList table
+                return this.fireBaseService.update(`${this.assessmentListTable}/${assessment.assessmentId}`, assessment);
               });
+  
+              // Wait for all updates to be completed
+              Promise.all(updatePromises)
+                .then(() => {
+                  // Show success toast only once after everything is updated
+                  this.toastr.error('Assessment and related entries deleted successfully', 'Deleted');
+                  this.eConfirmationVisible = false;  // Close the modal
+                  this.getAssessments();  // Refresh the assessments list after deletion
+                })
+                .catch((error) => {
+                  console.error('Error updating AssessmentList entries:', error);
+                  this.toastr.error('Failed to update related records', 'Error');
+                });
+            } else {
+              // No related entries to update, just show the success message for deleting the assessment
+              this.toastr.error('Assessment deleted successfully', 'Deleted');
+              this.eConfirmationVisible = false;  // Close the modal
+              this.getAssessments();  // Refresh the assessments list after deletion
+            }
           });
         })
         .catch((error) => {
@@ -143,9 +148,6 @@ export class AssessTableComponent  {
     }
   }
   
-  
-
-
   // View the details of the assessment and related subjects
 // In AssessTableComponent (TypeScript)
 viewAssessment(row: any) {
