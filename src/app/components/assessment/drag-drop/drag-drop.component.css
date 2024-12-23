@@ -152,3 +152,32 @@ select:disabled option {
   outline: 2px solid #4c51bf; /* Focus outline color */
   box-shadow: 0 0 0 2px rgba(76, 81, 191, 0.4); /* Box shadow for focus */
 }
+/* Custom Radio Button Styles */
+.radio-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #bbb; /* Outer border color */
+  position: relative;
+  transition: all 0.3s ease;
+  background-color: white;
+}
+
+.radio-btn:checked {
+  border-color: #bbb; /* Keep the outer border color as neutral */
+}
+
+/* Create the inner circle when the radio is checked */
+.radio-btn:checked::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #003e7e; /* Inner circle color */
+}

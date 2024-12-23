@@ -587,7 +587,6 @@ canSave(): boolean {
       this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
       return;
     }
-
     if (this.editFlag) {
       this.updateAssessment();
     } else {
@@ -615,6 +614,14 @@ canSave(): boolean {
                 this.resetRightListAndForm();
                 this.assessmentTitle = '';
                 this.isNewVisible = true;
+                this.updateSubjectsCanDeleted(Object.keys(subjects))
+                .then(() => {
+                  this.toastr.success('Subjects updated successfully', 'Updated');
+                })
+                .catch((error) => {
+                  console.error('Error updating subjects:', error);
+                  this.toastr.error('Failed to update subjects. Please try again.');
+                });
               })
               .catch((error) => {
                 console.error('Error saving data:', error);
@@ -744,4 +751,14 @@ canSave(): boolean {
     this.actionType = 'navigate'; 
     this.eConfirmationVisible = true; 
   }
+  updateSubjectsCanDeleted(subjectIds: string[]): Promise<void> {
+    const updatePromises = subjectIds.map(subjectId => 
+      this.firebaseService.update(`${TableNames.Subject}/${subjectId}`, { canDelete: false })
+    );
+
+    return Promise.all(updatePromises).then(() => {
+      console.log('All subjects updated successfully');
+    });
+  }
+
 }

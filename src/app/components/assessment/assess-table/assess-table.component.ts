@@ -79,6 +79,12 @@ export class AssessTableComponent {
       label: 'Delete',
       colorClass: 'bg-red-500 py-2 px-4 text-white rounded-md',
       action: (row: any) => this.confirmDelete(row),
+      customClassFunction: (row: any) => {
+        return row.isLinkGenerated
+          ? 'bg-gray-500 py-2 px-4 text-gray-800 rounded-md  cursor-not-allowed'
+          : 'bg-custom-blue hover:opacity-80 transition-opacity text-white py-2 px-4 text-white rounded-md';
+      },
+      disableFunction: (row: any) => this.isEditDisabled(row),
     },
   ];
 
