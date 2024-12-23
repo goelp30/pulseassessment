@@ -210,7 +210,7 @@ addbuttonlabel:string='add';
           // Proceed with updating the subject if no duplicates
           this.fireBaseService.update(`${this.tableName}/${this.selectedSubject!.subjectId}`, this.selectedSubject!)
             .then(() => {
-              this.toastr.success('Subject updated successfully', 'Updated', { timeOut: 2000 });
+              this.toastr.info('Subject updated successfully', 'Updated', { timeOut: 2000 });
               this.isModalVisible = false;
               this.closeModal();
               this.selectedSubject = null;

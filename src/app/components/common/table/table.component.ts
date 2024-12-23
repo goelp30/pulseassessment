@@ -35,6 +35,7 @@ export class TableComponent implements OnInit, OnChanges {
     colorClass: string;  
     action: Function; 
     icon?: string;
+    title?: string;
     customClassFunction?: (row: any) => string;
     disableFunction?: (row: any) => boolean;
   }[] = [];
