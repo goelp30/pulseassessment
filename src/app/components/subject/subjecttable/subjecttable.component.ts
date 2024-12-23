@@ -63,7 +63,7 @@ export class SubjectTableComponent  implements OnInit{
     },    
     {
       label: '',
-      icon: 'fas fa-cog px-2 text-xl',  // Font Awesome Manage Icon
+      icon: 'fas fa-cog px-2 text-lg ',  // Font Awesome Manage Icon
       colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-1',
       action: (row: any) => this.manageSubject(row),
       title:"Manage"
@@ -73,9 +73,20 @@ export class SubjectTableComponent  implements OnInit{
       icon: 'fa fa-trash px-2 text-lg ',  // Font Awesome Delete Icon
       colorClass: 'bg-red-500 hover:opacity-80 transition-opacity text-white rounded-md px-4 py-1',
       action: (row: any) => this.confirmDelete(row),
-      title:"Delete"
+      title: "Delete",
+      customClassFunction: (row: any) => {
+        // Apply different styles based on the `canDelete` condition
+        return row.canDelete
+          ? 'bg-red-500 hover:opacity-80 transition-opacity text-white rounded-md px-4 py-1'
+          : 'bg-gray-500 py-2 px-4 text-gray-800 rounded-md cursor-not-allowed';
+      },
+      disableFunction: (row: any) => !row.canDelete,  // Disable if canDelete is false
     },
   ];
+  
+  CanDelete(row: any): boolean {
+    return row.canDelete;
+  }
   
 
   modaltitle: string = 'Add Subject';
@@ -139,6 +150,7 @@ addbuttonlabel:string='add';
       createdOn: Date.now(),
       UpdatedOn: Date.now(),
       isDisabled: false,
+      canDelete:true
     };
     this.isModalVisible = true;
     this.isAddModal = true;
