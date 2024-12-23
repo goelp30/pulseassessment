@@ -107,7 +107,6 @@ addbuttonlabel:string='add';
       (data: Subject[]) => {
         this.subjects = data
           .filter(subject => !subject.isDisabled) // Exclude disabled subjects
-          .sort((a, b) => b.createdOn - a.createdOn); // Sort by 'createdOn' in descending order
         
         this.cdr.markForCheck(); // Trigger change detection manually
       },
