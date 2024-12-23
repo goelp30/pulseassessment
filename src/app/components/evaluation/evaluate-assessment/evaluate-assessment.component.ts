@@ -15,21 +15,15 @@ import { PageLabelService } from '../../../../sharedServices/pagelabel.service';
   selector: 'app-evaluate-assessment',
   templateUrl: './evaluate-assessment.component.html',
   styleUrls: ['./evaluate-assessment.component.css'],
-  imports: [
-    QuestionDisplayComponent,
-    CommonModule,
-    ButtonComponent,
-    FormsModule,
-    EvaluationHeaderComponent,
-  ],
+  imports: [ QuestionDisplayComponent, CommonModule, ButtonComponent, FormsModule, EvaluationHeaderComponent ],
   standalone: true,
 })
 export class EvaluateAssessmentComponent implements OnInit {
   clickedData: any = {};
   successMessage: boolean = false;
   evaluationList: any[] = [];
-  attemptedQuestions: any[] = []; // For attempted questions
-  notAttemptedQuestions: any[] = []; // For not attempted questions
+  attemptedQuestions: any[] = []; 
+  notAttemptedQuestions: any[] = []; 
   quizId: string = '';
   evaluationComplete: boolean | undefined;
   isLoading: boolean = false;
@@ -46,16 +40,15 @@ export class EvaluateAssessmentComponent implements OnInit {
     this.isLoading = true;
     this.pageLabelService.updatePageLabel('Evaluate Assessment');
 
-    // Listen for clicked data updates
     this.evaluationService.clickedData$.subscribe((data) => {
       this.clickedData = data;
       if (this.clickedData) {
         this.quizId = this.clickedData.quizId;
-        // Fetch evaluation data when quizId is available
         this.getEvaluationDataByQuizId(this.clickedData.quizId);
       }
     });
   }
+
   getEvaluationDataByQuizId(quizId: string): void {
     this.isLoading = true;
     this.firebaseservice
@@ -90,7 +83,6 @@ export class EvaluateAssessmentComponent implements OnInit {
                         options: options,
                       };
                     });
-
                     this.categorizeQuestions(combinedData);
                     return combinedData;
                   })
@@ -101,7 +93,6 @@ export class EvaluateAssessmentComponent implements OnInit {
       )
       .subscribe(
         (combinedData: any[]) => {
-          console.log('Combined evaluation list:', combinedData);
           this.evaluationList = combinedData;
           this.evaluateAutoScoredQuestions();
           this.isLoading = false;
@@ -113,16 +104,14 @@ export class EvaluateAssessmentComponent implements OnInit {
       );
   }
   checkDescriptiveMarksEntered(): boolean {
-    // Log the attempted questions and their marks for debugging
     return this.attemptedQuestions.every((question) => {
       if (question.questionType === 'Descriptive') {
-        // Ensure marks are entered, including zero (not undefined or null)
         return (
           question.assigned_marks !== undefined &&
           question.assigned_marks !== null
         );
       }
-      return true; // Skip non-descriptive questions
+      return true; 
     });
   }
 
@@ -172,17 +161,14 @@ export class EvaluateAssessmentComponent implements OnInit {
         selectedAnswers.forEach((answer: any) => {
           if (correctOptions.includes(answer)) correctCount++;
         });
-
         const marksPerCorrectAnswer =
-          question.questionWeitage / correctOptions.length;
+        question.questionWeitage / correctOptions.length;
         question.marks = correctCount * marksPerCorrectAnswer;
-
-        // Apply penalty for extra answers
         const extraAnswersSelected =
-          selectedAnswers.length - correctOptions.length;
+        selectedAnswers.length - correctOptions.length;
         if (extraAnswersSelected > 0) {
           const penaltyPerExtraAnswer =
-            question.questionWeitage / correctOptions.length;
+          question.questionWeitage / correctOptions.length;
           question.marks -= extraAnswersSelected * penaltyPerExtraAnswer;
           if (question.marks < 0) question.marks = 0;
         }
@@ -196,7 +182,6 @@ export class EvaluateAssessmentComponent implements OnInit {
         question.questionType === 'Descriptive'
           ? question.assignedMarks || 0
           : question.marks || 0;
-
       return totalMarks + questionMarks;
     }, 0);
   }
@@ -209,11 +194,11 @@ export class EvaluateAssessmentComponent implements OnInit {
 
   onMarksChange(question: any): void {
     if (question.assigned_marks > question.questionWeitage) {
-      question.assigned_marks = question.questionWeitage; // Reset to max allowed marks
+      question.assigned_marks = question.questionWeitage; 
     }
 
     if (question.questionType === 'Descriptive') {
-      question.marks = question.assigned_marks; // Assign marks for descriptive questions
+      question.marks = question.assigned_marks; 
     }
 
     this.getUserTotalMarks();
@@ -224,19 +209,15 @@ export class EvaluateAssessmentComponent implements OnInit {
   }
 
   onSubmit(): void {
-    // Check if all descriptive questions have marks assigned
     if (!this.checkDescriptiveMarksEntered()) {
-      alert('Please enter marks for all descriptive questions.');
-      return; // Prevent further execution if not all descriptive questions have marks
+      return; 
     }
 
-    // Proceed with submission if all checks are passed
     if (!this.evaluationList || this.evaluationList.length === 0) {
       console.error('No evaluation questions available');
       return;
     }
 
-    // Check if the assessment is already evaluated (if applicable)
     if (this.clickedData?.isEvaluation) {
       this.router.navigate(['/view']);
       return;
@@ -245,15 +226,13 @@ export class EvaluateAssessmentComponent implements OnInit {
     // Set marks for descriptive questions if not already done
     this.evaluationList.forEach((question: any) => {
       if (question.questionType === 'Descriptive') {
-        question.marks = question.assigned_marks; // Assign the assigned marks to question
+        question.marks = question.assigned_marks; 
       }
     });
 
-    // Calculate the total marks after setting the descriptive question marks
     this.getUserTotalMarks();
     this.successMessage = true;
 
-    // Prepare updates for Firebase (or your backend system)
     const updates: { [path: string]: any } = {};
     const assessmentPath = `AssessmentData/${this.quizId}`;
     updates[assessmentPath] = {
@@ -261,11 +240,9 @@ export class EvaluateAssessmentComponent implements OnInit {
       result: this.clickedData.result,
     };
 
-    // Loop through the evaluation list to update the quiz answers
     this.evaluationList.forEach((question: any) => {
       const quizAnswerPath = `QuizAnswer/${this.quizId}/${question.questionId}`;
       const marksToUpdate = Number(question.marks) || 0;
-
       updates[quizAnswerPath] = {
         marks: marksToUpdate.toString(),
         userAnswer: question.userAnswer || [],
@@ -273,23 +250,19 @@ export class EvaluateAssessmentComponent implements OnInit {
       };
     });
 
-    // Update Firebase data
     this.firebaseservice
       .batchUpdate(updates)
       .then(() => {
-        console.log('Assessment and Quiz Answers updated successfully');
         this.toastr.success(
           'Assessment evaluated and results saved successfully.',
           'Success'
         );
-        // alert('Assessment evaluated and results saved successfully.');
-        this.evaluationComplete = true; // Mark evaluation as complete
+        this.evaluationComplete = true; 
         sessionStorage.removeItem('clickedData');
         this.router.navigate(['/view']);
       })
       .catch((error) => {
         console.error('Error updating data in Firebase:', error);
-        // alert('There was an error updating the assessment data. Please try again.');
         this.toastr.error(
           'There was an error updating the assessment data. Please try again.',
           'Error'

@@ -20,12 +20,11 @@ import { PageLabelService } from '../../../../sharedServices/pagelabel.service';
 export class ViewAssessmentComponent implements OnInit, OnDestroy {
   clickedData: any = {};
   evaluationList: any[] = [];
-  attemptedQuestions: any[] = []; // For attempted questions
-  notAttemptedQuestions: any[] = []; // For not attempted questions
+  attemptedQuestions: any[] = []; 
+  notAttemptedQuestions: any[] = []; 
   quizId: string = '';
   isLoading: boolean = false;
   private destroy$ = new Subject<void>();
-
   constructor(
     private evaluationService: EvaluationService,
     private router: Router,
@@ -56,7 +55,6 @@ export class ViewAssessmentComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
-
 
   getEvaluationDataByQuizId(quizId: string): void {
     this.isLoading = true;
@@ -104,7 +102,6 @@ export class ViewAssessmentComponent implements OnInit, OnDestroy {
       )
       .subscribe(
         (combinedData: any[]) => {
-          console.log('Combined evaluation list:', combinedData);
           this.evaluationList = combinedData;
            this.isLoading = false;
         },
@@ -144,8 +141,7 @@ export class ViewAssessmentComponent implements OnInit, OnDestroy {
   // Calculate the total marks scored by the user
   getUserMarks(): number {
     return this.evaluationList.reduce((totalMarks, question) => {
-      // Convert marks to a number before adding
-      const marks = Number(question.marks) || 0; // Fallback to 0 if the marks are not a valid number
+      const marks = Number(question.marks) || 0; 
       return totalMarks + marks;
     }, 0);
   }

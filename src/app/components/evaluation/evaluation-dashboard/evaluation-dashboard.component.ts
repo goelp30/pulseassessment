@@ -27,7 +27,6 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
   filterKey = 'status';
   tableName: string = 'List of Evaluations';
   isLoading: boolean = true;
-
   columnAliases = {
     userName: ['User Name'],
     userEmail: ['User Email'],
@@ -42,12 +41,9 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
     },
   ];
   searchPlaceholder = 'Search....';
-  // Add properties to store user data
   candidates: Candidate[] = [];
   employees: Employee[] = [];
-
-  private destroy$ = new Subject<void>(); // Subject to manage subscriptions
-
+  private destroy$ = new Subject<void>(); 
   constructor(
     private router: Router,
     private evaluationService: EvaluationService,
@@ -59,24 +55,22 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
     this.router.events
       .pipe(
         filter((event) => event instanceof NavigationEnd),
-        takeUntil(this.destroy$) // Unsubscribe when component is destroyed
+        takeUntil(this.destroy$) 
       )
       .subscribe(() => {
         this.fetchData();
       });
   }
   ngOnDestroy(): void {
-    this.destroy$.next(); // Emit value to complete all subscriptions
-    this.destroy$.complete(); // Complete the subject
+    this.destroy$.next();
+    this.destroy$.complete(); 
   }
 
   fetchData() {
     this.getAssessmentForEvaluation();
     this.getCandidatesAndEmployees();
   }
-
   getCandidatesAndEmployees(): void {
-    // Fetch candidates and employees data
     this.firebaseservice
       .getAllData('candidates')
       .pipe(takeUntil(this.destroy$))
@@ -101,7 +95,6 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
       );
   }
 
-  // Whenever the search query changes, update the data in the table
   onSearchQueryChange(newQuery: string): void {
     this.searchQuery = newQuery;
   }
@@ -128,14 +121,10 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
         (data) => {
           this.evaluationList = data;
           this.filteredEvaluationList = [...this.evaluationList];
-
-          // Add the userName, userEmail, and assessmentName to each row
           this.filteredEvaluationList = this.filteredEvaluationList.map(
             (row) => {
               const userId = row.userId;
               let user: Candidate | Employee | undefined;
-
-              // Check if the user is a candidate or employee
               user =
                 this.candidates.find(
                   (candidate) => candidate.candidateId === userId
@@ -149,7 +138,7 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
                 userName: user ? this.getUserName(user) : '',
                 userEmail: user ? this.getUserEmail(user) : '',
                 status: row.isEvaluated ? 'Completed' : 'Pending',
-                assessmentName: '', // Placeholder for assessment name
+                assessmentName: '', 
               };
 
               // Fetch the assessmentName for each row
@@ -157,7 +146,7 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
                 .getAssessmentNameById(row.assessmentID)
                 .subscribe(
                   (name) => {
-                    updatedRow.assessmentName = name; // Set the actual assessmentName
+                    updatedRow.assessmentName = name; 
                   },
                   (error) => {
                     console.error('Error fetching assessment name:', error);

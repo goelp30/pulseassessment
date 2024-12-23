@@ -16,7 +16,6 @@ export class EvaluationHeaderComponent {
   @Input() totalMarks: number = 0;
   @Input() result?: string;
   @Output() backClick: EventEmitter<void> = new EventEmitter<void>();
-//Back Button
   onBackClick() {
     this.backClick.emit();
   }
