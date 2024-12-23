@@ -7,7 +7,6 @@ import { Assessment } from '../../../models/assessment';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { TableNames } from '../../../enums/TableName';
 import { TableComponent } from '../../common/table/table.component';
-import { HeaderComponent } from '../../common/header/header.component';
 
 @Component({
   selector: 'app-generate-link',
@@ -17,7 +16,6 @@ import { HeaderComponent } from '../../common/header/header.component';
     PopupModuleComponent,
     ModalComponent,
     TableComponent,
-    HeaderComponent,
   ],
   templateUrl: './link-generation.component.html',
   styleUrl: './link-generation.component.css',
@@ -32,6 +30,7 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
   filteredAssessments: Assessment[] = [];
   selectedLink: string = '';
   isModalVisible: boolean = false;
+  isLinkGenerated?: boolean;
   tableName: string = TableNames.Assessment;
   tableColumns: string[] = ['assessmentName', 'assessmentType'];
   columnAliases: { [key: string]: string[] } = {
@@ -59,7 +58,7 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
 
   getAssessments(): void {
     const assessmentSub = this.firebaseService
-      .getAllData('assessment')
+      .getAllDataByFilter('assessment', 'isDisabled', false)
       .subscribe(
         (data) => {
           this.assessments = data;

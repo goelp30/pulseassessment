@@ -4,7 +4,6 @@ import { TableComponent } from '../../common/table/table.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EvaluationService } from '../service/evaluation.service';
-import { HeaderComponent } from '../../common/header/header.component';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Candidate } from '../../../models/candidate';
 import { Employee } from '../../../models/employee';
@@ -14,7 +13,7 @@ import { Subject, filter, takeUntil } from 'rxjs';
 @Component({
   selector: 'app-evaluation-dashboard',
   standalone: true,
-  imports: [TableComponent, CommonModule, FormsModule, HeaderComponent],
+  imports: [TableComponent, CommonModule, FormsModule],
   templateUrl: './evaluation-dashboard.component.html',
   styleUrl: './evaluation-dashboard.component.css',
 })
@@ -38,7 +37,7 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
   buttons = [
     {
       label: (row: any) => this.getButtonLabel(row),
-      colorClass: 'bg-custom-blue text-white   py-2 px-4 rounded-md',
+      colorClass: 'bg-custom-blue text-white rounded-md inline-flex items-center justify-center h-10 w-24 px-4 box-border text-center whitespace-nowrap overflow-hidden text-ellipsis', 
       action: (row: any) => this.handleButtonClick(row),
     },
   ];
@@ -119,7 +118,6 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
     return row.isEvaluated ? 'View' : 'Evaluate';
   }
 
-
   getAssessmentForEvaluation(): void {
     this.getCandidatesAndEmployees();
     this.isLoading = true;
@@ -130,13 +128,13 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
         (data) => {
           this.evaluationList = data;
           this.filteredEvaluationList = [...this.evaluationList];
-  
+
           // Add the userName, userEmail, and assessmentName to each row
           this.filteredEvaluationList = this.filteredEvaluationList.map(
             (row) => {
               const userId = row.userId;
               let user: Candidate | Employee | undefined;
-  
+
               // Check if the user is a candidate or employee
               user =
                 this.candidates.find(
@@ -145,7 +143,7 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
                 this.employees.find(
                   (employee) => employee.employeeId === userId
                 );
-  
+
               const updatedRow = {
                 ...row,
                 userName: user ? this.getUserName(user) : '',
@@ -153,17 +151,19 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
                 status: row.isEvaluated ? 'Completed' : 'Pending',
                 assessmentName: '', // Placeholder for assessment name
               };
-  
+
               // Fetch the assessmentName for each row
-              this.firebaseservice.getAssessmentNameById(row.assessmentID).subscribe(
-                (name) => {
-                  updatedRow.assessmentName = name; // Set the actual assessmentName
-                },
-                (error) => {
-                  console.error('Error fetching assessment name:', error);
-                }
-              );
-  
+              this.firebaseservice
+                .getAssessmentNameById(row.assessmentID)
+                .subscribe(
+                  (name) => {
+                    updatedRow.assessmentName = name; // Set the actual assessmentName
+                  },
+                  (error) => {
+                    console.error('Error fetching assessment name:', error);
+                  }
+                );
+
               return updatedRow;
             }
           );
@@ -175,7 +175,7 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
         }
       );
   }
- 
+
   isCandidate(user: Candidate | Employee): user is Candidate {
     return (user as Candidate).candidateId !== undefined;
   }
@@ -206,5 +206,4 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
     }
     return '';
   }
-
 }
