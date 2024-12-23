@@ -63,7 +63,7 @@ export class SubjectTableComponent  implements OnInit{
     },    
     {
       label: '',
-      icon: 'fas fa-cog px-2 text-lg ',  // Font Awesome Manage Icon
+      icon: 'fas fa-cog px-2 text-xl',  // Font Awesome Manage Icon
       colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-1',
       action: (row: any) => this.manageSubject(row),
       title:"Manage"
@@ -210,7 +210,7 @@ addbuttonlabel:string='add';
           // Proceed with updating the subject if no duplicates
           this.fireBaseService.update(`${this.tableName}/${this.selectedSubject!.subjectId}`, this.selectedSubject!)
             .then(() => {
-              this.toastr.success('Subject updated successfully', 'Updated', { timeOut: 2000 });
+              this.toastr.info('Subject updated successfully', 'Updated', { timeOut: 2000 });
               this.isModalVisible = false;
               this.closeModal();
               this.selectedSubject = null;
