@@ -56,21 +56,21 @@ export class SubjectTableComponent  implements OnInit{
   buttons = [
     {
       label: '',
-      icon: 'fa fa-pen  pl-3 text-xl ',  // Font Awesome Edit Icon
+      icon: 'fa fa-pen px-2 text-xl ',  // Font Awesome Edit Icon
       colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-1 ', 
       action: (row: any) => this.editSubject(row),
       title:"Edit"
     },    
     {
       label: '',
-      icon: 'fas fa-cog pl-2   text-xl',  // Font Awesome Manage Icon
+      icon: 'fas fa-cog px-2 text-xl ',  // Font Awesome Manage Icon
       colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-1',
       action: (row: any) => this.manageSubject(row),
       title:"Manage"
     },
     {
       label: '',
-      icon: 'fa fa-trash pl-2 text-xl',  // Font Awesome Delete Icon
+      icon: 'fa fa-trash px-2 text-xl ',  // Font Awesome Delete Icon
       colorClass: 'bg-red-500 hover:opacity-80 transition-opacity text-white rounded-md px-4 py-1',
       action: (row: any) => this.confirmDelete(row),
       title:"Delete"
