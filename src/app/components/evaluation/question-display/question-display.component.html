@@ -23,7 +23,7 @@
   <!-- Single-Answer Question -->
   @if(question.questionType == 'Single'){
   <div class="space-y-1 font-mono">
-    @for(option of question.options;track question.options){
+    @for(option of question.options;track option.optionId){
     <div class="flex items-center space-x-2">
       <input
         type="radio"
@@ -52,7 +52,7 @@
   <!-- Multi-Answer Question -->
   @if(question.questionType === 'Multi'){
   <div class="space-y-1 font-mono">
-    @for(option of question.options;track question.options){
+    @for(option of question.options;track option.optionId){
     <div class="flex items-center space-x-2">
       <input
         type="checkbox"
@@ -84,12 +84,6 @@
   @if(question.questionType === 'Descriptive'){
   <div class="space-y-4 py-3">
     <div>
-      <!-- <pre
-        class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono overflow-x-auto whitespace-pre-wrap"
-        >{{ question.answer }}
-    </pre
-      > -->
-
       <!--Code Header -->
       <div
         class="bg-gray-800 rounded-t-lg text-gray-400 px-4 py-2 flex justify-between items-center"
