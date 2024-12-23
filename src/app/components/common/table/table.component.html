@@ -128,7 +128,7 @@
                 [ngClass]="
                   column === 'status' ? getStatusClass(row[column]) : ''
                 "
-                (click)="copyToClipboard(row[column])"
+                (click)="copyToClipboard(row[column],row)"
                 style="cursor: pointer"
               >
                 {{

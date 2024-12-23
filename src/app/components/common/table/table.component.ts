@@ -54,7 +54,7 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() statusMapping: { [key: string]: string } = {};
 
   @Input() customButtonDisplay: { [key: string]: any } = {};
-
+  copiedRow: any = null; // Track the copied row
   selectedFilter: string = '';
   selectedStatus: string = '';
 
@@ -99,9 +99,13 @@ export class TableComponent implements OnInit, OnChanges {
     ) {
       this.isLoading = true;
       this.filterData();
+      this.currentPage = 1; // Reset to first page
+      this.generatePagination();
       this.isLoading = false;
     }
   }
+  
+  
 
   selectTab(tab: string): void {
     this.activeTab = tab;
@@ -118,7 +122,7 @@ export class TableComponent implements OnInit, OnChanges {
 
   filterData() {
     let filtered = [...this.tableData];
-
+  
     if (this.searchQuery) {
       filtered = filtered.filter((row) => {
         return this.tableColumns.some((column) => {
@@ -143,12 +147,13 @@ export class TableComponent implements OnInit, OnChanges {
         );
       });
     }
-
+  
     this.filteredData = filtered;
     this.totalPages = Math.ceil(this.filteredData.length / this.itemsPerPage);
+    this.currentPage = Math.min(this.currentPage, this.totalPages); // Keep the current page within bounds
     this.generatePagination();
-    this.currentPage = 1;
   }
+  
 
   applyAdditionalFilters(data: any[]): any[] {
     let filteredData = [...data];
@@ -187,25 +192,30 @@ export class TableComponent implements OnInit, OnChanges {
     const endIndex = startIndex + this.itemsPerPage;
     return this.filteredData.slice(startIndex, endIndex);
   }
+  
 
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
+      this.filterData(); // Ensure data is recalculated
       this.currentPage++;
-      this.generatePagination();
     }
   }
-
+  
   previousPage(): void {
     if (this.currentPage > 1) {
+      this.filterData(); // Ensure data is recalculated
       this.currentPage--;
-      this.generatePagination();
     }
   }
+  
+  
 
   goToPage(page: number): void {
+    this.filterData(); // Reapply filters to ensure the latest data
     this.currentPage = page;
     this.generatePagination();
   }
+  
 
   generatePagination(): void {
     const totalPages = this.totalPages;
@@ -237,16 +247,17 @@ export class TableComponent implements OnInit, OnChanges {
     return false;
   }
 
-  copyToClipboard(content: string | undefined): void {
+  copyToClipboard(content: string | undefined, row: any): void {
     if (!content) return;
-
     navigator.clipboard
       .writeText(content)
       .then(() => {
         this.isPopupVisible = true;
-
+        this.copiedRow = row;
+ 
         setTimeout(() => {
           this.isPopupVisible = false;
+          this.copiedRow = null; // Clear the copied row after timeout
         }, 1000);
       })
       .catch((err) => console.error('Failed to copy text:', err));
