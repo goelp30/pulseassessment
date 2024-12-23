@@ -760,5 +760,34 @@ canSave(): boolean {
       console.log('All subjects updated successfully');
     });
   }
+  toggleMoveAllSubjects(): void {
+    if (this.leftList.length > 0) {
+      // If there are subjects in the left list, move all to the right
+      this.moveAllSubjectsToRight();
+    } else if (this.rightList.length > 0) {
+      // If there are subjects in the right list, move all to the left
+      this.moveAllSubjectsToLeft();
+    }
+  }
+
+  // Move all subjects from left to right
+  moveAllSubjectsToRight(): void {
+    this.rightList = [...this.rightList, ...this.leftList];
+    this.leftList = [];
+    // You can call any methods to update forms or validate if needed
+    this.updateRightListForm(this.rightList);
+    this.updateValidations();
+  }
+
+  // Move all subjects from right to left
+  moveAllSubjectsToLeft(): void {
+    this.leftList = [...this.leftList, ...this.rightList];
+    this.rightList = [];
+    // You can call any methods to update forms or validate if needed
+    // this.updateLeftListForm(this.leftList);
+    this.checkTotalQuestions();
+    this.updateValidations();
+  }
+
 
 }
