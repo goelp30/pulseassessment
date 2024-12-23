@@ -41,6 +41,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   assessmentId: string = ''
   editFlag: boolean = false;
   warningTitle: string = '';
+  isNewVisible:boolean=false;
 
 
   constructor(
@@ -148,7 +149,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         dateUpdated: Date.now(),
         isDisabled: false,
         isautoEvaluated: this.isAutoEvaluated,
-        isLinkGenerated:true
+        isLinkGenerated:false
       };
       this.firebaseService.create(this.assess_table + '/' + uniqueId, assessment)
         .then(() => {
@@ -180,17 +181,34 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     this.fetchLeftList(); 
   }
   fetchLeftList(): void {
-    this.firebaseService.getAllDataByFilter(this.subject_table, 'isDisabled', false).subscribe((data: any[]) => {
-      const allSubjects = data
-        .map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName }))
-        .sort((a, b) => a.subjectName.localeCompare(b.subjectName));
+    this.firebaseService.getAllDataByFilter(this.subject_table, 'isDisabled', false).subscribe((subjects: any[]) => {
+      const subjectsWithQuestionCounts = subjects.map(subject => ({
+        ...subject,
+        questionCount: 0
+      }));
 
-      // Filter out subjects that are already in the right list
-      this.leftList = allSubjects.filter(subject => 
-        !this.rightList.some(rightSubject => rightSubject.subjectId === subject.subjectId)
+      // Count questions for each subject
+      const countPromises = subjectsWithQuestionCounts.map(subject =>
+        this.getQuestionCountsForSubject(subject.subjectId).then(counts => {
+          subject.questionCount = counts.easyCount + counts.mediumCount + counts.hardCount + counts.descriptiveCount;
+        })
       );
 
-      this.subjectList = allSubjects; // Keep all subjects in subjectList for reference
+      Promise.all(countPromises).then(() => {
+        // Filter subjects with more than 1 question
+        const filteredSubjects = subjectsWithQuestionCounts.filter(subject => subject.questionCount > 1);
+
+        this.leftList = filteredSubjects
+          .map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName }))
+          .sort((a, b) => a.subjectName.localeCompare(b.subjectName));
+
+        // Filter out subjects that are already in the right list
+        this.leftList = this.leftList.filter(subject => 
+          !this.rightList.some(rightSubject => rightSubject.subjectId === subject.subjectId)
+        );
+
+        this.subjectList = filteredSubjects.map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName }));
+      });
     });
   }
   getCurrentTimestamp(): string {
@@ -530,6 +548,9 @@ canSave(): boolean {
     );
     this.rightListForm.setControl('rightListInputs', updatedInputs);
   }
+  onCreateNew(){
+    this.isNewVisible=false;
+  }
   saveFormData(): void {
     this.fetchQuestionCountsForRightList();
     const hasDescriptiveGreaterThanZero = this.rightListInputs.controls.some((group) => {
@@ -565,6 +586,7 @@ canSave(): boolean {
                 this.toastr.success('Assessment Created', 'Created');
                 this.resetRightListAndForm(); 
                 this.assessmentTitle = ''; 
+                this.isNewVisible=true;
 
               })
               .catch((error) => {
@@ -600,7 +622,7 @@ canSave(): boolean {
         dateUpdated: Date.now(),              
         isDisabled: false,                    
         isautoEvaluated: this.isAutoEvaluated,
-        isLinkGenerated:true
+        isLinkGenerated:false
       };
 
       this.firebaseService.update('assessment/' + this.assessmentId, updatedAssessment)

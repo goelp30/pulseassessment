@@ -119,7 +119,7 @@ export class AssessTableComponent {
     if (this.selectedAssessmentToDelete) {
       const assessmentToDelete = this.selectedAssessmentToDelete;
       assessmentToDelete.isDisabled = true; // Mark as disabled in the Assessment table
-
+  
       // First, update the 'Assessment' table to mark it as disabled
       this.fireBaseService
         .update(
@@ -128,17 +128,22 @@ export class AssessTableComponent {
         )
         .then(() => {
           // Once the assessment is marked as disabled, update the related AssessmentList entries
-
-          // Get all AssessmentList entries and update the ones that reference this assessmentId
           this.fireBaseService
             .getAllDataByFilter(this.assessmentListTable, 'isDisable', false)
             .subscribe((assessmentList: AssessmentList[]) => {
               const assessmentsToUpdate = assessmentList.filter(
-                (entry) =>
-                  entry.assessmentId === assessmentToDelete.assessmentId
+                (entry) => entry.assessmentId === assessmentToDelete.assessmentId
               );
-
-              // For each AssessmentList entry related to the deleted assessment
+  
+              // If no related entries are found, show success toast directly
+              if (assessmentsToUpdate.length === 0) {
+                this.toastr.success('Assessment deleted successfully', 'Deleted');
+                this.eConfirmationVisible = false; // Close the modal
+                this.getAssessments(); // Refresh the assessments list after deletion
+                return;
+              }
+  
+              // If related entries exist, update them and wait for all updates
               const updatePromises = assessmentsToUpdate.map((assessment) => {
                 assessment.isDisable = true; // Mark as disabled in the AssessmentList table
                 return this.fireBaseService.update(
@@ -146,27 +151,18 @@ export class AssessTableComponent {
                   assessment
                 );
               });
-
-              // Wait for all updates to be completed
+  
+              // Wait for all related entries to be updated
               Promise.all(updatePromises)
                 .then(() => {
-                  // Show success toast only once after everything is updated
-                  this.toastr.success(
-                    'Assessment deleted successfully',
-                    'Deleted'
-                  );
+                  // After all updates are complete, show the success toast
+                  this.toastr.success('Assessment deleted successfully', 'Deleted');
                   this.eConfirmationVisible = false; // Close the modal
                   this.getAssessments(); // Refresh the assessments list after deletion
                 })
                 .catch((error) => {
-                  console.error(
-                    'Error updating AssessmentList entries:',
-                    error
-                  );
-                  this.toastr.error(
-                    'Failed to update related records',
-                    'Error'
-                  );
+                  console.error('Error updating AssessmentList entries:', error);
+                  this.toastr.error('Failed to update related records', 'Error');
                 });
             });
         })
@@ -176,6 +172,8 @@ export class AssessTableComponent {
         });
     }
   }
+  
+  
 
   // View the details of the assessment and related subjects
   // In AssessTableComponent (TypeScript)
