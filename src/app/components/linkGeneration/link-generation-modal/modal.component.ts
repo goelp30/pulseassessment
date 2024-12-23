@@ -81,10 +81,9 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     const selectedDate = new Date(this.expiryDateTime);
     const currentDate = new Date();
     this.showPastTimeError = selectedDate < currentDate;
-    if(this.showPastTimeError){
-      this.isSendButtonEnabled()
+    if (this.showPastTimeError) {
+      this.isSendButtonEnabled();
     }
-  
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -249,6 +248,8 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     }
     this.dateTime();
     this.isSending = true;
+    // This updates isLinkGenerated in assessment table
+    this.updateIsLinkGenerated();
     this.selectedNames.forEach((user) => {
       const userLink = this.buildUrlWithUserId(this.link, user);
       // this.bitlyService.shortenLink(userLink).subscribe(
@@ -298,14 +299,26 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     }, 2000);
   }
 
+  // To updates isLinkGenerated in assessment table
+  private updateIsLinkGenerated(): void {
+    const assessmentRef = `assessment/${this.assessmentId}`;
+    this.firebaseService
+      .update(assessmentRef, { isLinkGenerated: true })
+      .catch((error) => {
+        console.error(
+          `Failed to update Assessment ${this.assessmentId}:`,
+          error
+        );
+      });
+  }
+
   isSendButtonEnabled(): boolean {
-      return (
-        this.selectedNames.length > 0 &&
-        this.expiryDateTime !== '' &&
-        !this.showPastTimeError
-      );
-    }
-  
+    return (
+      this.selectedNames.length > 0 &&
+      this.expiryDateTime !== '' &&
+      !this.showPastTimeError
+    );
+  }
 
   // Helper function to build URL for a specific user based on type
   private buildUrlWithUserId(baseUrl: string, user: any): string {
@@ -325,5 +338,4 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   trackById(item: any): number {
     return item.id;
   }
-
 }

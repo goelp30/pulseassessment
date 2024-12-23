@@ -3,7 +3,6 @@ import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
 import { FormsModule } from '@angular/forms';
 import { assessmentRecords } from '../../../../models/assessmentRecords';
 import { TableComponent } from '../../../common/table/table.component';
-import { HeaderComponent } from '../../../common/header/header.component';
 import { TableNames } from '../../../../enums/TableName';
 import { filter, Subject, takeUntil } from 'rxjs';
 import { NavigationEnd, Router } from '@angular/router';
@@ -11,7 +10,7 @@ import { NavigationEnd, Router } from '@angular/router';
 @Component({
   selector: 'app-assessment-records',
   standalone: true,
-  imports: [FormsModule, TableComponent, HeaderComponent],
+  imports: [FormsModule, TableComponent],
   templateUrl: './assessment-records.component.html',
   styleUrls: ['./assessment-records.component.css'],
 })
@@ -70,7 +69,7 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
     Expired: 'text-red-600 font-semibold',
     'In Progress': 'text-yellow-600 font-semibold',
     Completed: 'text-blue-600 font-semibold',
-    Invalid: 'text-blue-900 font-semibold',
+    Invalid: 'text-red-600 font-semibold',
   };
 
   private destroy$ = new Subject<void>(); // Subject to manage subscriptions

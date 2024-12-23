@@ -10,6 +10,7 @@ import { SubmissionModalComponent } from '../submission-modal/submission-modal.c
 import { QuizAnswerService } from '../../services/quiz-answer.service';
 import { ToastService } from '../../services/toast.service';
 import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
+import { assessmentRecords } from '../../../../models/assessmentRecords';
 
 @Component({
   standalone:true,
@@ -37,7 +38,7 @@ export class QuizComponent implements OnInit, OnDestroy {
     private quizService: QuizService,
     private quizAnswerService: QuizAnswerService,
     private toastService: ToastService,
-    private firebaseService: FireBaseService<any>
+    private firebaseService: FireBaseService<assessmentRecords>
   ) {
     this.handlePageReload();
     this.setupBeforeUnloadListener();

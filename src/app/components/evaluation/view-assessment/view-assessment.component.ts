@@ -1,47 +1,65 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { EvaluationService } from '../service/evaluation.service';
 import { Router } from '@angular/router';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
-import { mergeMap, map } from 'rxjs/operators';
+import { mergeMap, map, takeUntil } from 'rxjs/operators';
 import { QuizAnswers } from '../../../models/quizAnswers';
-import { ButtonComponent } from '../../common/button/button.component';
 import { CommonModule } from '@angular/common';
 import { QuestionDisplayComponent } from '../question-display/question-display.component';
 import { EvaluationHeaderComponent } from '../evaluation-header/evaluation-header.component';
+import { Subject } from 'rxjs';
+import { PageLabelService } from '../../../../sharedServices/pagelabel.service';
 
 @Component({
   selector: 'app-view-assessment',
   standalone: true,
-  imports: [ButtonComponent, CommonModule, QuestionDisplayComponent,EvaluationHeaderComponent],
+  imports: [CommonModule, QuestionDisplayComponent, EvaluationHeaderComponent],
   templateUrl: './view-assessment.component.html',
   styleUrls: ['./view-assessment.component.css'],
 })
-export class ViewAssessmentComponent implements OnInit {
+export class ViewAssessmentComponent implements OnInit, OnDestroy {
   clickedData: any = {};
   evaluationList: any[] = [];
   attemptedQuestions: any[] = []; // For attempted questions
   notAttemptedQuestions: any[] = []; // For not attempted questions
   quizId: string = '';
-  isLoading: boolean = true; 
+  isLoading: boolean = false;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private evaluationService: EvaluationService,
     private router: Router,
-    private firebaseservice: FireBaseService<QuizAnswers>
+    private firebaseservice: FireBaseService<QuizAnswers>,
+    private pageLabelService: PageLabelService  
   ) {}
 
   ngOnInit(): void {
     // Listen for clicked data updates
-    this.evaluationService.clickedData$.subscribe((data) => {
+    this.isLoading = true;
+    this.pageLabelService.updatePageLabel('View Assessment');
+    this.evaluationService.clickedData$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((data) => {
       this.clickedData = data;
-      if (this.clickedData) {
+      if (this.clickedData && this.clickedData.quizId) {
         this.quizId = this.clickedData.quizId;
         // Fetch evaluation data when quizId is available
         this.getEvaluationDataByQuizId(this.clickedData.quizId);
+      }else{
+        this.evaluationList = [];
+         this.isLoading = false;
       }
     });
   }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+
   getEvaluationDataByQuizId(quizId: string): void {
+    this.isLoading = true;
     // Fetch evaluation data from Firebase based on the quizId
     this.firebaseservice
       .getItemsByQuizId('QuizAnswer', quizId)
@@ -88,6 +106,7 @@ export class ViewAssessmentComponent implements OnInit {
         (combinedData: any[]) => {
           console.log('Combined evaluation list:', combinedData);
           this.evaluationList = combinedData;
+           this.isLoading = false;
         },
         (error: any) => {
           console.error('Error fetching combined data:', error);
