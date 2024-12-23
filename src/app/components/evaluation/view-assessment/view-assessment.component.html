@@ -6,6 +6,7 @@
       [userMarks]="getUserMarks()"
       [totalMarks]="getTotalMarks()"
       [result]="clickedData.result"
+      (backClick)="onSubmit()"
     >
     </app-evaluation-header>
     <div class="p-4">
@@ -18,7 +19,7 @@
           }}</span>
         </h2>
         <!-- Keep the @for loop as is -->
-        @for(question of attemptedQuestions; track attemptedQuestions) {
+        @for(question of attemptedQuestions; track question.questionId) {
         <div>
           <app-question-display
             [question]="question"
@@ -42,7 +43,7 @@
             notAttemptedQuestions.length
           }}</span>
         </h2>
-        @for(question of notAttemptedQuestions; track notAttemptedQuestions) {
+        @for(question of notAttemptedQuestions; track question.questionId) {
         <div>
           <app-question-display
             [question]="question"

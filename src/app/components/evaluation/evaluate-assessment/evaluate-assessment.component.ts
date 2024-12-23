@@ -218,6 +218,10 @@ export class EvaluateAssessmentComponent implements OnInit {
 
     this.getUserTotalMarks();
   }
+  onBackClick(){
+    sessionStorage.removeItem('clickedData');  
+    this.router.navigate(['/evaluation']);
+  }
 
   onSubmit(): void {
     // Check if all descriptive questions have marks assigned
