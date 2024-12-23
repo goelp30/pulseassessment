@@ -26,7 +26,7 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
   tableColumns: string[] = [ 'assessmentName', 'userName', 'email', 'status', 'url', ];
   columnAliases: { [key: string]: string[] } = {
     assessmentName: ['Assessment Name'],
-    userName: ['User Name'],
+    userName: ['Name'],
     email: ['Email'],
     status: ['Status'],
     url: ['URL'],
