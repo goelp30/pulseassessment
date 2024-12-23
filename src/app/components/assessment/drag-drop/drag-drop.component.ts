@@ -11,12 +11,13 @@ import { NavigationStart, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { AssessmentService } from '../services/assessmentServices/assessment.service';
 import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';
+import { ButtonComponent } from '../../common/button/button.component';
 @Component({
   selector: 'app-drag-drop',
   standalone: true,
   templateUrl: './drag-drop.component.html',
   styleUrls: ['./drag-drop.component.css'],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule,PopupModuleComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule,PopupModuleComponent,ButtonComponent],
 })
 
 export class DragDropComponent implements AfterViewInit, OnInit {
@@ -40,6 +41,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   assessmentId: string = ''
   editFlag: boolean = false;
   warningTitle: string = '';
+  isNewVisible:boolean=false;
 
 
   constructor(
@@ -54,7 +56,30 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     event.returnValue = message;  
     return message;               
   }
+  checkTotalQuestions(): void {
+    this.rightListInputs.controls.forEach((group, i) => {
+      const easyValue = group.get('easy')?.value || 0;
+      const mediumValue = group.get('medium')?.value || 0;
+      const hardValue = group.get('hard')?.value || 0;
+      const descriptiveValue = group.get('descriptive')?.value || 0;
+      const totalSelectedForSubject = easyValue + mediumValue + hardValue + descriptiveValue;
+  
+      // Check for each subject individually if it has at least 2 questions selected
+      if (totalSelectedForSubject < 2) {
+        // Set the warning message for the specific subject
+        this.totalWarning = `Please select at least 2 questions for each subject.`;
+      } else {
+        // Clear the warning message for this subject if it's fine
+        this.totalWarning = '';  
+      }
+    });
+  
+    // Update Save button status
+    this.updateSaveButtonStatus();
+  }
+  
   ngOnInit(): void {
+  //  try
     window.addEventListener('beforeunload', this.handleBeforeUnload);
     this.assessmentService.assessmentId$.subscribe((assessmentId) => {
       if (assessmentId) {
@@ -63,6 +88,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         this.getEditData(this.assessmentId, this.editFlag);
       } else {
         this.editFlag = false;
+        this.fetchLeftList(); // Fetch all subjects if not editing
       }
     });
   
@@ -72,6 +98,14 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     }
     this.subscribeToFormChanges();
     this.setupNavigationListener();
+    if(this.rightList){
+      this.rightListInputs.controls.forEach((group, i) => {
+        this.checkTotalQuestions(); // Check total selected questions on initialization
+      });
+    }
+  }
+  ngDoCheck():void{
+    this.checkTotalQuestions();
   }
   setupNavigationListener(): void {
     this.router.events.subscribe((event) => {
@@ -115,7 +149,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         dateUpdated: Date.now(),
         isDisabled: false,
         isautoEvaluated: this.isAutoEvaluated,
-        isLinkGenerated:true
+        isLinkGenerated:false
       };
       this.firebaseService.create(this.assess_table + '/' + uniqueId, assessment)
         .then(() => {
@@ -147,13 +181,34 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     this.fetchLeftList(); 
   }
   fetchLeftList(): void {
-    this.firebaseService.getAllDataByFilter(this.subject_table, 'isDisabled', false).subscribe((data: any[]) => {
-      this.leftList = data
-        .map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName }))
-        .sort((a, b) => a.subjectName.localeCompare(b.subjectName)); 
+    this.firebaseService.getAllDataByFilter(this.subject_table, 'isDisabled', false).subscribe((subjects: any[]) => {
+      const subjectsWithQuestionCounts = subjects.map(subject => ({
+        ...subject,
+        questionCount: 0
+      }));
 
-      this.subjectList = this.leftList
-        .map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName })) 
+      // Count questions for each subject
+      const countPromises = subjectsWithQuestionCounts.map(subject =>
+        this.getQuestionCountsForSubject(subject.subjectId).then(counts => {
+          subject.questionCount = counts.easyCount + counts.mediumCount + counts.hardCount + counts.descriptiveCount;
+        })
+      );
+
+      Promise.all(countPromises).then(() => {
+        // Filter subjects with more than 1 question
+        const filteredSubjects = subjectsWithQuestionCounts.filter(subject => subject.questionCount > 1);
+
+        this.leftList = filteredSubjects
+          .map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName }))
+          .sort((a, b) => a.subjectName.localeCompare(b.subjectName));
+
+        // Filter out subjects that are already in the right list
+        this.leftList = this.leftList.filter(subject => 
+          !this.rightList.some(rightSubject => rightSubject.subjectId === subject.subjectId)
+        );
+
+        this.subjectList = filteredSubjects.map(item => ({ subjectId: item.subjectId, subjectName: item.subjectName }));
+      });
     });
   }
   getCurrentTimestamp(): string {
@@ -219,10 +274,12 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     });
   }
   disable = false;
-
+  totalWarning: string = ''; // Initialize the totalWarning variable
   onInputChange(event: Event, index: number, controlName: string, subjectId: string): void {
     const input = event.target as HTMLInputElement;
     let value = Number(input.value);
+  
+    // Validate input values (don't allow values outside of the specified range)
     this.getQuestionCountsForSubject(subjectId).then((availableCounts) => {
       let warningMessage = '';
       const countKey = `${controlName}Count` as keyof typeof availableCounts;
@@ -234,13 +291,14 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         if (value > 5) {
           warningMessage = `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} value cannot exceed 5!`;
           input.value = '5';
-          value = 5; 
-        }
-          else if (value < 0) {
+          value = 5;
+        } else if (value < 0) {
           warningMessage = `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} value cannot be less than 0!`;
-          input.value = '0'; 
-          value = 0; 
+          input.value = '0';
+          value = 0;
         }
+  
+        // Store the warning message for each input
         if (controlName === 'easy') {
           this.newValidationWarnings.easy[index] = warningMessage;
         } else if (controlName === 'medium') {
@@ -250,11 +308,36 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         } else if (controlName === 'descriptive') {
           this.newValidationWarnings.descriptive[index] = warningMessage;
         }
+  
+        // Update the form control value for the current input
+        this.rightListInputs.at(index).get(controlName)?.setValue(value);
+  
+        // Now calculate the sum of selected values for all subjects in real-time
+        let totalSelected = 0;
+  
+        // Iterate through each subject and sum up the values
+        this.rightListInputs.controls.forEach((group, i) => {
+          const easyValue = group.get('easy')?.value || 0;
+          const mediumValue = group.get('medium')?.value || 0;
+          const hardValue = group.get('hard')?.value || 0;
+          const descriptiveValue = group.get('descriptive')?.value || 0;
+          totalSelected += easyValue + mediumValue + hardValue + descriptiveValue;
+        });
+  
+        // Real-time total check and warning message
+        if (totalSelected < 2) {
+          this.totalWarning = 'Please select at least 2 questions from each subject.';
+        } else {
+          this.totalWarning = '';  // Clear the warning if total is 2 or more
+        }
+  
+        // Update Save button status
         this.updateSaveButtonStatus();
       }
-      this.rightListInputs.at(index).get(controlName)?.setValue(value);
     });
   }
+  
+  
   updateSaveButtonStatus(): void {
     const hasWarnings = this.rightList.some((subject, index) => {
       return this.newValidationWarnings.easy[index] ||
@@ -319,15 +402,19 @@ export class DragDropComponent implements AfterViewInit, OnInit {
 
     return isRightListNotEmpty;
 }
-canSave(): boolean { 
-  const isFormValid = this.rightListForm.valid;        
-  const isAssessmentTitleValid = this.assessmentTitle.trim().length > 0;         
-  const isTitleUnique = !this.assessmentTitleWarning;        
+canSave(): boolean {
+  const isFormValid = this.rightListForm.valid;
+  const isAssessmentTitleValid = this.assessmentTitle.trim().length > 0;
+  const isTitleUnique = !this.assessmentTitleWarning;
   const isAllSubjectsValid = !this.disable;
   const isRightListNotEmpty = this.checkRightList();
-  return isFormValid && isAssessmentTitleValid && isTitleUnique && isAllSubjectsValid && isRightListNotEmpty;
-}
 
+  // Check if there's a warning about selecting at least 2 questions
+  const hasTotalSelectedWarning = this.totalWarning !== ''; // Check if totalWarning is not empty
+
+  // Disable save if there are validation warnings (including the totalSelected warning)
+  return isFormValid && isAssessmentTitleValid && isTitleUnique && isAllSubjectsValid && isRightListNotEmpty && !hasTotalSelectedWarning;
+}
   onSave(): void {
     if (!this.canSave()) {
       this.showValidationErrorToast();
@@ -353,31 +440,14 @@ canSave(): boolean {
             if (assessmentLists && assessmentLists.length > 0) {
               const assessmentList = assessmentLists[0]; 
               const subjectsWithRatings = assessmentList.subjects; 
-              const subjectIds: string[] = [];
-              const subjectDetailsWithRatings: any[] = [];
-              for (const subjectId in subjectsWithRatings) {
-                if (subjectsWithRatings.hasOwnProperty(subjectId)) {
-                  const subject = subjectsWithRatings[subjectId];
-                  subjectIds.push(subject.subjectId); 
-                  subjectDetailsWithRatings.push({
-                    subjectId: subject.subjectId,
-                    subjectName: subject.subjectName,
-                    easy: subject.easy,
-                    medium: subject.medium,
-                    hard: subject.hard,
-                    descriptive: subject.descriptive
-                  });
-                }
-              }
-              this.rightList = subjectIds.map((subjectId) => {
-                const subject = this.subjectList.find(sub => sub.subjectId === subjectId);
-                return {
-                  subjectId: subject ? subject.subjectId : '',  
-                  subjectName: subject ? subject.subjectName : '',
-                };
-              });
+              
+              this.rightList = Object.values(subjectsWithRatings).map((subject: any) => ({
+                subjectId: subject.subjectId,
+                subjectName: subject.subjectName
+              }));
+
               const rightListInputs = this.fb.array(
-                subjectDetailsWithRatings.map(subject =>
+                Object.values(subjectsWithRatings).map((subject: any) =>
                   this.fb.group({
                     item: [subject],
                     easy: [subject.easy, [Validators.min(0), Validators.max(5)]],
@@ -389,13 +459,14 @@ canSave(): boolean {
               );
               this.rightListForm.setControl('rightListInputs', rightListInputs);
 
+              // After setting the right list, fetch the left list to exclude selected subjects
+              this.fetchLeftList();
             } else {
               console.error('No matching assessmentList found for the given assessmentId');
             }
           }, (error) => {
             console.error('Error fetching assessmentList data:', error);
           });
-
         } else {
           console.error('Assessment not found in Firebase');
         }
@@ -430,7 +501,13 @@ canSave(): boolean {
           };
         });
         this.updateRightListForm(this.rightList);
+        
+        // Update left list to exclude items in the right list
+        this.leftList = this.subjectList.filter(subject => 
+          !this.rightList.some(rightSubject => rightSubject.subjectId === subject.subjectId)
+        );
       };
+
       const options = {
         group: 'shared',
         animation: 150,
@@ -471,6 +548,9 @@ canSave(): boolean {
     );
     this.rightListForm.setControl('rightListInputs', updatedInputs);
   }
+  onCreateNew(){
+    this.isNewVisible=false;
+  }
   saveFormData(): void {
     this.fetchQuestionCountsForRightList();
     const hasDescriptiveGreaterThanZero = this.rightListInputs.controls.some((group) => {
@@ -506,6 +586,7 @@ canSave(): boolean {
                 this.toastr.success('Assessment Created', 'Created');
                 this.resetRightListAndForm(); 
                 this.assessmentTitle = ''; 
+                this.isNewVisible=true;
 
               })
               .catch((error) => {
@@ -541,7 +622,7 @@ canSave(): boolean {
         dateUpdated: Date.now(),              
         isDisabled: false,                    
         isautoEvaluated: this.isAutoEvaluated,
-        isLinkGenerated:true
+        isLinkGenerated:false
       };
 
       this.firebaseService.update('assessment/' + this.assessmentId, updatedAssessment)
