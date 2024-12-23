@@ -278,7 +278,9 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   onInputChange(event: Event, index: number, controlName: string, subjectId: string): void {
     const input = event.target as HTMLInputElement;
     let value = Number(input.value);
-  
+    if (input.disabled) {
+      value = 0;
+    }
     // Validate input values (don't allow values outside of the specified range)
     this.getQuestionCountsForSubject(subjectId).then((availableCounts) => {
       let warningMessage = '';
@@ -518,6 +520,7 @@ canSave(): boolean {
       new Sortable(document.getElementById('sortable-left')!, options);
       new Sortable(document.getElementById('sortable-right')!, options);
     }
+    this.updateValidations();
   }
   ngOnDestroy(): void {
       window.removeEventListener('beforeunload', this.handleBeforeUnload);
@@ -525,28 +528,63 @@ canSave(): boolean {
   subscribeToFormChanges(): void {
     this.rightListForm.valueChanges.subscribe(() => {
     });
+    
   }
   updateRightListForm(newRightList: any[]): void {
     const updatedInputs = this.fb.array(
-      newRightList.map((subject) => {
+      newRightList.map((subject, index) => {
         const existingSubjectInput = this.rightListInputs.controls.find((control) => {
-          const subjectControl = control.value; 
-          return subjectControl.item.subjectId === subject.subjectId; 
+          const subjectControl = control.value;
+          return subjectControl.item.subjectId === subject.subjectId;
         });
+
+        // If the subject is new (moved from left to right), initialize with default values
         const easy = existingSubjectInput ? existingSubjectInput.value.easy : 0;
         const medium = existingSubjectInput ? existingSubjectInput.value.medium : 0;
         const hard = existingSubjectInput ? existingSubjectInput.value.hard : 0;
         const descriptive = existingSubjectInput ? existingSubjectInput.value.descriptive : 0;
-        return this.fb.group({
-          item: [subject], // The subject is passed as is.
+
+        const group = this.fb.group({
+          item: [subject],
           easy: [easy, [Validators.min(0), Validators.max(5)]],
           medium: [medium, [Validators.min(0), Validators.max(5)]],
           hard: [hard, [Validators.min(0), Validators.max(5)]],
           descriptive: [descriptive, [Validators.min(0), Validators.max(5)]],
         });
+
+        this.getQuestionCountsForSubject(subject.subjectId).then((counts) => {
+          (['easy', 'medium', 'hard', 'descriptive'] as const).forEach((type) => {
+            const countKey = `${type}Count` as keyof typeof counts;
+            if (counts[countKey] === 0) {
+              group.get(type)?.disable();
+            }
+          });
+        });
+
+        return group;
       })
     );
+    this.rightListInputs.controls.forEach((control, index) => {
+      const subjectId = control.value.item.subjectId;
+      if (!newRightList.some(subject => subject.subjectId === subjectId)) {
+        this.newValidationWarnings.easy[index] = '';
+        this.newValidationWarnings.medium[index] = '';
+        this.newValidationWarnings.hard[index] = '';
+        this.newValidationWarnings.descriptive[index] = '';
+      }
+    });
+
     this.rightListForm.setControl('rightListInputs', updatedInputs);
+
+    // Update validations for the new list
+    this.updateValidations();
+  }
+  updateValidations(): void {
+    this.rightListInputs.controls.forEach((group, index) => {
+      ['easy', 'medium', 'hard', 'descriptive'].forEach(type => {
+        this.onInputChange({ target: { value: group.get(type)?.value } } as any, index, type, group.value.item.subjectId);
+      });
+    });
   }
   onCreateNew(){
     this.isNewVisible=false;
