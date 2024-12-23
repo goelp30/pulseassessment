@@ -11,37 +11,26 @@
   <!-- Content (questions and options) -->
   <div *ngIf="!loading" class="flex flex-col lg:flex-row gap-6">
     <div class="flex-1">
-      <app-question-display
-        [question]="currentQuestionData"
-        [options]="currentQuestionOptions"
-        [questionNumber]="currentQuestion + 1"
-        [totalQuestions]="questions.length"
-        (answerSelect)="onAnswerSelect($event)"
-        (descriptiveAnswerChange)="onDescriptiveAnswerChange($event)"
-        (textAreaTouched)="onDescriptiveQuestionTouched()"
-        (reviewToggle)="toggleReview()">
+      <app-question-display [question]="currentQuestionData" [options]="currentQuestionOptions"
+        [questionNumber]="currentQuestion + 1" [totalQuestions]="questions.length"
+        (answerSelect)="onAnswerSelect($event)" (descriptiveAnswerChange)="onDescriptiveAnswerChange($event)"
+        (textAreaTouched)="onDescriptiveQuestionTouched()" (reviewToggle)="toggleReview()">
       </app-question-display>
 
       <!-- Navigation and Submit buttons -->
       <div class="flex justify-between items-center mt-6 space-x-4">
-        <button
-          (click)="previousQuestion()"
-          [disabled]="currentQuestion === 0"
-          class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50">
+        <button (click)="previousQuestion()" [disabled]="currentQuestion === 0"
+          class="px-6 py-2 bg-custom-blue text-white rounded-md hover:opacity-80 transition-opacity disabled:opacity-50">
           Previous
         </button>
 
-        <button
-        *ngIf="allQuestionsVisited()"
-          (click)="submitFinalQuiz()"
-          class="px-8 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+        <button *ngIf="allQuestionsVisited()" (click)="submitFinalQuiz()"
+          class="px-8 py-2 bg-green-500 text-white rounded-md hover:opacity-80 transition-opacity">
           Submit Quiz
         </button>
 
-        <button
-          (click)="nextQuestion()"
-          [disabled]="isNextButtonDisabled()"
-          class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50">
+        <button (click)="nextQuestion()" [disabled]="isNextButtonDisabled()"
+          class="px-6 py-2 bg-custom-blue text-white rounded-md hover:opacity-80 transition-opacity disabled:opacity-50">
           Next
         </button>
       </div>
@@ -49,33 +38,54 @@
 
     <!-- Timer and Question Navigator -->
     <div class="w-full lg:w-64 space-y-4">
-      <app-quiz-timer
-  [totalTime]="totalQuestionTime"
-  (timeUp)="handleTimeUp()">
-</app-quiz-timer>
+      <app-quiz-timer [totalTime]="totalQuestionTime" (timeUp)="handleTimeUp()">
+      </app-quiz-timer>
 
-      <app-question-navigator
-        [questions]="questions"
-        [currentQuestionIndex]="currentQuestion"
+      <app-question-navigator [questions]="questions" [currentQuestionIndex]="currentQuestion"
         (questionSelect)="goToQuestion($event)">
       </app-question-navigator>
     </div>
   </div>
 
-   <!-- Submission Modal -->
-   <app-submission-modal 
-   [show]="showModal" 
-   [questions]="questions"
-   (onConfirm)="submitQuiz()"
-   (onCancel)="showModal = false">
- </app-submission-modal>
- 
+  <!-- Submission Modal -->
+  <app-submission-modal [show]="showModal" [questions]="questions" (onConfirm)="submitQuiz()"
+    (onCancel)="showModal = false">
+  </app-submission-modal>
+
   <!-- Reload Warning Modal -->
   <div *ngIf="showReloadWarningModal" class="modal-overlay">
     <div class="modal-content warning-modal">
       <h2>⚠️ Warning</h2>
       <p>Please do not refresh the page during the quiz. Refreshing again will terminate your quiz session.</p>
       <button (click)="closeReloadWarning()" class="btn btn-warning">I Understand</button>
+    </div>
+  </div>
+
+  <!-- Auto-submit Modal -->
+  <div *ngIf="showAutoSubmitModal"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-auto text-center transform transition-all">
+      <!-- Timer Icon -->
+      <div class="mx-auto mb-6 bg-red-50 rounded-full p-4 w-20 h-20 flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+
+      <!-- Content -->
+      <h2 class="text-2xl font-bold mb-2 text-gray-800">Time's Up!</h2>
+      <div class="space-y-4 mb-8">
+        <p class="text-gray-600">Your quiz has been automatically submitted.</p>
+        <p class="text-sm text-gray-500">Click OK exit quiz.</p>
+      </div>
+
+      <!-- Button -->
+      <button (click)="closeAutoSubmitModal()" class="w-full sm:w-auto px-8 py-3 bg-custom-blue text-white rounded-md hover:opacity-80 transition-all duration-200 font-medium
+          transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-custom-blue">
+        OK
+      </button>
     </div>
   </div>
 </div>
