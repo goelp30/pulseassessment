@@ -128,8 +128,8 @@
                 [ngClass]="
                   column === 'status' ? getStatusClass(row[column]) : ''
                 "
-                (click)="copyToClipboard(row[column])"
-                style="cursor: pointer"
+                (click)="column === 'url' ? copyToClipboard(row[column],row) : null"
+                style="cursor: pointer;"
               >
                 {{
                   row[column]?.length > 50
@@ -138,7 +138,7 @@
                 }}
               </p>
               <!-- Popup Notification -->
-              @if (showAdditionalFilters && isPopupVisible && column === 'url')
+              @if (showAdditionalFilters && isPopupVisible && column === 'url' && copiedRow === row)
               {
               <div class="link_copy">Link copied!</div>
               }
@@ -147,10 +147,10 @@
             <td class="px-4 sm:px-6 py-3 border-b">
               <div class="flex justify-center gap-3">
                 @for(button of buttons; track button){
-                  <app-button
+                <app-button
                   [label]="getButtonLabel(button, row)"
                   [colorClass]="getCustomButtonClasses(button, row)"
-                  [icon]="button.icon" 
+                  [icon]="button.icon"
                   (action)="button.action(row)"
                   [disabled]="isButtonDisabled(button, row)"
                 ></app-button>
@@ -199,7 +199,6 @@
         >
           {{ page }}
         </button>
-
         }
       </div>
       <button

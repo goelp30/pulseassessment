@@ -1,10 +1,5 @@
-<app-header
-  [title]="'List of Assessments'"
-  [subtitle]="'Generate link for assessments'"
-  [buttonLabel]="''" >
-</app-header>
-  <!-- Common Table component  -->
-  <app-table
+<!-- Common Table component  -->
+<app-table
   [tableName]="tableName"
   [tableData]="filteredAssessments"
   [tableColumns]="tableColumns"
@@ -15,37 +10,41 @@
   [buttons]="buttons"
   [tabs]="['all', 'internal', 'external']"
   [filterKey]="'assessmentType'"
-  [tabAliases]="{ 'internal': 'Internal Assessments', 'external': 'External Assessments', 'all': 'All' }"
+  [tabAliases]="{
+    internal: 'Internal Assessments',
+    external: 'External Assessments',
+    all: 'All'
+  }"
   (openModal)="openModal($event)"
 >
 </app-table>
-  <!-- common popup modal  -->
-  <app-popup-module [isVisible]="isModalVisible" (closeModalEvent)="closeModal()">
-    <div modalTitle>
-      <h5 class="text-xl font-semibold text-black-600">
-        List of {{ assessmentType === "external" ? "Candidates" : "Employees" }}
-      </h5>
-    </div>
-    <!-- Wrapper to control height -->
-    <div class="h-100">
-      <app-modal
-        [assessmentType]="assessmentType"
-        [link]="selectedLink"
-        [isVisible]="isModalVisible"
-        [assessmentId]="assessmentId"
-        [assessmentName]="assessmentName"
-        (closeModalEvent)="closeModal()"
-        (successMessageEvent)="onSuccessMessageReceived($event)"
-      ></app-modal>
-    </div>
-  </app-popup-module>
-  
-  <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-10">
-    @if (successMessage) {
-    <div class="bg-green-500 text-white p-4 rounded-md shadow-md">
-      <h3 class="text-center font-medium">
-        {{ successMessage }}
-      </h3>
-    </div>
-    }
+<!-- common popup modal  -->
+<app-popup-module [isVisible]="isModalVisible" (closeModalEvent)="closeModal()">
+  <div modalTitle>
+    <h5 class="text-xl font-semibold text-black-600">
+      List of {{ assessmentType === "external" ? "Candidates" : "Employees" }}
+    </h5>
   </div>
+  <!-- Wrapper to control height -->
+  <div class="h-100">
+    <app-modal
+      [assessmentType]="assessmentType"
+      [link]="selectedLink"
+      [isVisible]="isModalVisible"
+      [assessmentId]="assessmentId"
+      [assessmentName]="assessmentName"
+      (closeModalEvent)="closeModal()"
+      (successMessageEvent)="onSuccessMessageReceived($event)"
+    ></app-modal>
+  </div>
+</app-popup-module>
+
+<div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-10">
+  @if (successMessage) {
+  <div class="bg-green-500 text-white p-4 rounded-md shadow-md">
+    <h3 class="text-center font-medium">
+      {{ successMessage }}
+    </h3>
+  </div>
+  }
+</div>
