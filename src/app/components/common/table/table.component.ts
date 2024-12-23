@@ -11,7 +11,7 @@ import { ButtonComponent } from '../button/button.component';
 import { SearchbarComponent } from '../searchbar/searchbar.component';
 import { FormsModule } from '@angular/forms';
 import { CamelCaseToSpacePipe } from './camel-case-to-space.pipe';
- 
+
 @Component({
   selector: 'app-table',
   standalone: true,
@@ -30,34 +30,33 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() tableData: any[] = [];
   @Input() tableColumns: string[] = [];
   @Input() columnAliases: { [key: string]: string[] } = {};
-  @Input() buttons: {
+  @Input() buttons: { 
     label: string | ((row: any) => string);  
     colorClass: string;  
-    action: Function;
+    action: Function; 
     icon?: string;
-    title?:string;
     customClassFunction?: (row: any) => string;
     disableFunction?: (row: any) => boolean;
   }[] = [];
- 
+  
   @Input() searchQuery: string = '';
   @Input() onSearchQueryChange: (newQuery: string) => void = () => {};
   @Input() tabs: string[] = [];
   @Input() filterKey: string = '';
   @Input() tabAliases: { [key: string]: string } = {};
   @Input() searchPlaceholder: string = 'Search';
- 
+
   @Input() filterOptions: string[] = [];
   @Input() statusOptions: string[] = [];
   @Input() showAdditionalFilters: boolean = false;
- 
+
   @Input() statusMapping: { [key: string]: string } = {};
- 
+
   @Input() customButtonDisplay: { [key: string]: any } = {};
- 
+
   selectedFilter: string = '';
   selectedStatus: string = '';
- 
+
   currentPage: number = 1;
   itemsPerPage: number = 10;
   totalPages: number = 1;
@@ -66,9 +65,9 @@ export class TableComponent implements OnInit, OnChanges {
   pageNumbers: number[] = [];
   isLoading: boolean = true;
   isPopupVisible: boolean = false;
- 
+
   constructor(private fireBaseService: FireBaseService<any>) {}
- 
+
   ngOnInit(): void {
     if (this.tableName) {
       this.isLoading = true;
@@ -84,12 +83,12 @@ export class TableComponent implements OnInit, OnChanges {
           this.isLoading = false;
         });
     }
- 
+
     if (this.tabs.length > 0) {
       this.activeTab = this.tabs[0];
     }
   }
- 
+
   ngOnChanges(changes: SimpleChanges): void {
     if (
       changes['searchQuery'] ||
@@ -102,23 +101,23 @@ export class TableComponent implements OnInit, OnChanges {
       this.isLoading = false;
     }
   }
- 
+
   selectTab(tab: string): void {
     this.activeTab = tab;
     this.filterData();
   }
- 
+
   onFilterChange(): void {
     this.filterData();
   }
- 
+
   onStatusChange(): void {
     this.filterData();
   }
- 
+
   filterData() {
     let filtered = [...this.tableData];
- 
+
     if (this.searchQuery) {
       filtered = filtered.filter((row) => {
         return this.tableColumns.some((column) => {
@@ -143,13 +142,13 @@ export class TableComponent implements OnInit, OnChanges {
         );
       });
     }
- 
+
     this.filteredData = filtered;
     this.totalPages = Math.ceil(this.filteredData.length / this.itemsPerPage);
     this.generatePagination();
     this.currentPage = 1;
   }
- 
+
   applyAdditionalFilters(data: any[]): any[] {
     let filteredData = [...data];
     if (this.selectedFilter) {
@@ -166,47 +165,47 @@ export class TableComponent implements OnInit, OnChanges {
         return row.status?.toLowerCase() === this.selectedStatus.toLowerCase();
       });
     }
- 
+
     return filteredData;
   }
- 
+
   getStatusClass(status: string): string {
     return this.statusMapping[status] || '';
   }
- 
+
   getColumnAliases(column: string): string[] {
     return this.columnAliases[column] || [column];
   }
- 
+
   getTabAlias(tab: string): string {
     return this.tabAliases[tab] || tab;
   }
- 
+
   getPaginatedData(): any[] {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
     return this.filteredData.slice(startIndex, endIndex);
   }
- 
+
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
       this.generatePagination();
     }
   }
- 
+
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
       this.generatePagination();
     }
   }
- 
+
   goToPage(page: number): void {
     this.currentPage = page;
     this.generatePagination();
   }
- 
+
   generatePagination(): void {
     const totalPages = this.totalPages;
     const pages = [];
@@ -215,48 +214,48 @@ export class TableComponent implements OnInit, OnChanges {
     }
     this.pageNumbers = pages;
   }
- 
+
   getButtonLabel(button: any, row: any): string {
     if (typeof button.label === 'function') {
       return button.label(row);
     }
     return button.label;
   }
- 
+
   getCustomButtonClasses(button: any, row: any) {
     if (button.customClassFunction) {
       return button.customClassFunction(row);
     }
     return button.colorClass;
   }
- 
+
   isButtonDisabled(button: any, row: any) {
     if (button.disableFunction) {
       return button.disableFunction(row);
     }
     return false;
   }
- 
+
   copyToClipboard(content: string | undefined): void {
     if (!content) return;
- 
+
     navigator.clipboard
       .writeText(content)
       .then(() => {
         this.isPopupVisible = true;
- 
+
         setTimeout(() => {
           this.isPopupVisible = false;
         }, 1000);
       })
       .catch((err) => console.error('Failed to copy text:', err));
   }
- 
+
   getActionColumnWidth(): string {
     const buttonCount = this.buttons.length;
-    const minWidth = 120; // Minimum width for the action column
-    const estimatedButtonWidth = 150; // Estimated average width for a button
-    const totalWidth = Math.max(minWidth, buttonCount * estimatedButtonWidth);
+    const baseWidth = 100; // Base width for one button
+    const additionalWidth = 50; // Additional width for each extra button
+    const totalWidth = baseWidth + (buttonCount - 1) * additionalWidth;
     return `${totalWidth}px`;
   }
 }
