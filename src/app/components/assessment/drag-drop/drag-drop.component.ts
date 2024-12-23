@@ -215,21 +215,21 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     return new Date().toISOString();
   }
   mapRightListInputs(list: any[]): any {
-    const subjects: any = {}; 
-    this.rightListInputs.value.forEach((input: any) => {
-      const subject = list.find((item: any) => item.subjectId === input.item.subjectId);
-    if (subject) {
+    const subjects: any = {};
+    this.rightListInputs.controls.forEach((control: any) => {
+      const subject = list.find((item: any) => item.subjectId === control.value.item.subjectId);
+      if (subject) {
         subjects[subject.subjectId] = {
-          subjectId: subject.subjectId,       
-          subjectName: subject.subjectName,    
-          easy: input.easy,                    
-          medium: input.medium,                
-          hard: input.hard,                    
-          descriptive: input.descriptive       
+          subjectId: subject.subjectId,
+          subjectName: subject.subjectName,
+          easy: control.get('easy')?.value || 0,
+          medium: control.get('medium')?.value || 0,
+          hard: control.get('hard')?.value || 0,
+          descriptive: control.get('descriptive')?.value || 0
         };
       }
     });
-    return subjects; 
+    return subjects;
   }
   onAssessmentTitleChange(): void {
     this.validateAssessmentTitle();
@@ -313,7 +313,6 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   
         // Update the form control value for the current input
         this.rightListInputs.at(index).get(controlName)?.setValue(value);
-  
         // Now calculate the sum of selected values for all subjects in real-time
         let totalSelected = 0;
   
@@ -532,24 +531,23 @@ canSave(): boolean {
   }
   updateRightListForm(newRightList: any[]): void {
     const updatedInputs = this.fb.array(
-      newRightList.map((subject, index) => {
+      newRightList.map((subject) => {
         const existingSubjectInput = this.rightListInputs.controls.find((control) => {
           const subjectControl = control.value;
           return subjectControl.item.subjectId === subject.subjectId;
         });
 
-        // If the subject is new (moved from left to right), initialize with default values
-        const easy = existingSubjectInput ? existingSubjectInput.value.easy : 0;
-        const medium = existingSubjectInput ? existingSubjectInput.value.medium : 0;
-        const hard = existingSubjectInput ? existingSubjectInput.value.hard : 0;
-        const descriptive = existingSubjectInput ? existingSubjectInput.value.descriptive : 0;
+        const easy = existingSubjectInput ? existingSubjectInput.get('easy')?.value : 0;
+        const medium = existingSubjectInput ? existingSubjectInput.get('medium')?.value : 0;
+        const hard = existingSubjectInput ? existingSubjectInput.get('hard')?.value : 0;
+        const descriptive = existingSubjectInput ? existingSubjectInput.get('descriptive')?.value : 0;
 
         const group = this.fb.group({
           item: [subject],
-          easy: [easy, [Validators.min(0), Validators.max(5)]],
-          medium: [medium, [Validators.min(0), Validators.max(5)]],
-          hard: [hard, [Validators.min(0), Validators.max(5)]],
-          descriptive: [descriptive, [Validators.min(0), Validators.max(5)]],
+          easy: [{ value: easy, disabled: false }, [Validators.min(0), Validators.max(5)]],
+          medium: [{ value: medium, disabled: false }, [Validators.min(0), Validators.max(5)]],
+          hard: [{ value: hard, disabled: false }, [Validators.min(0), Validators.max(5)]],
+          descriptive: [{ value: descriptive, disabled: false }, [Validators.min(0), Validators.max(5)]],
         });
 
         this.getQuestionCountsForSubject(subject.subjectId).then((counts) => {
@@ -564,19 +562,8 @@ canSave(): boolean {
         return group;
       })
     );
-    this.rightListInputs.controls.forEach((control, index) => {
-      const subjectId = control.value.item.subjectId;
-      if (!newRightList.some(subject => subject.subjectId === subjectId)) {
-        this.newValidationWarnings.easy[index] = '';
-        this.newValidationWarnings.medium[index] = '';
-        this.newValidationWarnings.hard[index] = '';
-        this.newValidationWarnings.descriptive[index] = '';
-      }
-    });
 
     this.rightListForm.setControl('rightListInputs', updatedInputs);
-
-    // Update validations for the new list
     this.updateValidations();
   }
   updateValidations(): void {
@@ -592,13 +579,15 @@ canSave(): boolean {
   saveFormData(): void {
     this.fetchQuestionCountsForRightList();
     const hasDescriptiveGreaterThanZero = this.rightListInputs.controls.some((group) => {
-      return group.get('descriptive')?.value > 0;
+      return (group.get('descriptive')?.value || 0) > 0;
     });
     this.isAutoEvaluated = !hasDescriptiveGreaterThanZero;
+
     if (this.assessmentTitle.trim().length === 0) {
       this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
       return;
     }
+
     if (this.editFlag) {
       this.updateAssessment();
     } else {
@@ -615,17 +604,17 @@ canSave(): boolean {
               assessmentId,
               dateCreated: Date.now(),
               dateUpdated: Date.now(),
-              isDisable:false,
+              isDisable: false,
               subjects: subjects,
             };
+
             this.firebaseService.create('assessmentList/' + assessmentId, updatedAssessmentList)
               .then(() => {
-                this.assessmentList.unshift(updatedAssessmentList); 
+                this.assessmentList.unshift(updatedAssessmentList);
                 this.toastr.success('Assessment Created', 'Created');
-                this.resetRightListAndForm(); 
-                this.assessmentTitle = ''; 
-                this.isNewVisible=true;
-
+                this.resetRightListAndForm();
+                this.assessmentTitle = '';
+                this.isNewVisible = true;
               })
               .catch((error) => {
                 console.error('Error saving data:', error);
