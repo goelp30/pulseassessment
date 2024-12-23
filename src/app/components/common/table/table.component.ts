@@ -35,6 +35,7 @@ export class TableComponent implements OnInit, OnChanges {
     colorClass: string;  
     action: Function; 
     icon?: string;
+    title?:string;
     customClassFunction?: (row: any) => string;
     disableFunction?: (row: any) => boolean;
   }[] = [];
@@ -53,7 +54,6 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() statusMapping: { [key: string]: string } = {};
 
   @Input() customButtonDisplay: { [key: string]: any } = {};
-
   selectedFilter: string = '';
   selectedStatus: string = '';
 

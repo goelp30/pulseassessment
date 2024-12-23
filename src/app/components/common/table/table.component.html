@@ -151,6 +151,7 @@
                   [label]="getButtonLabel(button, row)"
                   [colorClass]="getCustomButtonClasses(button, row)"
                   [icon]="button.icon"
+                  [title]="button.title"
                   (action)="button.action(row)"
                   [disabled]="isButtonDisabled(button, row)"
                 ></app-button>

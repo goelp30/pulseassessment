@@ -60,13 +60,16 @@ export class AssessTableComponent {
   selectedAssessmentToDelete: Assessment | null = null;
   searchPlaceholder: string = 'Search Assessments...';
 
+
   // For handling tabs
   selectedTab: string = 'all';
   // disableFunction: (row: any) => this.isEditDisabled(row),
   buttons = [
     {
-      label: 'Edit',
-      colorClass: 'bg-blue-500 py-2 px-4 text-white rounded-md',
+      label: '',
+      icon:'fa fa-pen px-2 text-lg',
+      colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-1 ',
+      title:"Edit",
       action: (row: any) => this.editAssessment(row),
       customClassFunction: (row: any) => {
         return row.isLinkGenerated
@@ -76,13 +79,15 @@ export class AssessTableComponent {
       disableFunction: (row: any) => this.isEditDisabled(row),
     },
     {
-      label: 'Delete',
-      colorClass: 'bg-red-500 py-2 px-4 text-white rounded-md',
+      label: '',
+      icon:'fa fa-trash px-2 text-lg',
+      title:"Delete",
+      colorClass: 'bg-red-500 hover:opacity-80 transition-opacity text-white rounded-md px-4 py-1',
       action: (row: any) => this.confirmDelete(row),
       customClassFunction: (row: any) => {
         return row.isLinkGenerated
           ? 'bg-gray-500 py-2 px-4 text-gray-800 rounded-md  cursor-not-allowed'
-          : 'bg-custom-blue hover:opacity-80 transition-opacity text-white py-2 px-4 text-white rounded-md';
+          : 'bg-red-500 hover:opacity-80 transition-opacity text-white py-2 px-4 text-white rounded-md';
       },
       disableFunction: (row: any) => this.isEditDisabled(row),
     },
