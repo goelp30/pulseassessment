@@ -83,14 +83,19 @@ export class QuizAnswerService {
     isAutoEvaluated: boolean = false,
     isPassed: boolean = false
   ) {
+    const hasDescriptiveQuestions = questions.some(q => q.questionType === 'Descriptive');
+    const maxMarks = questions.reduce((sum, q) => sum + (q.questionWeightage || 0), 0).toString();
+    const percentage = (totalMarks / parseInt(maxMarks)) * 100;
+    const result = percentage >= 70 ? 'Pass' : 'Fail';
+
     const quizAnswer: QuizAnswer = {
       userId: this.userId,
       assessmentId: this.assessmentID,
       answers: this.userAnswers[this.quizId] || {},
       totalMarks: totalMarks,
       submittedAt: new Date().toISOString(),
-      isAutoEvaluated: isAutoEvaluated,
-      isPassed: isPassed
+      isAutoEvaluated: !hasDescriptiveQuestions, // Set based on question types
+      isPassed: !hasDescriptiveQuestions ? (percentage >= 70) : false // Only set pass/fail if no descriptive questions
     };
 
     // Store in both formats for backward compatibility
@@ -101,13 +106,13 @@ export class QuizAnswerService {
       this.fireBaseService.create(`AssessmentData/${this.quizId}`, {
         assessmentID: this.assessmentID,
         quizId: this.quizId,
-        isEvaluated: isAutoEvaluated,
+        isEvaluated: !hasDescriptiveQuestions,
         userId: this.userId,
-        result: isPassed ? 'Pass' : 'Fail',
+        result: hasDescriptiveQuestions ? 'Pending' : result,
         submittedAt: new Date().toISOString(),
         totalMarks: totalMarks.toString(),
-        maxMarks: questions.reduce((sum, q) => sum + (q.marks || 0), 0).toString(),
-        percentage: ((totalMarks / questions.reduce((sum, q) => sum + (q.marks || 0), 0)) * 100).toFixed(2)
+        maxMarks: maxMarks,
+        percentage: percentage.toFixed(2)
       })
     ];
 
