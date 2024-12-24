@@ -20,11 +20,13 @@ export class QuestionDisplayComponent {
   @Input() isDisabled: boolean = false; 
   @Output() marksChanged = new EventEmitter<any>();
   isCopied: boolean = false;
+  showMarksError :boolean=false;  
+
   onMarksChange(): void {
     this.question.assigned_marks = this.question.assignedMarks;
-    this.marksChanged.emit(this.question); 
+    this.showMarksError=this.question.assignedMarks > this.question.questionWeitage;
+    this.marksChanged.emit([this.question,this.showMarksError]);
   }
-
   // Copy to clipboard function
   copyToClipboard(text: string): void {
     const textarea = document.createElement('textarea');
