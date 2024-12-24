@@ -10,6 +10,70 @@
     <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">
       Manage Your Assessments
     </h2>
+    
+    <!-- Buttons for Reset and Back -->
+    <div class="gap-2 flex">
+        <app-button
+        [icon]="'fa fa-arrow-left'"
+        [label]="'Back'"
+        [colorClass]="'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-2'"
+        (action)="onBack()"
+      ></app-button>
+      <app-button
+      [icon]="'fas fa-sync'"
+      [label]="'Reset'"
+      [colorClass]="'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-2'"
+      (action)="onReset()"
+    ></app-button>
+    </div>
+  <!-- create -->
+  <app-popup-module
+  *ngIf="isNewVisible"
+  [isVisible]="isNewVisible"
+  [modalTitle]="'Confirm '"
+  (closeModalEvent)="closeModal()"
+>
+  <!-- Confirmation Content -->
+  <div class="text-gray-800">
+    <h3 class="text-xl font-semibold mb-2">Please Select</h3>
+    <div class="flex justify-end space-x-4 mt-6">
+      <button (click)="navigateToAssessments()" class="bg-custom-blue hover:opacity-80 transition-opacity  py-2 px-6 text-white rounded-md">Go Back</button>
+      <button (click)="onCreateNew()" class="bg-custom-blue hover:opacity-80 transition-opacity px-6 py-2 text-white rounded-md">Create New Assessment</button>  
+    </div>
+  </div>
+</app-popup-module>
+
+  <!-- Confirmation Popup -->
+    <app-popup-module
+      *ngIf="eConfirmationVisible"
+      [isVisible]="eConfirmationVisible"
+      [modalTitle]="actionType === 'reset' ? 'Confirm Reset' : 'Confirm Navigation'"
+      (closeModalEvent)="closeModal()"
+    >
+      <!-- Confirmation Content -->
+      <div class="text-gray-800">
+        <h3 class="text-xl font-semibold mb-2">
+          {{ actionType === 'reset' ? 'Are you sure you want to reset the form?' : 'Are you sure you want to leave this page?' }}
+        </h3>
+        <p class="mb-4">
+          {{ actionType === 'reset' ? 'This will clear all the entered data and reset the form.' : 'Any unsaved changes will be lost.' }}
+        </p>
+        <div class="flex justify-end space-x-4 mt-6">
+          <button (click)="closeModal()" class="bg-custom-blue hover:opacity-80 transition-opacity py-2 px-6 text-white rounded-md">
+            Cancel
+          </button>
+          <button 
+            (click)="actionType === 'reset' ? resetPage() : navigateToAssessments()"
+            class="bg-custom-blue hover:opacity-80 transition-opacity px-6 py-2 text-white rounded-md">
+            {{ actionType === 'reset' ? 'Confirm Reset' : 'Confirm Leave' }}
+          </button>
+        </div>
+      </div>
+    </app-popup-module>
+
+  
+
+    <div class="items-center justify-center p-2">
 
     <div class="mb-6">
       <label for="assessmentTitle" class="block text-gray-700 font-medium mb-2">
@@ -301,4 +365,33 @@
       </button>
     </div>
   </div>
+</div>
+                            <!-- Validation Warning -->
+                            <span *ngIf="validationWarnings[i]" class="text-red-500 text-sm">
+                                {{ validationWarnings[i] }}
+                            </span>
+                            <!-- Show warning if right list is empty -->
+                            <div *ngIf="rightListWarning" class="text-red-700 mt-2">
+                                {{ rightListWarning }}
+                            </div>
+                        </div>
+                       
+                    </li>
+                </ul>
+            </form>
+        </div>
+        <div *ngIf="totalWarning && rightList.length > 0" class="text-red-700 mt-2">
+            {{ totalWarning }}
+          </div>
+        <!-- Save Button -->
+        <div class="flex justify-center mt-6">
+            <button (click)="onSave()" [ngClass]="{
+                'bg-blue-950 hover:bg-blue-950': canSave(),
+                'bg-gray-400 cursor-not-allowed': !canSave()
+            }" class="text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all">
+                {{ editFlag ? 'Update' : 'Save' }}
+            </button>
+        </div>
+        
+    </div>
 </div>

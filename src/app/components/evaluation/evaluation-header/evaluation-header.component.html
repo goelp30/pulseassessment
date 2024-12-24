@@ -1,0 +1,37 @@
+<app-button
+  [icon]="'fa fa-arrow-left'"
+  [label]="'Back'"
+  [colorClass]="'px-3 py-2 bg-custom-blue text-white rounded-lg transition-opacity mb-2 space-x-2'"
+  (click)="onBackClick()"
+></app-button>
+
+<div class="flex items-center p-3 bg-custom-blue text-white rounded-t-lg">
+  <h1 class="text-3xl font-semibold text-center flex-grow">
+    {{ assessmentName }}
+  </h1>
+</div>
+
+<div class="text-end p-3">
+  <div class="text-lg font-semibold">
+    <span>Marks Scored:</span>
+    <span
+      [ngClass]="{
+        'text-red-600': userMarks === 0,
+        'text-green-600': totalMarks !== 0
+      }"
+      class="font-semibold">
+      {{ userMarks || 0 }} / {{ totalMarks }}
+    </span>
+  </div>
+  @if(result){
+  <div class="text-lg font-semibold">
+    <span>Result: </span>
+    <span
+      [ngClass]="{
+        'text-green-600': result === 'Pass',
+        'text-red-600': result === 'Fail'
+      }">
+      {{ result }}
+    </span>
+  </div>}
+</div>

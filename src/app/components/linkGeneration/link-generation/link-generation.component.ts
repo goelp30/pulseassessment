@@ -7,7 +7,6 @@ import { Assessment } from '../../../models/assessment';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { TableNames } from '../../../enums/TableName';
 import { TableComponent } from '../../common/table/table.component';
-import { HeaderComponent } from '../../common/header/header.component';
 
 @Component({
   selector: 'app-generate-link',
@@ -17,14 +16,12 @@ import { HeaderComponent } from '../../common/header/header.component';
     PopupModuleComponent,
     ModalComponent,
     TableComponent,
-    HeaderComponent,
   ],
   templateUrl: './link-generation.component.html',
   styleUrl: './link-generation.component.css',
 })
 export class LinkGenerationComponent implements OnInit, OnDestroy {
   @Input() successMessage: string = '';
-
   assessments: Assessment[] = [];
   assessmentId: string = '';
   assessmentName: string = '';
@@ -32,6 +29,7 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
   filteredAssessments: Assessment[] = [];
   selectedLink: string = '';
   isModalVisible: boolean = false;
+  isLinkGenerated?: boolean;
   tableName: string = TableNames.Assessment;
   tableColumns: string[] = ['assessmentName', 'assessmentType'];
   columnAliases: { [key: string]: string[] } = {
@@ -50,7 +48,6 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
     },
   ];
   constructor(private firebaseService: FireBaseService<Assessment>) {}
-
   private subscription: Subscription = new Subscription();
 
   ngOnInit(): void {
@@ -59,7 +56,7 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
 
   getAssessments(): void {
     const assessmentSub = this.firebaseService
-      .getAllData('assessment')
+      .getAllDataByFilter('assessment', 'isDisabled', false)
       .subscribe(
         (data) => {
           this.assessments = data;
@@ -92,7 +89,7 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
     return `${baseUrl}/${id}`;
   }
 
-  // Open the modal with the selected link and type
+  
   openModal(row: any): void {
     this.selectedLink = this.generateLink(row.assessmentId);
     this.assessmentType = row.assessmentType;
@@ -101,7 +98,6 @@ export class LinkGenerationComponent implements OnInit, OnDestroy {
     this.isModalVisible = true;
   }
 
-  // Close the modal and reset visibility
   closeModal(): void {
     this.isModalVisible = false;
   }

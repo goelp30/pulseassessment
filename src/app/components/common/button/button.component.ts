@@ -13,6 +13,8 @@ export class ButtonComponent {
     @Input() colorClass: string = "btn py-2 text-white";
     @Input() disabled: boolean = false; // Add this line
     @Output() action = new EventEmitter<void>();
+    @Input() icon?: string; // Add icon input
+    @Input() title?: string;
 
     onClick(): void {
         if(!this.disabled){

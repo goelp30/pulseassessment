@@ -3,7 +3,6 @@ import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
 import { FormsModule } from '@angular/forms';
 import { assessmentRecords } from '../../../../models/assessmentRecords';
 import { TableComponent } from '../../../common/table/table.component';
-import { HeaderComponent } from '../../../common/header/header.component';
 import { TableNames } from '../../../../enums/TableName';
 import { filter, Subject, takeUntil } from 'rxjs';
 import { NavigationEnd, Router } from '@angular/router';
@@ -11,7 +10,7 @@ import { NavigationEnd, Router } from '@angular/router';
 @Component({
   selector: 'app-assessment-records',
   standalone: true,
-  imports: [FormsModule, TableComponent, HeaderComponent],
+  imports: [FormsModule, TableComponent],
   templateUrl: './assessment-records.component.html',
   styleUrls: ['./assessment-records.component.css'],
 })
@@ -21,34 +20,18 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
   selectedFilter: string = 'Search...'; // Default to 'userName'
   selectedStatus: string = '';
   filterOptions: string[] = ['userName', 'email', 'assessmentName'];
-  statusOptions: string[] = [
-    'Active',
-    'Expired',
-    'In Progress',
-    'Completed',
-    'Invalid',
-  ];
   isLoading: boolean = true;
-
   tableName: string = TableNames.Assessment;
-  tableColumns: string[] = [
-    'assessmentName',
-    'userName',
-    'email',
-    'status',
-    'url',
-  ];
-
+  statusOptions: string[] = ['Active','Expired','In Progress','Completed','Invalid',];
+  tableColumns: string[] = [ 'assessmentName', 'userName', 'email', 'status', 'url', ];
   columnAliases: { [key: string]: string[] } = {
     assessmentName: ['Assessment Name'],
-    userName: ['User Name'],
+    userName: ['Name'],
     email: ['Email'],
     status: ['Status'],
-    url: ['Url'],
+    url: ['URL'],
   };
-
   searchPlaceholder: string = this.selectedFilter;
-
   buttons = [
     {
       label: ' Invalid',
@@ -69,10 +52,10 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
     Expired: 'text-red-600 font-semibold',
     'In Progress': 'text-yellow-600 font-semibold',
     Completed: 'text-blue-600 font-semibold',
-    Invalid: 'text-blue-900 font-semibold',
+    Invalid: 'text-red-600 font-semibold',
   };
 
-  private destroy$ = new Subject<void>(); // Subject to manage subscriptions
+  private destroy$ = new Subject<void>(); 
   constructor(
     private firebaseService: FireBaseService<any>,
     private router: Router
@@ -80,11 +63,10 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.fetchAssessments();
-
     this.router.events
       .pipe(
         filter((event) => event instanceof NavigationEnd),
-        takeUntil(this.destroy$) // Unsubscribe when component is destroyed
+        takeUntil(this.destroy$) 
       )
       .subscribe(() => {
         this.fetchAssessments();
@@ -92,8 +74,8 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next(); // Emit value to complete all subscriptions
-    this.destroy$.complete(); // Complete the subject
+    this.destroy$.next(); 
+    this.destroy$.complete(); 
   }
 
   fetchAssessments() {
@@ -108,7 +90,6 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
           email: assessment.email || 'No email provided',
           userName: assessment.userName || 'No userName provided',
         }));
-        console.log('Processed assessments:', this.assessments);
         this.isLoading = false;
       });
   }
@@ -117,10 +98,8 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
     if (this.isInvalidDisabled(assessment)) return;
     const recordKey = `${assessment.assessmentId}_${assessment.userId}`;
     assessment.isValid = false;
-
     this.updateState(recordKey, { isValid: false })
       .then(() => {
-        console.log(`Successfully invalidated assessment: ${recordKey}`);
         assessment.status = 'Invalid';
       })
       .catch((error) => {
@@ -132,7 +111,6 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
     const tableName = `assessmentRecords/${recordKey}`;
     return await this.firebaseService
       .update(tableName, updates)
-      .then(() => console.log('Successfully updated:', tableName))
       .catch((error) => {
         console.error('Failed to update Firebase:', error);
         throw error;
@@ -142,7 +120,6 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
   getStatus(assessment: assessmentRecords): string {
     const currentDate = new Date();
     const expiryDate = new Date(assessment.expiryDate);
-
     if (assessment.isValid === false) return 'Invalid';
     if (!assessment.isAccessed && expiryDate < currentDate) {
       return 'Expired';
@@ -165,7 +142,8 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
   isInvalidDisabled(assessment: assessmentRecords): boolean {
     return (
       assessment.status === 'Invalid' ||
-      assessment.status?.includes('Expired') ||
+      assessment.status === 'Completed' ||
+      assessment.status?.includes('Expired' ) ||
       false
     );
   }

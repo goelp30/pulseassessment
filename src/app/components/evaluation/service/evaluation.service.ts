@@ -5,26 +5,25 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root',
 })
 export class EvaluationService {
-  private clickedDataSubject = new BehaviorSubject<any>(null); // Store clicked row data (single object, not an array)
+  private clickedDataSubject = new BehaviorSubject<any>(this.getSessionData() || null); 
   clickedData$ = this.clickedDataSubject.asObservable();
 
-  private quizIdSource = new BehaviorSubject<string | null>(null);
-  quizId$ = this.quizIdSource.asObservable();
-
-  setQuizId(id: string) {
-    this.quizIdSource.next(id);
-  }
-
-  getQuizId(): string | null {
-    return this.quizIdSource.getValue();
-  }
-
-  // Set the clicked row's data directly
   setData(data: any) {
-    this.clickedDataSubject.next(data); // Store the clicked row data as an object
+    this.clickedDataSubject.next(data); 
+    sessionStorage.setItem('clickedData', JSON.stringify(data)); 
   }
 
   getData(): any {
-    return this.clickedDataSubject.value; // Return the data for the clicked row
+    return this.clickedDataSubject.value; 
+  }
+
+  private getSessionData(): any {
+    const storedData = sessionStorage.getItem('clickedData');
+    return storedData ? JSON.parse(storedData) : null; 
+  }
+
+  clearSessionData() {
+    sessionStorage.removeItem('clickedData');
+    this.clickedDataSubject.next(null); 
   }
 }

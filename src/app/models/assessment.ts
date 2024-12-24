@@ -1,5 +1,4 @@
 export type Assessment = {
-
   assessmentId: string,
   assessmentName: string,
   assessmentType: 'internal' | 'external', 
@@ -7,6 +6,6 @@ export type Assessment = {
   dateUpdated: number,
   isDisabled:boolean,
   isautoEvaluated:boolean,
-  isLinkGenerated?:boolean
+  isLinkGenerated?:boolean,
 };
 

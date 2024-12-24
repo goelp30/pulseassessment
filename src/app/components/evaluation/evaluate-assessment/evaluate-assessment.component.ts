@@ -3,134 +3,172 @@ import { Router } from '@angular/router';
 import { EvaluationService } from '../service/evaluation.service';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { mergeMap, map } from 'rxjs/operators';
+import { QuizAnswers } from '../../../models/quizAnswers';
 import { ButtonComponent } from '../../common/button/button.component';
+import { QuestionDisplayComponent } from '../question-display/question-display.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { QuizAnswers } from '../../../models/quizAnswers';
+import { EvaluationHeaderComponent } from '../evaluation-header/evaluation-header.component';
+import { ToastrService } from 'ngx-toastr';
+import { PageLabelService } from '../../../../sharedServices/pagelabel.service';
 @Component({
   selector: 'app-evaluate-assessment',
-  standalone: true,
-  imports: [CommonModule, FormsModule, ButtonComponent],
   templateUrl: './evaluate-assessment.component.html',
   styleUrls: ['./evaluate-assessment.component.css'],
+  imports: [ QuestionDisplayComponent, CommonModule, ButtonComponent, FormsModule, EvaluationHeaderComponent ],
+  standalone: true,
 })
 export class EvaluateAssessmentComponent implements OnInit {
   clickedData: any = {};
   successMessage: boolean = false;
   evaluationList: any[] = [];
-  quizId: string = ''; // Initialize quizId as a string
-
+  attemptedQuestions: any[] = []; 
+  notAttemptedQuestions: any[] = []; 
+  quizId: string = '';
+  evaluationComplete: boolean | undefined;
+  isLoading: boolean = false;
   constructor(
     private evaluationService: EvaluationService,
+    private toastr: ToastrService,
     private router: Router,
-    private firebaseservice: FireBaseService<QuizAnswers>
+    private firebaseservice: FireBaseService<QuizAnswers>,
+    private pageLabelService: PageLabelService  
+
   ) {}
 
   ngOnInit(): void {
-    // Listen for clicked data updates
-    this.evaluationService.clickedData$.subscribe((data) => {
-      this.clickedData = data; // Store the clicked row data
-    
-    });
+    this.isLoading = true;
+    this.pageLabelService.updatePageLabel('Evaluate Assessment');
 
-    // Listen for quizId updates and fetch evaluation data
-    this.evaluationService.quizId$.subscribe((quizId) => {
-      if (quizId) {
-        this.quizId = quizId;
-      
-        // Fetch evaluation data when quizId is available
-        this.getEvaluationDataByQuizId(this.quizId);
+    this.evaluationService.clickedData$.subscribe((data) => {
+      this.clickedData = data;
+      if (this.clickedData) {
+        this.quizId = this.clickedData.quizId;
+        this.getEvaluationDataByQuizId(this.clickedData.quizId);
       }
     });
   }
 
   getEvaluationDataByQuizId(quizId: string): void {
-    // Fetch evaluation data from Firebase based on the quizId
+    this.isLoading = true;
     this.firebaseservice
       .getItemsByQuizId('QuizAnswer', quizId)
       .pipe(
         mergeMap((evaluationData: any[]) => {
           const questionIds = evaluationData.map((item) => item.questionId);
-          return this.firebaseservice.getQuestionsFromIds('questions', questionIds).pipe(
-            mergeMap((questionData: any[]) => {
-              return this.firebaseservice.getAllOptions('options').pipe(
-                map((optionData: any[]) => {
-                  const optionsMap = optionData.reduce((acc, option) => {
-                    if (!acc[option.questionId]) {
-                      acc[option.questionId] = [];
-                    }
-                    acc[option.questionId].push(option);
-                    return acc;
-                  }, {} as { [key: string]: any[] });
+          return this.firebaseservice
+            .getQuestionsFromIds('questions', questionIds)
+            .pipe(
+              mergeMap((questionData: any[]) => {
+                return this.firebaseservice.getAllOptions('options').pipe(
+                  map((optionData: any[]) => {
+                    const optionsMap = optionData.reduce((acc, option) => {
+                      if (!acc[option.questionId]) {
+                        acc[option.questionId] = [];
+                      }
+                      acc[option.questionId].push(option);
+                      return acc;
+                    }, {} as { [key: string]: any[] });
 
-                  const combinedData = evaluationData.map((item) => {
-                    const question = questionData.find((q) => q.questionId === item.questionId);
-                    const options = optionsMap[item.questionId] || [];
-                    return {
-                      ...item,
-                      questionText: question?.questionText,
-                      questionWeitage: question?.questionWeightage,
-                      questionType: question?.questionType,
-                      options: options,
-                    };
-                  });
-                  return combinedData;
-                })
-              );
-            })
-          );
+                    const combinedData = evaluationData.map((item) => {
+                      const question = questionData.find(
+                        (q) => q.questionId === item.questionId
+                      );
+                      const options = optionsMap[item.questionId] || [];
+                      return {
+                        ...item,
+                        questionText: question?.questionText,
+                        questionWeitage: question?.questionWeightage,
+                        questionType: question?.questionType,
+                        options: options,
+                      };
+                    });
+                    this.categorizeQuestions(combinedData);
+                    return combinedData;
+                  })
+                );
+              })
+            );
         })
       )
       .subscribe(
         (combinedData: any[]) => {
-          console.log('Combined evaluation list:', combinedData);
           this.evaluationList = combinedData;
           this.evaluateAutoScoredQuestions();
+          this.isLoading = false;
         },
         (error: any) => {
           console.error('Error fetching combined data:', error);
+          this.isLoading = false;
         }
       );
   }
+  checkDescriptiveMarksEntered(): boolean {
+    return this.attemptedQuestions.every((question) => {
+      if (question.questionType === 'Descriptive') {
+        return (
+          question.assigned_marks !== undefined &&
+          question.assigned_marks !== null
+        );
+      }
+      return true; 
+    });
+  }
 
-  onMarksChange(question: any): void {
-    if (question.assigned_marks > question.questionWeitage) {
-      question.assigned_marks = question.questionWeitage; // Reset to max allowed marks
+  categorizeQuestions(combinedData: any[]): void {
+    // Separate attempted and not attempted questions
+    this.attemptedQuestions = combinedData.filter((question) =>
+      this.isQuestionAttempted(question)
+    );
+    this.notAttemptedQuestions = combinedData.filter(
+      (question) => !this.isQuestionAttempted(question)
+    );
+  }
+
+  isQuestionAttempted(question: any): boolean {
+    if (
+      question.questionType === 'Multi' ||
+      question.questionType === 'Single'
+    ) {
+      return question.userAnswer && question.userAnswer.length > 0;
     }
 
     if (question.questionType === 'Descriptive') {
-      question.marks = question.assigned_marks; // Assign marks for descriptive questions
+      return question.answer && question.answer.trim() !== '';
     }
-
-    // Recalculate total marks after changes
-    this.getUserTotalMarks();
+    return false;
   }
 
   evaluateAutoScoredQuestions(): void {
     this.evaluationList.forEach((question: any) => {
       if (question.questionType === 'Single') {
-        const selectedOption = question.options.find((option: { optionId: any }) => option.optionId == question.userAnswer);
-        question.marks = selectedOption?.isCorrectOption ? question.questionWeitage : 0;
+        const selectedOption = question.options.find(
+          (option: { optionId: any }) => option.optionId == question.userAnswer
+        );
+        question.marks = selectedOption?.isCorrectOption
+          ? question.questionWeitage
+          : 0;
       } else if (question.questionType === 'Multi') {
         const correctOptions = question.options
           .filter((option: { isCorrectOption: any }) => option.isCorrectOption)
           .map((option: { optionId: any }) => option.optionId);
-        
+
         let selectedAnswers = question.userAnswer;
-        if (typeof selectedAnswers === 'string') selectedAnswers = [selectedAnswers];
-        
+        if (typeof selectedAnswers === 'string')
+          selectedAnswers = [selectedAnswers];
+
         let correctCount = 0;
         selectedAnswers.forEach((answer: any) => {
           if (correctOptions.includes(answer)) correctCount++;
         });
-
-        const marksPerCorrectAnswer = question.questionWeitage / correctOptions.length;
+        const marksPerCorrectAnswer =
+        question.questionWeitage / correctOptions.length;
         question.marks = correctCount * marksPerCorrectAnswer;
-
-        // Apply penalty for extra answers
-        const extraAnswersSelected = selectedAnswers.length - correctOptions.length;
+        const extraAnswersSelected =
+        selectedAnswers.length - correctOptions.length;
         if (extraAnswersSelected > 0) {
-          const penaltyPerExtraAnswer = question.questionWeitage / correctOptions.length;
+          const penaltyPerExtraAnswer =
+          question.questionWeitage / correctOptions.length;
           question.marks -= extraAnswersSelected * penaltyPerExtraAnswer;
           if (question.marks < 0) question.marks = 0;
         }
@@ -140,7 +178,11 @@ export class EvaluateAssessmentComponent implements OnInit {
 
   getUserTotalMarks(): number {
     return this.evaluationList.reduce((totalMarks, question) => {
-      return totalMarks + (question.marks || 0);
+      const questionMarks =
+        question.questionType === 'Descriptive'
+          ? question.assignedMarks || 0
+          : question.marks || 0;
+      return totalMarks + questionMarks;
     }, 0);
   }
 
@@ -149,73 +191,82 @@ export class EvaluateAssessmentComponent implements OnInit {
       return totalMarks + (question.questionWeitage || 0);
     }, 0);
   }
-onSubmit(): void {
-  // Ensure evaluationList is not undefined and has data
-  if (!this.evaluationList || this.evaluationList.length === 0) {
-    console.error('No evaluation questions available');
-    return; // Prevent further execution if there are no questions
-  }
 
-  // If the assessment is already evaluated, navigate to the view page
-  if (this.clickedData?.isEvaluation) {
-    this.router.navigate(['/view']);
-    return;
-  }
-
-  // Manually assign marks for descriptive questions
-  this.evaluationList.forEach((question: any) => {
-    if (question.questionType === 'Descriptive') {
-      question.marks = question.assigned_marks; // Assign marks for descriptive questions
+  onMarksChange(question: any): void {
+    if (question.assigned_marks > question.questionWeitage) {
+      question.assigned_marks = question.questionWeitage; 
     }
-  });
 
-  // Calculate the total marks
-  this.getUserTotalMarks();
-  this.successMessage = true;
+    if (question.questionType === 'Descriptive') {
+      question.marks = question.assigned_marks; 
+    }
 
-  const updates: { [path: string]: any } = {};
+    this.getUserTotalMarks();
+  }
+  onBackClick(){
+    sessionStorage.removeItem('clickedData');  
+    this.router.navigate(['/evaluation']);
+  }
 
-  // Prepare the update path for AssessmentData
-  const assessmentPath = `AssessmentData/${this.quizId}`;
-  updates[assessmentPath] = {
-    isEvaluated: true,
-    result: this.clickedData.result,
-  };
+  onSubmit(): void {
+    if (!this.checkDescriptiveMarksEntered()) {
+      return; 
+    }
 
-  // Loop through each question in the evaluation list and prepare the updates for QuizAnswer
-  this.evaluationList.forEach((question: any) => {
-    const quizAnswerPath = `QuizAnswer/${this.quizId}/${question.questionId}`;
+    if (!this.evaluationList || this.evaluationList.length === 0) {
+      console.error('No evaluation questions available');
+      return;
+    }
 
-    // Ensure that the marks are set to a valid number, default to 0 if not present
-    const marksToUpdate = Number(question.marks) || 0;
-
-    // Log the update path and marks being sent to Firebase
-    console.log(`Updating path: ${quizAnswerPath} with marks: ${marksToUpdate}`);
-
-    // Prepare the update for each question's marks
-    updates[quizAnswerPath] = {
-      marks: marksToUpdate.toString(),  // Ensure marks are stored as strings
-      userAnswer: question.userAnswer || [], // Store user answers (if any)
-      isDescriptive: question.questionType === 'Descriptive', // Store if the question is descriptive
-    };
-  });
-
-  // Log the updates object for verification before proceeding
-  console.log('Updates object:', updates);
-
-  // Perform the batch update in Firebase
-  this.firebaseservice.batchUpdate(updates)
-    .then(() => {
-      console.log('Assessment and Quiz Answers updated successfully');
-      alert('Assessment evaluated and results saved successfully.');
-
-      // Navigate to the view page after successful update
+    if (this.clickedData?.isEvaluation) {
       this.router.navigate(['/view']);
-    })
-    .catch((error) => {
-      console.error('Error updating data in Firebase:', error);
-      alert('There was an error updating the assessment data. Please try again.');
-    });
-}
+      return;
+    }
 
+    // Set marks for descriptive questions if not already done
+    this.evaluationList.forEach((question: any) => {
+      if (question.questionType === 'Descriptive') {
+        question.marks = question.assigned_marks; 
+      }
+    });
+
+    this.getUserTotalMarks();
+    this.successMessage = true;
+
+    const updates: { [path: string]: any } = {};
+    const assessmentPath = `AssessmentData/${this.quizId}`;
+    updates[assessmentPath] = {
+      isEvaluated: true,
+      result: this.clickedData.result,
+    };
+
+    this.evaluationList.forEach((question: any) => {
+      const quizAnswerPath = `QuizAnswer/${this.quizId}/${question.questionId}`;
+      const marksToUpdate = Number(question.marks) || 0;
+      updates[quizAnswerPath] = {
+        marks: marksToUpdate.toString(),
+        userAnswer: question.userAnswer || [],
+        isDescriptive: question.questionType === 'Descriptive',
+      };
+    });
+
+    this.firebaseservice
+      .batchUpdate(updates)
+      .then(() => {
+        this.toastr.success(
+          'Assessment evaluated and results saved successfully.',
+          'Success'
+        );
+        this.evaluationComplete = true; 
+        sessionStorage.removeItem('clickedData');
+        this.router.navigate(['/view']);
+      })
+      .catch((error) => {
+        console.error('Error updating data in Firebase:', error);
+        this.toastr.error(
+          'There was an error updating the assessment data. Please try again.',
+          'Error'
+        );
+      });
+  }
 }

@@ -1,45 +1,63 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { EvaluationService } from '../service/evaluation.service';
 import { Router } from '@angular/router';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
-import { mergeMap, map } from 'rxjs/operators';
+import { mergeMap, map, takeUntil } from 'rxjs/operators';
 import { QuizAnswers } from '../../../models/quizAnswers';
-import { ButtonComponent } from '../../common/button/button.component';
 import { CommonModule } from '@angular/common';
+import { QuestionDisplayComponent } from '../question-display/question-display.component';
+import { EvaluationHeaderComponent } from '../evaluation-header/evaluation-header.component';
+import { Subject } from 'rxjs';
+import { PageLabelService } from '../../../../sharedServices/pagelabel.service';
 
 @Component({
   selector: 'app-view-assessment',
   standalone: true,
-  imports: [ButtonComponent, CommonModule],
+  imports: [CommonModule, QuestionDisplayComponent, EvaluationHeaderComponent],
   templateUrl: './view-assessment.component.html',
   styleUrls: ['./view-assessment.component.css'],
 })
-export class ViewAssessmentComponent implements OnInit {
-  clickedData: any = {}; // To store the clicked data for the assessment
-  quizId: string = ''; // Initialize quizId
-  evaluationList: any[] = []; // Initialize an empty evaluation list
-
+export class ViewAssessmentComponent implements OnInit, OnDestroy {
+  clickedData: any = {};
+  evaluationList: any[] = [];
+  attemptedQuestions: any[] = []; 
+  notAttemptedQuestions: any[] = []; 
+  quizId: string = '';
+  isLoading: boolean = false;
+  private destroy$ = new Subject<void>();
   constructor(
     private evaluationService: EvaluationService,
     private router: Router,
-    private firebaseservice: FireBaseService<QuizAnswers>
+    private firebaseservice: FireBaseService<QuizAnswers>,
+    private pageLabelService: PageLabelService  
   ) {}
 
   ngOnInit(): void {
-    // Get clicked data from the service
-    this.clickedData = this.evaluationService.getData();
-    console.log('Clicked Data:', this.clickedData);
+    // Listen for clicked data updates
+    this.isLoading = true;
+    this.pageLabelService.updatePageLabel('View Assessment');
+    this.evaluationService.clickedData$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((data) => {
+      this.clickedData = data;
+      if (this.clickedData && this.clickedData.quizId) {
+        this.quizId = this.clickedData.quizId;
+        // Fetch evaluation data when quizId is available
+        this.getEvaluationDataByQuizId(this.clickedData.quizId);
+      }else{
+        this.evaluationList = [];
+         this.isLoading = false;
+      }
+    });
+  }
 
-    // Get the quizId from the service (assuming it's available)
-    this.quizId = this.clickedData.quizId;
-
-    // Fetch the data based on the quizId
-    if (this.quizId) {
-      this.getEvaluationDataByQuizId(this.quizId);
-    }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   getEvaluationDataByQuizId(quizId: string): void {
+    this.isLoading = true;
     // Fetch evaluation data from Firebase based on the quizId
     this.firebaseservice
       .getItemsByQuizId('QuizAnswer', quizId)
@@ -74,8 +92,7 @@ export class ViewAssessmentComponent implements OnInit {
                       };
                     });
 
-                    // Store the combined data in the evaluationList
-                    this.evaluationList = combinedData;
+                    this.categorizeQuestions(combinedData);
                     return combinedData;
                   })
                 );
@@ -85,31 +102,59 @@ export class ViewAssessmentComponent implements OnInit {
       )
       .subscribe(
         (combinedData: any[]) => {
-          console.log('Combined evaluation list:', this.evaluationList);
+          this.evaluationList = combinedData;
+           this.isLoading = false;
         },
         (error: any) => {
           console.error('Error fetching combined data:', error);
+          this.isLoading = false;
         }
       );
+  }
+  
+  categorizeQuestions(combinedData: any[]): void {
+    // Separate attempted and not attempted questions
+    this.attemptedQuestions = combinedData.filter((question) =>
+      this.isQuestionAttempted(question)
+    );
+    this.notAttemptedQuestions = combinedData.filter(
+      (question) => !this.isQuestionAttempted(question)
+    );
+  }
+
+  isQuestionAttempted(question: any): boolean {
+    // Check if the question is attempted
+    if (
+      question.questionType === 'Multi' ||
+      question.questionType === 'Single'
+    ) {
+      return question.userAnswer && question.userAnswer.length > 0;
+    }
+
+    if (question.questionType === 'Descriptive') {
+      return question.answer && question.answer.trim() !== '';
+    }
+
+    return false;
   }
 
   // Calculate the total marks scored by the user
   getUserMarks(): number {
     return this.evaluationList.reduce((totalMarks, question) => {
-      // Convert marks to a number before adding
-      const marks = Number(question.marks) || 0;  // Fallback to 0 if the marks are not a valid number
+      const marks = Number(question.marks) || 0; 
       return totalMarks + marks;
     }, 0);
   }
-// Calculate the total possible marks
+
+  // Calculate the total possible marks
   getTotalMarks(): number {
     return this.evaluationList.reduce((totalMarks, question) => {
       return totalMarks + (question.questionWeitage || 0);
     }, 0);
   }
 
-  // Navigate to another page (evaluation dashboard)
   onSubmit(): void {
+    sessionStorage.removeItem('clickedData');  
     this.router.navigate(['/evaluation']);
   }
 }

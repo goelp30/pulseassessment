@@ -10,6 +10,8 @@ import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../button/button.component';
 import { SearchbarComponent } from '../searchbar/searchbar.component';
 import { FormsModule } from '@angular/forms';
+import { CamelCaseToSpacePipe } from './camel-case-to-space.pipe';
+import { TextCasePipe } from "./text-case.pipe";
 
 @Component({
   selector: 'app-table',
@@ -19,7 +21,9 @@ import { FormsModule } from '@angular/forms';
     ButtonComponent,
     SearchbarComponent,
     FormsModule,
-  ],
+    CamelCaseToSpacePipe,
+    TextCasePipe
+],
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.css'],
 })
@@ -28,26 +32,31 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() tableData: any[] = [];
   @Input() tableColumns: string[] = [];
   @Input() columnAliases: { [key: string]: string[] } = {};
-  @Input() buttons: { label: string | ((row: any) => string); colorClass: string; action: Function }[] =
-    [];
+  @Input() buttons: {
+    label: string | ((row: any) => string);
+    colorClass: string;
+    action: Function;
+    icon?: string;
+    title?: string;
+    customClassFunction?: (row: any) => string;
+    disableFunction?: (row: any) => boolean;
+  }[] = [];
+
   @Input() searchQuery: string = '';
   @Input() onSearchQueryChange: (newQuery: string) => void = () => {};
-  @Input() tabs: string[] = []; // Empty array means no tabs
+  @Input() tabs: string[] = [];
   @Input() filterKey: string = '';
   @Input() tabAliases: { [key: string]: string } = {};
   @Input() searchPlaceholder: string = 'Search';
 
-  // Input properties for assessmentRecord filters
   @Input() filterOptions: string[] = [];
   @Input() statusOptions: string[] = [];
   @Input() showAdditionalFilters: boolean = false;
 
-  // New Input for handling status display
   @Input() statusMapping: { [key: string]: string } = {};
 
-  // new input for custom button display
   @Input() customButtonDisplay: { [key: string]: any } = {};
-
+  copiedRow: any = null; // Track the copied row
   selectedFilter: string = '';
   selectedStatus: string = '';
 
@@ -58,10 +67,18 @@ export class TableComponent implements OnInit, OnChanges {
   activeTab: string = '';
   pageNumbers: number[] = [];
   isLoading: boolean = true;
-
-  // For link in Assessment records
   isPopupVisible: boolean = false;
-  copiedUrl: string | null = null;
+
+  columnConfig:any = {
+    subjectName: 'titlecase',
+    questionText: 'sentenceCase',
+    optionText: 'sentenceCase',
+    assessmentName: 'titlecase',
+    assessmentType: 'titlecase',
+    userName: 'titlecase',
+    status: 'titlecase',
+  };
+
 
 
   constructor(private fireBaseService: FireBaseService<any>) {}
@@ -73,7 +90,7 @@ export class TableComponent implements OnInit, OnChanges {
         .getAllDataByFilter(this.tableName, 'isDisabled', false)
         .subscribe((res) => {
           this.tableData = res;
-          this.filterData(); // Initial filter to include tab and other filters
+          this.filterData();
           this.totalPages = Math.ceil(
             this.tableData.length / this.itemsPerPage
           );
@@ -96,6 +113,8 @@ export class TableComponent implements OnInit, OnChanges {
     ) {
       this.isLoading = true;
       this.filterData();
+      this.currentPage = 1; // Reset to first page
+      this.generatePagination();
       this.isLoading = false;
     }
   }
@@ -143,11 +162,10 @@ export class TableComponent implements OnInit, OnChanges {
 
     this.filteredData = filtered;
     this.totalPages = Math.ceil(this.filteredData.length / this.itemsPerPage);
+    this.currentPage = Math.min(this.currentPage, this.totalPages); // Keep the current page within bounds
     this.generatePagination();
-    this.currentPage = 1;
   }
 
-  // Method to Apply additional filters
   applyAdditionalFilters(data: any[]): any[] {
     let filteredData = [...data];
     if (this.selectedFilter) {
@@ -168,7 +186,6 @@ export class TableComponent implements OnInit, OnChanges {
     return filteredData;
   }
 
-  // Function to get the CSS classes for status display
   getStatusClass(status: string): string {
     return this.statusMapping[status] || '';
   }
@@ -208,19 +225,54 @@ export class TableComponent implements OnInit, OnChanges {
 
   generatePagination(): void {
     const totalPages = this.totalPages;
-    const pages = [];
-    for (let i = 1; i <= totalPages; i++) {
-      pages.push(i);
+    let pages: (number | '...')[] = [];
+
+    if (totalPages <= 5) {
+      // If total pages are 5 or less, display all
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Display first page
+      pages.push(1);
+
+      //Logic to show ellipsis when needed and not add duplicate elements
+      if (this.currentPage > 3) {
+        pages.push('...');
+      }
+      // Display current page, the one before and the one after if inside boundaries
+      if (this.currentPage > 2) {
+        pages.push(this.currentPage - 1);
+      }
+      if (this.currentPage > 1 && this.currentPage <= totalPages) {
+        pages.push(this.currentPage);
+      }
+      if (this.currentPage < totalPages - 1) {
+        pages.push(this.currentPage + 1);
+      }
+      if (this.currentPage < totalPages - 2) {
+        pages.push('...');
+      }
+
+      // Display last page
+      if (totalPages !== 1) {
+        pages.push(totalPages);
+      }
+
+      // Filter out potential duplicate "..."
+      pages = pages.filter((item, index, arr) => arr.indexOf(item) === index);
     }
-    this.pageNumbers = pages;
+
+    this.pageNumbers = pages as number[];
   }
 
-    getButtonLabel(button:any, row: any): string {
+  getButtonLabel(button: any, row: any): string {
     if (typeof button.label === 'function') {
       return button.label(row);
     }
-      return button.label;
+    return button.label;
   }
+
   getCustomButtonClasses(button: any, row: any) {
     if (button.customClassFunction) {
       return button.customClassFunction(row);
@@ -235,38 +287,27 @@ export class TableComponent implements OnInit, OnChanges {
     return false;
   }
 
+  copyToClipboard(content: string | undefined, row: any): void {
+    if (!content) return;
+    navigator.clipboard
+      .writeText(content)
+      .then(() => {
+        this.isPopupVisible = true;
+        this.copiedRow = row;
 
-  copyToClipboard(url: string): void {
-    navigator.clipboard.writeText(url).then(
-      () => {
-        this.copiedUrl = url; // Set the copied URL to show style changes
-        this.showPopup(); // Trigger the popup
-      },
-      (err) => {
-        console.error('Failed to copy URL: ', err);
-      }
-    );
+        setTimeout(() => {
+          this.isPopupVisible = false;
+          this.copiedRow = null; // Clear the copied row after timeout
+        }, 1000);
+      })
+      .catch((err) => console.error('Failed to copy text:', err));
   }
 
-  showPopup(): void {
-    this.isPopupVisible = true;
-
-    // Hide the popup after 2 seconds
-    setTimeout(() => {
-      this.isPopupVisible = false;
-    }, 1000);
+  getActionColumnWidth(): string {
+    const buttonCount = this.buttons.length;
+    const baseWidth = 100; // Base width for one button
+    const additionalWidth = 50; // Additional width for each extra button
+    const totalWidth = baseWidth + (buttonCount - 1) * additionalWidth;
+    return `${totalWidth}px`;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
