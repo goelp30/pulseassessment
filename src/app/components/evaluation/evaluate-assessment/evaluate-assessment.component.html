@@ -1,12 +1,11 @@
 @if(!isLoading){
-
 <div class="min-h-screen bg-white shadow-xl rounded-xl">
   <!-- Evaluation Header -->
   <app-evaluation-header
     [assessmentName]="clickedData.assessmentName"
     [userMarks]="getUserTotalMarks()"
     [totalMarks]="getTotalMarks()"
-    [result]="clickedData.result"
+    (backClick)="onBackClick()"
   >
   </app-evaluation-header>
   <div class="p-4">
@@ -17,7 +16,7 @@
           attemptedQuestions.length
         }}</span>
       </p>
-      @for(question of attemptedQuestions;track attemptedQuestions){
+      @for(question of attemptedQuestions;track question.questionId){
       <app-question-display
         [question]="question"
         [options]="question.options"
@@ -30,7 +29,6 @@
       </app-question-display
       >}
     </div>
-
     <div>
       <h2 class="text-lg font-semibold">
         Unattempted Questions:
@@ -38,7 +36,7 @@
           notAttemptedQuestions.length
         }}</span>
       </h2>
-      @for(question of notAttemptedQuestions;track notAttemptedQuestions){
+      @for(question of notAttemptedQuestions;track question.questionId){
       <app-question-display
         [question]="question"
         [options]="question.options"
@@ -100,5 +98,4 @@
   <div class="flex justify-center mt-4 top-0">
     <div class="loader"></div>
   </div>
-</div>
-}
+</div>}

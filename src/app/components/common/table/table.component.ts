@@ -11,6 +11,7 @@ import { ButtonComponent } from '../button/button.component';
 import { SearchbarComponent } from '../searchbar/searchbar.component';
 import { FormsModule } from '@angular/forms';
 import { CamelCaseToSpacePipe } from './camel-case-to-space.pipe';
+import { TextCasePipe } from "./text-case.pipe";
 
 @Component({
   selector: 'app-table',
@@ -21,7 +22,8 @@ import { CamelCaseToSpacePipe } from './camel-case-to-space.pipe';
     SearchbarComponent,
     FormsModule,
     CamelCaseToSpacePipe,
-  ],
+    TextCasePipe
+],
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.css'],
 })
@@ -30,16 +32,16 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() tableData: any[] = [];
   @Input() tableColumns: string[] = [];
   @Input() columnAliases: { [key: string]: string[] } = {};
-  @Input() buttons: { 
-    label: string | ((row: any) => string);  
-    colorClass: string;  
-    action: Function; 
+  @Input() buttons: {
+    label: string | ((row: any) => string);
+    colorClass: string;
+    action: Function;
     icon?: string;
     title?: string;
     customClassFunction?: (row: any) => string;
     disableFunction?: (row: any) => boolean;
   }[] = [];
-  
+
   @Input() searchQuery: string = '';
   @Input() onSearchQueryChange: (newQuery: string) => void = () => {};
   @Input() tabs: string[] = [];
@@ -66,6 +68,18 @@ export class TableComponent implements OnInit, OnChanges {
   pageNumbers: number[] = [];
   isLoading: boolean = true;
   isPopupVisible: boolean = false;
+
+  columnConfig:any = {
+    subjectName: 'titlecase',
+    questionText: 'sentenceCase',
+    optionText: 'sentenceCase',
+    assessmentName: 'titlecase',
+    assessmentType: 'titlecase',
+    userName: 'titlecase',
+    status: 'titlecase',
+  };
+
+
 
   constructor(private fireBaseService: FireBaseService<any>) {}
 
@@ -163,7 +177,8 @@ export class TableComponent implements OnInit, OnChanges {
     // Update filtered data and pagination
     this.filteredData = filtered;
     this.totalPages = Math.ceil(this.filteredData.length / this.itemsPerPage);
-    this.currentPage = Math.min(this.currentPage, this.totalPages); // Ensure current page is within bounds
+
+    this.currentPage = Math.min(this.currentPage, this.totalPages); // Keep the current page within bounds
     this.generatePagination();
   }
   
@@ -297,7 +312,6 @@ export class TableComponent implements OnInit, OnChanges {
       .then(() => {
         this.isPopupVisible = true;
         this.copiedRow = row;
- 
         setTimeout(() => {
           this.isPopupVisible = false;
           this.copiedRow = null; // Clear the copied row after timeout
