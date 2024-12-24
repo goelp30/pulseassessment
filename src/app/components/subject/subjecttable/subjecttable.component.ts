@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { AuthService } from '../../../../sharedServices/auth.service';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Subject } from '../../../models/subject';
@@ -30,7 +30,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './subjecttable.component.html',
   styleUrls: ['./subjecttable.component.css'],
 })
-export class SubjectTableComponent  implements OnInit{
+export class SubjectTableComponent  implements OnInit, OnDestroy{
   // Data properties
   subjects: Subject[] = [];
   tableColumns: (keyof Subject)[] = ['subjectName'];
@@ -49,6 +49,7 @@ export class SubjectTableComponent  implements OnInit{
   selectedSubjectToDelete: Subject | null = null;
   eConfirmationVisible: boolean = false;
   SubjectToDelete:boolean=false;
+  getQuestionSub: Subscription;
  
  
 
@@ -101,7 +102,9 @@ addbuttonlabel:string='add';
     private subjectService: SubjectService, // Inject SubjectService
     private router: Router, // Inject Router
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    this.getQuestionSub = new Subscription();
+  }
 
   ngOnInit(): void {
     this.fetchSubjects();
@@ -248,7 +251,7 @@ addbuttonlabel:string='add';
       const subjectToDelete = this.selectedSubjectToDelete;
    
       // Fetch questions associated with the subject
-      this.fireBaseService.getAllDataByFilter('questions', 'subjectId', subjectToDelete.subjectId).subscribe(
+      this.getQuestionSub = this.fireBaseService.getAllDataByFilter('questions', 'subjectId', subjectToDelete.subjectId).subscribe(
         (questionsList: Question[]) => {
           // Check if any question has isQuesDisabled set to false
           const hasEnabledQuestions = questionsList.some((question) => !question.isQuesDisabled);
@@ -295,5 +298,9 @@ addbuttonlabel:string='add';
     } else {
       console.error('Subject ID or Subject Name is missing.');
     }
+  }
+
+  ngOnDestroy() {
+    this.getQuestionSub.unsubscribe();
   }
 }
