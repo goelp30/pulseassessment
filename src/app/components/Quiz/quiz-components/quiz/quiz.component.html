@@ -60,4 +60,7 @@
       <button (click)="closeReloadWarning()" class="btn btn-warning">I Understand</button>
     </div>
   </div>
+
+  <app-auto-submission-modal [show]="showAutoSubmitModal"
+    (onOkClick)="handleAutoSubmitOk()"></app-auto-submission-modal>
 </div>
