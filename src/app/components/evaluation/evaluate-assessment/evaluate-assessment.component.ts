@@ -15,25 +15,31 @@ import { PageLabelService } from '../../../../sharedServices/pagelabel.service';
   selector: 'app-evaluate-assessment',
   templateUrl: './evaluate-assessment.component.html',
   styleUrls: ['./evaluate-assessment.component.css'],
-  imports: [ QuestionDisplayComponent, CommonModule, ButtonComponent, FormsModule, EvaluationHeaderComponent ],
+  imports: [
+    QuestionDisplayComponent,
+    CommonModule,
+    ButtonComponent,
+    FormsModule,
+    EvaluationHeaderComponent,
+  ],
   standalone: true,
 })
 export class EvaluateAssessmentComponent implements OnInit {
   clickedData: any = {};
   successMessage: boolean = false;
   evaluationList: any[] = [];
-  attemptedQuestions: any[] = []; 
-  notAttemptedQuestions: any[] = []; 
+  attemptedQuestions: any[] = [];
+  notAttemptedQuestions: any[] = [];
   quizId: string = '';
   evaluationComplete: boolean | undefined;
   isLoading: boolean = false;
+  isEnteredMarksMoreThanQuestionWeightage: boolean = false;
   constructor(
     private evaluationService: EvaluationService,
     private toastr: ToastrService,
     private router: Router,
     private firebaseservice: FireBaseService<QuizAnswers>,
-    private pageLabelService: PageLabelService  
-
+    private pageLabelService: PageLabelService
   ) {}
 
   ngOnInit(): void {
@@ -103,16 +109,22 @@ export class EvaluateAssessmentComponent implements OnInit {
         }
       );
   }
+
   checkDescriptiveMarksEntered(): boolean {
-    return this.attemptedQuestions.every((question) => {
+    let allMarksValid = true;
+
+    this.attemptedQuestions.forEach((question) => {
       if (question.questionType === 'Descriptive') {
-        return (
-          question.assigned_marks !== undefined &&
-          question.assigned_marks !== null
-        );
+        const marks = question.assigned_marks;
+        const weightage = question.questionWeitage;
+
+        if (marks === undefined || marks === null || marks > weightage) {
+          allMarksValid = false;
+        }
       }
-      return true; 
     });
+
+    return allMarksValid;
   }
 
   categorizeQuestions(combinedData: any[]): void {
@@ -162,13 +174,13 @@ export class EvaluateAssessmentComponent implements OnInit {
           if (correctOptions.includes(answer)) correctCount++;
         });
         const marksPerCorrectAnswer =
-        question.questionWeitage / correctOptions.length;
+          question.questionWeitage / correctOptions.length;
         question.marks = correctCount * marksPerCorrectAnswer;
         const extraAnswersSelected =
-        selectedAnswers.length - correctOptions.length;
+          selectedAnswers.length - correctOptions.length;
         if (extraAnswersSelected > 0) {
           const penaltyPerExtraAnswer =
-          question.questionWeitage / correctOptions.length;
+            question.questionWeitage / correctOptions.length;
           question.marks -= extraAnswersSelected * penaltyPerExtraAnswer;
           if (question.marks < 0) question.marks = 0;
         }
@@ -193,24 +205,28 @@ export class EvaluateAssessmentComponent implements OnInit {
   }
 
   onMarksChange(question: any): void {
-    if (question.assigned_marks > question.questionWeitage) {
-      question.assigned_marks = question.questionWeitage; 
+    const marks = parseInt(question.assigned_marks || '0', 10);
+    const weightage = parseInt(question.questionWeitage || '0', 10);
+
+    // Ensure marks are within valid range
+    if (marks > weightage) {
+      question.assigned_marks = weightage; 
     }
 
-    if (question.questionType === 'Descriptive') {
-      question.marks = question.assigned_marks; 
-    }
+    // Update button state
+    this.successMessage = this.checkDescriptiveMarksEntered();
 
     this.getUserTotalMarks();
   }
-  onBackClick(){
-    sessionStorage.removeItem('clickedData');  
+
+  onBackClick() {
+    sessionStorage.removeItem('clickedData');
     this.router.navigate(['/evaluation']);
   }
 
   onSubmit(): void {
     if (!this.checkDescriptiveMarksEntered()) {
-      return; 
+      return;
     }
 
     if (!this.evaluationList || this.evaluationList.length === 0) {
@@ -226,7 +242,7 @@ export class EvaluateAssessmentComponent implements OnInit {
     // Set marks for descriptive questions if not already done
     this.evaluationList.forEach((question: any) => {
       if (question.questionType === 'Descriptive') {
-        question.marks = question.assigned_marks; 
+        question.marks = question.assigned_marks;
       }
     });
 
@@ -257,7 +273,7 @@ export class EvaluateAssessmentComponent implements OnInit {
           'Assessment evaluated and results saved successfully.',
           'Success'
         );
-        this.evaluationComplete = true; 
+        this.evaluationComplete = true;
         sessionStorage.removeItem('clickedData');
         this.router.navigate(['/view']);
       })

@@ -118,6 +118,10 @@
         (ngModelChange)="onMarksChange()"
         [disabled]="isDisabled"
       />
+      @if(showMarksError){
+        <div  class="text-red-600 text-xs mt-1">
+          <span>Marks cannot exceed the question weightage!</span>
+        </div>}
     </div>
 
     } @else {
