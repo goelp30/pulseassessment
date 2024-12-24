@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { AuthService } from '../../../../sharedServices/auth.service';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Subject } from '../../../models/subject';
@@ -30,7 +30,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './subjecttable.component.html',
   styleUrls: ['./subjecttable.component.css'],
 })
-export class SubjectTableComponent  implements OnInit{
+export class SubjectTableComponent  implements OnInit, OnDestroy{
   // Data properties
   subjects: Subject[] = [];
   tableColumns: (keyof Subject)[] = ['subjectName'];
@@ -49,6 +49,7 @@ export class SubjectTableComponent  implements OnInit{
   selectedSubjectToDelete: Subject | null = null;
   eConfirmationVisible: boolean = false;
   SubjectToDelete:boolean=false;
+  getQuestionSub: Subscription;
  
  
 
@@ -63,7 +64,7 @@ export class SubjectTableComponent  implements OnInit{
     },    
     {
       label: '',
-      icon: 'fas fa-cog px-2 text-xl',  // Font Awesome Manage Icon
+      icon: 'fas fa-cog px-2 text-lg ',  // Font Awesome Manage Icon
       colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-1',
       action: (row: any) => this.manageSubject(row),
       title:"Manage"
@@ -87,6 +88,8 @@ export class SubjectTableComponent  implements OnInit{
   CanDelete(row: any): boolean {
     return row.canDelete;
   }
+  
+
   modaltitle: string = 'Add Subject';
  private routerSubscription!: Subscription;
 addbuttonlabel:string='add';
@@ -99,7 +102,9 @@ addbuttonlabel:string='add';
     private subjectService: SubjectService, // Inject SubjectService
     private router: Router, // Inject Router
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    this.getQuestionSub = new Subscription();
+  }
 
   ngOnInit(): void {
     this.fetchSubjects();
@@ -116,7 +121,6 @@ addbuttonlabel:string='add';
       (data: Subject[]) => {
         this.subjects = data
           .filter(subject => !subject.isDisabled) // Exclude disabled subjects
-          .sort((a, b) => b.createdOn - a.createdOn); // Sort by 'createdOn' in descending order
         
         this.cdr.markForCheck(); // Trigger change detection manually
       },
@@ -149,7 +153,7 @@ addbuttonlabel:string='add';
       createdOn: Date.now(),
       UpdatedOn: Date.now(),
       isDisabled: false,
-      canDelete:true,
+      canDelete:true
     };
     this.isModalVisible = true;
     this.isAddModal = true;
@@ -245,38 +249,39 @@ addbuttonlabel:string='add';
   deleteSubject() {
     if (this.selectedSubjectToDelete) {
       const subjectToDelete = this.selectedSubjectToDelete;
-      subjectToDelete.isDisabled = true; // Mark the subject as disabled
-  
-      // First, update the subject to mark it as disabled
-      this.fireBaseService.update(`${this.tableName}/${subjectToDelete.subjectId}`, subjectToDelete)
-        .then(() => {
-          // Once the subject is marked as disabled, fetch all questions associated with the subject
-          this.fireBaseService.getAllDataByFilter('questions', 'isQuesDisabled', false).subscribe((questionsList: Question[]) => {
-            const questionsToUpdate = questionsList.filter((question) => question.subjectId === subjectToDelete.subjectId);
-  
-            // Disable all questions associated with this subject
-            const updatePromises = questionsToUpdate.map((question) => {
-              question.isQuesDisabled = true;
-              return this.fireBaseService.update(`questions/${question.questionId}`, question);
+   
+      // Fetch questions associated with the subject
+      this.getQuestionSub = this.fireBaseService.getAllDataByFilter('questions', 'subjectId', subjectToDelete.subjectId).subscribe(
+        (questionsList: Question[]) => {
+          // Check if any question has isQuesDisabled set to false
+          const hasEnabledQuestions = questionsList.some((question) => !question.isQuesDisabled);
+   
+          if (hasEnabledQuestions) {
+            // If any question is enabled, show a warning and do not delete
+            this.toastr.warning('Cannot delete this subject as it has active questions.', 'Warning', {
+              timeOut: 2000,
             });
-  
-            // Wait for all updates to complete
-            Promise.all(updatePromises)
+            this.eConfirmationVisible = false; // Close confirmation modal
+          } else {
+            // Proceed with deleting the subject
+            subjectToDelete.isDisabled = true; // Mark the subject as disabled
+            this.fireBaseService.update(`${this.tableName}/${subjectToDelete.subjectId}`, subjectToDelete)
               .then(() => {
-                this.toastr.success('Subject and related questions disabled successfully', 'Deleted');
-                this.eConfirmationVisible = false;
-                this.fetchSubjects();
+                this.toastr.success('Subject deleted successfully', 'Deleted');
+                this.eConfirmationVisible = false; // Close confirmation modal
+                this.fetchSubjects(); // Refresh the subject list
               })
               .catch((error) => {
-                console.error('Error updating related questions:', error);
-                this.toastr.error('Failed to update related questions', 'Error');
+                console.error('Error deleting subject:', error);
+                this.toastr.error('Failed to delete subject', 'Error');
               });
-          });
-        })
-        .catch((error) => {
-          console.error('Error deleting subject:', error);
-          this.toastr.error('Failed to delete subject', 'Error');
-        });
+          }
+        },
+        (error) => {
+          console.error('Error fetching questions:', error);
+          this.toastr.error('Failed to fetch associated questions', 'Error');
+        }
+      );
     }
   }
   
@@ -293,5 +298,9 @@ addbuttonlabel:string='add';
     } else {
       console.error('Subject ID or Subject Name is missing.');
     }
+  }
+
+  ngOnDestroy() {
+    this.getQuestionSub.unsubscribe();
   }
 }
