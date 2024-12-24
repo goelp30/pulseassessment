@@ -14,17 +14,19 @@ export class QuestionDisplayComponent {
   @Input() question: any;
   @Input() options: any[] = [];
   @Input() userAnswer: any;
-  @Input() answer: any; // For Descriptive answers
+  @Input() answer: any; 
   @Input() marks: number = 0;
   @Input() assignedMarks: number = 0;
-  @Input() isDisabled: boolean = false; // Ensure this is defined as an Input
+  @Input() isDisabled: boolean = false; 
   @Output() marksChanged = new EventEmitter<any>();
   isCopied: boolean = false;
+  showMarksError :boolean=false;  
+
   onMarksChange(): void {
     this.question.assigned_marks = this.question.assignedMarks;
-    this.marksChanged.emit(this.question); // Emit the question when marks change
+    this.showMarksError=this.question.assignedMarks > this.question. questionWeightage;
+    this.marksChanged.emit([this.question,this.showMarksError]);
   }
-
   // Copy to clipboard function
   copyToClipboard(text: string): void {
     const textarea = document.createElement('textarea');
@@ -33,8 +35,6 @@ export class QuestionDisplayComponent {
     textarea.select();
     document.execCommand('copy');
     document.body.removeChild(textarea);
-
-    // Optional: Show a success message
     this.isCopied = true;
     setTimeout(() => {
       this.isCopied = false;

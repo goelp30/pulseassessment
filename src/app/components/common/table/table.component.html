@@ -13,7 +13,7 @@
 
 <!-- Dynamic Tabs Section -->
 @if(tabs.length > 0){
-<div class="flex justify-center">
+<div class="flex justify-center mt-3">
   <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
     <div class="block w-full overflow-hidden md:w-max">
       <nav>
@@ -47,7 +47,7 @@
 <!-- Additional Filters Section (Conditionally Displayed for assessmentRecords) -->
 @if(showAdditionalFilters) {
 <div
-  class="flex flex-wrap justify-center sm:flex-nowrap items-center gap-4 sm:gap-6 mb-2 sm:mb-8"
+  class="flex flex-wrap justify-center mt-4 sm:flex-nowrap items-center gap-4 sm:gap-6 mb-2 sm:mb-8"
 >
   <!-- Dropdown for Filters -->
   <div class="w-full sm:w-auto">
@@ -96,15 +96,15 @@
 <!-- Table Section -->
 <div class="min-h-screen p-1 sm:p-8">
   <div class="bg-white shadow-xl min-h-screen rounded-xl p-6 sm:p-8">
-    <div class="overflow-x-auto min-h-screen">
+    <div class="overflow-x-auto">
       <table
         class="min-w-full bg-white border border-gray-300 rounded-lg text-sm sm:text-base"
       >
         <thead class="bg-custom-blue">
           <tr>
-            @for(column of tableColumns; track column){
+            @for(column of tableColumns; track $index){
             <th
-              class="px-4 sm:px-6 py-3 text-left text-white font-semibold border-b"
+              class="px-2 sm:px-6 py-3 text-left text-white font-semibold border-b"
             >
               {{ getColumnAliases(column)[0] || column }}
             </th>
@@ -119,41 +119,46 @@
         </thead>
         <tbody>
           @if(filteredData.length > 0){ @for(row of getPaginatedData(); track
-          row){
+          $index){
           <tr class="even:bg-gray-50">
             @for(column of tableColumns; track column){
-            <td class="px-4 sm:px-6 py-3 border-b">
+            <td class="px-2 sm:px-6 py-3 border-b">
               <p
                 class="text-blue-gray-900"
                 [ngClass]="
                   column === 'status' ? getStatusClass(row[column]) : ''
                 "
-               (click)="
-               column === 'url' ? copyToClipboard(row[column], row) : null
-             "
+                (click)="
+                  column === 'url' ? copyToClipboard(row[column], row) : null
+                "
                 style="cursor: pointer"
               >
+               
                 {{
                   row[column]?.length > 50
-                    ? (row[column] | titlecase | slice : 0 :10) + "..."
-                    : (row[column] | titlecase)
+                    ? (row[column]
+                        | textCase : columnConfig[column]
+                        | slice : 0 : 15) + "..."
+                    : (row[column] | textCase : columnConfig[column])
                 }}
               </p>
               <!-- Popup Notification -->
-              @if (showAdditionalFilters && isPopupVisible && column === 'url' && copiedRow===row)
-              {
+
+              @if (showAdditionalFilters && isPopupVisible && column === 'url'
+              && copiedRow===row) {
+
               <div class="link_copy">Link copied!</div>
               }
             </td>
             }
-            <td class="px-4 sm:px-6 py-3 border-b">
+            <td class="px-2 sm:px-6 py-3 border-b">
               <div class="flex justify-center gap-3">
                 @for(button of buttons; track button){
                   <app-button
                   [label]="getButtonLabel(button, row)"
                   [colorClass]="getCustomButtonClasses(button, row)"
-                  [icon]="button.icon" 
-                  [title] = "button.title"
+                  [icon]="button.icon"
+                  [title]="button.title"
                   (action)="button.action(row)"
                   [disabled]="isButtonDisabled(button, row)"
                 ></app-button>

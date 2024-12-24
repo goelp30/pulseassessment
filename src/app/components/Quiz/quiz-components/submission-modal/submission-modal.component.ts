@@ -6,8 +6,8 @@ import { Question } from '../../../../models/question';
   selector: 'app-submission-modal',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: "submission-modal.component.html",
-  styleUrl: "submission-modal.component.css",
+  templateUrl: 'submission-modal.component.html',
+  styleUrl: 'submission-modal.component.css',
 })
 export class SubmissionModalComponent {
   @Input() show = false;
@@ -23,16 +23,18 @@ export class SubmissionModalComponent {
         return question.descriptiveAnswer?.trim() ? count + 1 : count;
       } else {
         // For MCQ/Single choice, check selectedAnswer
-        return question.selectedAnswer && 
-               (Array.isArray(question.selectedAnswer) ? 
-                question.selectedAnswer.length > 0 : 
-                question.selectedAnswer !== null) ? count + 1 : count;
+        return question.selectedAnswer &&
+          (Array.isArray(question.selectedAnswer)
+            ? question.selectedAnswer.length > 0
+            : question.selectedAnswer !== null)
+          ? count + 1
+          : count;
       }
     }, 0);
   }
 
   getMarkedForReviewCount(): number {
-    return this.questions.filter(q => q.isMarkedForReview).length;
+    return this.questions.filter((q) => q.isMarkedForReview).length;
   }
 
   getNotAttemptedCount(): number {

@@ -1,9 +1,16 @@
-<h1
-  class="text-3xl font-semibold  text-center p-3 rounded-t-lg bg-custom-blue text-white"
->
-  {{ assessmentName }}
-</h1>
-<!-- Marks Scored Section (Aligned to the Right) -->
+<app-button
+  [icon]="'fa fa-arrow-left'"
+  [label]="'Back'"
+  [colorClass]="'px-3 py-2 bg-custom-blue text-white rounded-lg transition-opacity mb-2 space-x-2'"
+  (click)="onBackClick()"
+></app-button>
+
+<div class="flex items-center p-3 bg-custom-blue text-white rounded-t-lg">
+  <h1 class="text-3xl font-semibold text-center flex-grow">
+    {{ assessmentName }}
+  </h1>
+</div>
+
 <div class="text-end p-3">
   <div class="text-lg font-semibold">
     <span>Marks Scored:</span>
@@ -12,23 +19,19 @@
         'text-red-600': userMarks === 0,
         'text-green-600': totalMarks !== 0
       }"
-      class="font-semibold"
-    >
+      class="font-semibold">
       {{ userMarks || 0 }} / {{ totalMarks }}
     </span>
   </div>
-  <!-- Result Section (Only shown if result is provided) -->
-  @if(result) {
-    <div class="text-lg font-semibold">
-      <span>Result: </span>
-      <span
+  @if(result){
+  <div class="text-lg font-semibold">
+    <span>Result: </span>
+    <span
       [ngClass]="{
-        'text-green-600': calculateResult() === 'Pass',
-        'text-red-600': calculateResult() === 'Fail'
-      }"
-    >
-      {{ calculateResult() }}
+        'text-green-600': result === 'Pass',
+        'text-red-600': result === 'Fail'
+      }">
+      {{ result }}
     </span>
-    </div>
-  }
+  </div>}
 </div>

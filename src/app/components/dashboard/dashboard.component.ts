@@ -18,7 +18,7 @@ export class DashboardComponent implements OnInit {
   userFirstName: string = '';
 
   navItems = [
-    { label: 'Manage Subjects', route: '/subjects', icon: 'fas fa-plus' },
+    { label: 'Manage Subjects', route: '/subjects', icon: 'fas fa-book' },
     { label: 'Manage Assessment', route: '/assessment-list', icon: 'fas fa-clipboard-list' },
     { label: 'Generate Link', route: '/generatelink', icon: 'fas fas fa-link' },
     { label: 'Assessment Records', route: '/assessmentrecords', icon: 'fas fa-history' },
@@ -30,7 +30,8 @@ export class DashboardComponent implements OnInit {
     '/generatelink': 'Generate Link',
     '/assessment-list': 'Manage Assessment',
     '/assessmentrecords': 'Assessment Records',
-    '/evaluation': 'Evaluate Assessments'
+    '/evaluation': 'Evaluate Assessments',
+    '/drag-and-drop':'Add Assessment'
   };
 
   constructor(

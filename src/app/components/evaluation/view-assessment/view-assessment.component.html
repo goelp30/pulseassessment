@@ -6,10 +6,9 @@
       [userMarks]="getUserMarks()"
       [totalMarks]="getTotalMarks()"
       [result]="clickedData.result"
-    >
+      (backClick)="onSubmit()">
     </app-evaluation-header>
     <div class="p-4">
-      <!-- Attempted Questions Section -->
       <div class="mb-6">
         <h2 class="text-lg font-semibold mb-2">
           Attempted Questions:
@@ -17,8 +16,7 @@
             attemptedQuestions.length
           }}</span>
         </h2>
-        <!-- Keep the @for loop as is -->
-        @for(question of attemptedQuestions; track attemptedQuestions) {
+        @for(question of attemptedQuestions; track question.questionId) {
         <div>
           <app-question-display
             [question]="question"
@@ -33,7 +31,6 @@
         </div>
         }
       </div>
-  
       <!-- Not Attempted Questions Section -->
       <div class="mb-6">
         <h2 class="text-lg font-semibold mb-2">
@@ -42,7 +39,7 @@
             notAttemptedQuestions.length
           }}</span>
         </h2>
-        @for(question of notAttemptedQuestions; track notAttemptedQuestions) {
+        @for(question of notAttemptedQuestions; track question.questionId) {
         <div>
           <app-question-display
             [question]="question"
@@ -51,8 +48,7 @@
             [answer]="question.answer"
             [marks]="question.marks"
             [assignedMarks]="question.assigned_marks"
-            [isDisabled]="true"
-          >
+            [isDisabled]="true">
           </app-question-display>
         </div>
         }
@@ -65,6 +61,4 @@
     <div class="flex justify-center mt-4 top-0">
       <div class="loader"></div>
     </div>
-  </div>
-    }
-  
+  </div>}

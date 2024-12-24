@@ -4,12 +4,10 @@
       <span class="text-gray-600">Question {{ questionNumber }} of {{ totalQuestions }}:</span>
       <span class="ml-2 font-medium">{{ question.questionText }}</span>
     </h2>
-    <button 
-      (click)="onReviewToggle()"
-      class="px-6 py-2 rounded-full text-white text-sm"
-      [class.bg-yellow-400]="question.isMarkedForReview"
-      [class.bg-blue-500]="!question.isMarkedForReview">
-      Mark for Review
+    <button (click)="onReviewToggle()"
+      class="px-6 py-2 text-white text-sm rounded-md transition-opacity hover:opacity-80"
+      [class.bg-yellow-400]="question.isMarkedForReview" [class.bg-custom-blue]="!question.isMarkedForReview">
+      Marked for Review
     </button>
   </div>
 
@@ -17,22 +15,19 @@
     <ng-container [ngSwitch]="question.questionType">
       <!-- Single Choice -->
       <ng-container *ngSwitchCase="'Single'">
-        <div 
-          *ngFor="let option of options"
-          class="flex items-center p-4 bg-white rounded-lg border cursor-pointer transition-colors hover:bg-blue-100"
-          [class.border-blue-500]="isOptionSelected(option.optionId)"
-          (click)="selectOption(option.optionId, $event)">
-          <input 
-            #radioInput
-            type="radio" 
-            [id]="'option' + option.optionId" 
-            [name]="'question' + question.questionId" 
-            [value]="option.optionId" 
-            [checked]="isOptionSelected(option.optionId)"
+        <div *ngFor="let option of options"
+          class="flex items-center p-4 rounded-lg border cursor-pointer mb-3 transition-all duration-200" [ngClass]="{
+            'bg-blue-50': isOptionSelected(option.optionId),
+            'bg-white hover:bg-blue-50': !isOptionSelected(option.optionId),
+            'border-blue-500': isOptionSelected(option.optionId),
+            'border-gray-200': !isOptionSelected(option.optionId)
+          }" (click)="selectOption(option.optionId, $event)">
+          <input #radioInput type="radio" [id]="'option' + option.optionId" [name]="'question' + question.questionId"
+            [value]="option.optionId" [checked]="isOptionSelected(option.optionId)"
             class="h-4 w-4 text-blue-600 focus:ring-blue-500 cursor-pointer"
             (change)="selectOption(option.optionId, $event)">
           <label [for]="'option' + option.optionId" class="ml-3 cursor-pointer w-full">
-            <div class="w-full">
+            <div class="w-full text-gray-700">
               {{ option.optionText }}
             </div>
           </label>
@@ -41,22 +36,20 @@
 
       <!-- Multi Choice -->
       <ng-container *ngSwitchCase="'Multi'">
-        <div 
-          *ngFor="let option of options"
-          class="flex items-center p-4 bg-white rounded-lg border cursor-pointer transition-colors hover:bg-blue-100"
-          [class.border-blue-500]="isOptionSelected(option.optionId)"
-          (click)="selectOption(option.optionId, $event)">
-          <input 
-            #checkboxInput
-            type="checkbox" 
-            [id]="'option' + option.optionId" 
-            [name]="'question' + question.questionId" 
-            [value]="option.optionId" 
+        <div *ngFor="let option of options"
+          class="flex items-center p-4 rounded-lg border cursor-pointer mb-3 transition-all duration-200" [ngClass]="{
+            'bg-blue-50': isOptionSelected(option.optionId),
+            'bg-white hover:bg-blue-50': !isOptionSelected(option.optionId),
+            'border-blue-500': isOptionSelected(option.optionId),
+            'border-gray-200': !isOptionSelected(option.optionId)
+          }" (click)="selectOption(option.optionId, $event)">
+          <input #checkboxInput type="checkbox" [id]="'option' + option.optionId"
+            [name]="'question' + question.questionId" [value]="option.optionId"
             [checked]="isOptionSelected(option.optionId)"
             class="h-4 w-4 text-blue-600 focus:ring-blue-500 cursor-pointer"
             (change)="selectOption(option.optionId, $event)">
           <label [for]="'option' + option.optionId" class="ml-3 cursor-pointer w-full">
-            <div class="w-full">
+            <div class="w-full text-gray-700">
               {{ option.optionText }}
             </div>
           </label>
@@ -65,11 +58,8 @@
 
       <!-- Descriptive -->
       <ng-container *ngSwitchCase="'Descriptive'">
-        <textarea
-          [(ngModel)]="currentDescriptiveAnswer"
-          (ngModelChange)="onDescriptiveAnswerChange($event)"
-          (focus)="onTextAreaFocus()"
-          rows="6"
+        <textarea [(ngModel)]="currentDescriptiveAnswer" (ngModelChange)="onDescriptiveAnswerChange($event)"
+          (focus)="onTextAreaFocus()" rows="6"
           class="w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="Type your answer here...">
         </textarea>

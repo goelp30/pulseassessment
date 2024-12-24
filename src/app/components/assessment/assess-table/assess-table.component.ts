@@ -60,13 +60,16 @@ export class AssessTableComponent {
   selectedAssessmentToDelete: Assessment | null = null;
   searchPlaceholder: string = 'Search Assessments...';
 
+
   // For handling tabs
   selectedTab: string = 'all';
   // disableFunction: (row: any) => this.isEditDisabled(row),
   buttons = [
     {
-      label: 'Edit',
-      colorClass: 'bg-blue-500 py-2 px-4 text-white rounded-md',
+      label: '',
+      icon:'fa fa-pen px-2 text-lg',
+      colorClass: 'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-1 ',
+      title:"Edit",
       action: (row: any) => this.editAssessment(row),
       customClassFunction: (row: any) => {
         return row.isLinkGenerated
@@ -76,9 +79,17 @@ export class AssessTableComponent {
       disableFunction: (row: any) => this.isEditDisabled(row),
     },
     {
-      label: 'Delete',
-      colorClass: 'bg-red-500 py-2 px-4 text-white rounded-md',
+      label: '',
+      icon:'fa fa-trash px-2 text-lg',
+      title:"Delete",
+      colorClass: 'bg-red-500 hover:opacity-80 transition-opacity text-white rounded-md px-4 py-1',
       action: (row: any) => this.confirmDelete(row),
+      customClassFunction: (row: any) => {
+        return row.isLinkGenerated
+          ? 'bg-gray-500 py-2 px-4 text-gray-800 rounded-md  cursor-not-allowed'
+          : 'bg-red-500 hover:opacity-80 transition-opacity text-white py-2 px-4 text-white rounded-md';
+      },
+      disableFunction: (row: any) => this.isEditDisabled(row),
     },
   ];
 
@@ -98,6 +109,7 @@ export class AssessTableComponent {
   onSearchQueryChange(newQuery: string): void {
     this.searchQuery = newQuery;
   }
+  // getting all assessments
   getAssessments() {
     this.fireBaseService
       .getAllDataByFilter(this.tableName, 'isDisabled', false)
@@ -114,71 +126,28 @@ export class AssessTableComponent {
     this.selectedAssessmentToDelete = assessment;
     this.eConfirmationVisible = true;
   }
-  // Proceed with the deletion of the assessment
   deleteAssessment() {
     if (this.selectedAssessmentToDelete) {
-      const assessmentToDelete = this.selectedAssessmentToDelete;
-      assessmentToDelete.isDisabled = true; // Mark as disabled in the Assessment table
-
-      // First, update the 'Assessment' table to mark it as disabled
+      const assessmentToDelete = { ...this.selectedAssessmentToDelete }; // Create a copy of the selected assessment to delete
+      assessmentToDelete.isDisabled = true; // Mark the assessment as disabled (soft delete)
+  
+      // Update the assessment in the Firestore or your database to set isDisabled as true
       this.fireBaseService
-        .update(
-          `${this.tableName}/${assessmentToDelete.assessmentId}`,
-          assessmentToDelete
-        )
+        .update(`${this.tableName}/${assessmentToDelete.assessmentId}`, assessmentToDelete)
         .then(() => {
-          // Once the assessment is marked as disabled, update the related AssessmentList entries
-
-          // Get all AssessmentList entries and update the ones that reference this assessmentId
-          this.fireBaseService
-            .getAllDataByFilter(this.assessmentListTable, 'isDisable', false)
-            .subscribe((assessmentList: AssessmentList[]) => {
-              const assessmentsToUpdate = assessmentList.filter(
-                (entry) =>
-                  entry.assessmentId === assessmentToDelete.assessmentId
-              );
-
-              // For each AssessmentList entry related to the deleted assessment
-              const updatePromises = assessmentsToUpdate.map((assessment) => {
-                assessment.isDisable = true; // Mark as disabled in the AssessmentList table
-                return this.fireBaseService.update(
-                  `${this.assessmentListTable}/${assessment.assessmentId}`,
-                  assessment
-                );
-              });
-
-              // Wait for all updates to be completed
-              Promise.all(updatePromises)
-                .then(() => {
-                  // Show success toast only once after everything is updated
-                  this.toastr.success(
-                    'Assessment deleted successfully',
-                    'Deleted'
-                  );
-                  this.eConfirmationVisible = false; // Close the modal
-                  this.getAssessments(); // Refresh the assessments list after deletion
-                })
-                .catch((error) => {
-                  console.error(
-                    'Error updating AssessmentList entries:',
-                    error
-                  );
-                  this.toastr.error(
-                    'Failed to update related records',
-                    'Error'
-                  );
-                });
-            });
+          // Show success toast if the assessment is marked as disabled
+          this.toastr.error('Assessment deleted successfully', 'Deleted', { timeOut: 1000 });
+          this.getAssessments(); // Refresh the assessments list to reflect the change
+          this.eConfirmationVisible = false; // Close the delete confirmation modal
         })
         .catch((error) => {
-          console.error('Error deleting assessment:', error);
-          this.toastr.error('Failed to delete assessment', 'Error');
+          // Handle errors if the update fails
+          console.error('Error disabling assessment:', error);
+          this.toastr.error('Failed to delete assessment', 'Error', { timeOut: 1000 });
         });
     }
   }
-
-  // View the details of the assessment and related subjects
-  // In AssessTableComponent (TypeScript)
+  
   viewAssessment(row: any) {
     this.selectedAssessment = { ...row };
     this.isEditMode = false;

@@ -1,9 +1,17 @@
-<app-header
+<!-- <app-header
  
   [buttonLabel]="'Add Assessment'"
   [buttonClasses]="'bg-custom-blue hover:opacity-80 transition-opacity text-white py-2 px-4 text-white rounded-md'"
   (addSubjectEvent)="RouteAssessment()">
-</app-header>
+</app-header> -->
+<div class="flex justify-end">
+  <app-button
+    [icon]="'fa fa-plus'"
+    [label]="'Add'"
+    [colorClass]="'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-2 space-x-2'"
+    (action)="RouteAssessment()"
+  ></app-button>
+</div>
 <app-assess-table></app-assess-table>
-<!--  [title]="'Assessment'"
-  [subtitle]="'Add your Assessments Here'" -->
+
+ 

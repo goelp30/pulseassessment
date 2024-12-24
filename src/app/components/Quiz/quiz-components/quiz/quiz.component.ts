@@ -13,11 +13,17 @@ import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
 import { assessmentRecords } from '../../../../models/assessmentRecords';
 
 @Component({
-  standalone:true,
-  imports: [CommonModule, QuestionDisplayComponent, QuestionNavigatorComponent, QuizTimerComponent, SubmissionModalComponent],
+  standalone: true,
+  imports: [
+    CommonModule,
+    QuestionDisplayComponent,
+    QuestionNavigatorComponent,
+    QuizTimerComponent,
+    SubmissionModalComponent,
+  ],
   selector: 'app-quiz',
   templateUrl: './quiz.component.html',
-  styleUrl:'./quiz.component.css'
+  styleUrl: './quiz.component.css',
 })
 export class QuizComponent implements OnInit, OnDestroy {
   questions: Question[] = [];
@@ -26,11 +32,13 @@ export class QuizComponent implements OnInit, OnDestroy {
   loading = true;
   userId: string = '';
   assessmentId: string = '';
-  showModal = false; 
+  showModal = false;
   totalQuestionTime: number = 0; // New property to store total question time
   reloadCount = 0;
   showReloadWarningModal = false;
   private beforeUnloadListener: any;
+  private passingPercentage: number = 40; // You can adjust this value as needed
+  isAutoEvaluated: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -65,7 +73,9 @@ export class QuizComponent implements OnInit, OnDestroy {
         this.showReloadWarningModal = true;
       } else if (this.reloadCount >= 2) {
         this.router.navigate(['/invalid']);
-        this.toastService.showError('Quiz terminated due to multiple page refreshes');
+        this.toastService.showError(
+          'Quiz terminated due to multiple page refreshes'
+        );
       }
     }
   }
@@ -78,50 +88,56 @@ export class QuizComponent implements OnInit, OnDestroy {
     const state = window.history.state;
     if (state?.assessmentId) {
       this.assessmentId = state.assessmentId;
-      this.quizAnswerService.setAssessmentId(this.assessmentId);  // Set userId in the service
+      this.quizAnswerService.setAssessmentId(this.assessmentId); // Set userId in the service
       console.log('Assessment ID from state:', this.assessmentId);
     } else {
       console.error('Assessment ID not found in router state');
       return;
     }
-    if (state?.userId) { //--------
+    if (state?.userId) {
+      //--------
       this.userId = state.userId;
-      this.quizAnswerService.setUserId(this.userId);  // Set userId in the service  
+      this.quizAnswerService.setUserId(this.userId); // Set userId in the service
     }
 
     this.loadAssessmentData();
   }
 
-
-  
   private loadAssessmentData(): void {
     this.loading = true;
 
-    this.quizService.getAssessmentById(this.assessmentId).subscribe((assessment) => {
-      if (assessment) {
-        console.log('Found assessment:', assessment);
-        this.quizService.getQuestionsBySubjects(Object.keys(assessment.subjects)).subscribe(
-          (questions) => {
-            this.questions = this.quizService.filterQuestionsByDifficulty(
-              questions,
-              assessment
-            );
+    this.quizService
+      .getAssessmentById(this.assessmentId)
+      .subscribe((assessment) => {
+        if (assessment) {
+          console.log('Found assessment:', assessment);
+          this.quizService
+            .getQuestionsBySubjects(Object.keys(assessment.subjects))
+            .subscribe((questions) => {
+              this.questions = this.quizService.filterQuestionsByDifficulty(
+                questions,
+                assessment
+              );
 
-            // Calculate total question time
-            this.totalQuestionTime = this.questions.reduce((total, question) => total + question.questionTime, 0);
+              // Calculate total question time
+              this.totalQuestionTime = this.questions.reduce(
+                (total, question) => total + question.questionTime,
+                0
+              );
 
-            const questionIds = this.questions.map((q) => q.questionId);
-            this.quizService.getOptionsForQuestions(questionIds).subscribe((options) => {
-              this.options = options;
-              this.loading = false;
+              const questionIds = this.questions.map((q) => q.questionId);
+              this.quizService
+                .getOptionsForQuestions(questionIds)
+                .subscribe((options) => {
+                  this.options = options;
+                  this.loading = false;
+                });
             });
-          }
-        );
-      } else {
-        console.error('Assessment not found!');
-        this.loading = false;
-      }
-    });
+        } else {
+          console.error('Assessment not found!');
+          this.loading = false;
+        }
+      });
   }
 
   get currentQuestionData(): Question {
@@ -132,14 +148,14 @@ export class QuizComponent implements OnInit, OnDestroy {
     return this.options[this.currentQuestionData?.questionId.toString()] || [];
   }
 
-
   isNextButtonDisabled(): boolean {
     const currentQuestion = this.questions[this.currentQuestion];
-    const currentQuestionAnswer = this.quizAnswerService.getUserAnswers()[currentQuestion?.questionId];
-    
+    const currentQuestionAnswer = 
+      this.quizAnswerService.getUserAnswers()[currentQuestion?.questionId];
+
     // Check if the current question is the last question
     const isLastQuestion = this.currentQuestion === this.questions.length - 1;
-  
+
     if (isLastQuestion) {
       return true;
     }
@@ -155,12 +171,12 @@ export class QuizComponent implements OnInit, OnDestroy {
     }
 
     // For other question types, check for answers
-    return !currentQuestionAnswer?.userAnswer?.length;
+    return !(currentQuestionAnswer?.userAnswer?.length > 0);
   }
-  
 
   onAnswerSelect(optionId: string) {
-    const isDescriptive = this.currentQuestionData.questionType === 'Descriptive';
+    const isDescriptive =
+      this.currentQuestionData.questionType === 'Descriptive';
     let marks = '0';
     let userAnswers: string[] = [];
 
@@ -168,25 +184,30 @@ export class QuizComponent implements OnInit, OnDestroy {
       if (this.currentQuestionData.questionType === 'Single') {
         // For single choice, always override with new selection
         userAnswers = [optionId];
-        
+
         // Update the question's selected answer
         this.questions[this.currentQuestion].selectedAnswer = optionId;
       } else {
         // For multi choice, get current state from the question component
-        userAnswers = Array.isArray(this.questions[this.currentQuestion].selectedAnswer) ? 
-                     [...this.questions[this.currentQuestion].selectedAnswer] : [];
+        userAnswers = Array.isArray(
+          this.questions[this.currentQuestion].selectedAnswer
+        )
+          ? [...this.questions[this.currentQuestion].selectedAnswer]
+          : [];
       }
 
-      marks = this.quizService.evaluateAutoScoredQuestions(
-        this.currentQuestionData,
-        this.currentQuestionOptions,
-        userAnswers
-      ).toString();
+      marks = this.quizService
+        .evaluateAutoScoredQuestions(
+          this.currentQuestionData,
+          this.currentQuestionOptions,
+          userAnswers
+        )
+        .toString();
 
       console.log('Answer Updated:', {
         questionId: this.currentQuestionData.questionId,
         userAnswers,
-        calculatedMarks: marks
+        calculatedMarks: marks,
       });
 
       // Store and override the answer in Firebase
@@ -230,25 +251,31 @@ export class QuizComponent implements OnInit, OnDestroy {
     }
   }
 
-
   allQuestionsVisited(): boolean {
     return this.questions.every((question) => {
       if (question.isVisited) return true;
-      
-      const currentQuestionAnswer = this.quizAnswerService.getUserAnswers()[question?.questionId];
-      const descriptiveAnswer = question?.descriptiveAnswer?.trim();
-      
-      return (currentQuestionAnswer?.userAnswer?.length ?? 0) > 0 || 
-             (descriptiveAnswer?.length ?? 0) > 0;
+
+      const currentQuestionAnswer =
+        this.quizAnswerService.getUserAnswers()[question?.questionId];
+      const descriptiveAnswer = currentQuestionAnswer?.answer?.trim();
+
+      return (
+        (currentQuestionAnswer?.userAnswer?.length ?? 0) > 0 ||
+        (descriptiveAnswer?.length ?? 0) > 0
+      );
     });
   }
-  
-  
 
-  onDescriptiveAnswerChange(answerData: { questionId: string, answer: string }) {
+  onDescriptiveAnswerChange(answerData: {
+    questionId: string;
+    answer: string;
+  }) {
     console.log('Descriptive answer received:', answerData);
-    
-    if (this.currentQuestionData && this.currentQuestionData.questionType === 'Descriptive') {
+
+    if (
+      this.currentQuestionData &&
+      this.currentQuestionData.questionType === 'Descriptive'
+    ) {
       // Store descriptive answer
       this.quizAnswerService.storeAnswer(
         answerData.questionId,
@@ -259,16 +286,19 @@ export class QuizComponent implements OnInit, OnDestroy {
       );
 
       // Mark question as visited
-      const questionIndex = this.questions.findIndex(q => q.questionId === answerData.questionId);
+      const questionIndex = this.questions.findIndex(
+        (q) => q.questionId === answerData.questionId
+      );
       if (questionIndex !== -1) {
         this.questions[questionIndex].isVisited = true;
-        this.questions[questionIndex].descriptiveAnswer = answerData.answer.trim();
+        this.questions[questionIndex].descriptiveAnswer =
+          answerData.answer.trim();
       }
 
       console.log('Descriptive Answer Stored:', {
         questionId: answerData.questionId,
         answer: answerData.answer,
-        question: this.questions[questionIndex]
+        question: this.questions[questionIndex],
       });
     }
   }
@@ -287,80 +317,131 @@ export class QuizComponent implements OnInit, OnDestroy {
       });
   }
 
-  submitQuiz() {
+  submitQuiz(isAutoSubmit: boolean = false) {
     console.log('Quiz submitted:', this.questions);
-    
+
     const userAnswers = this.quizAnswerService.getUserAnswers();
     let totalMarks = 0;
+    let totalPossibleMarks = 0;
     let hasDescriptiveAnswers = false;
-    
+    let hasAttemptedAnyQuestion = false;
+    let descriptiveQuestionsCount = 0;
+    let attemptedDescriptiveCount = 0;
+
     this.questions.forEach((question) => {
       const answer = userAnswers[question.questionId];
       let marks = '0';
 
+      // Add marks to total possible marks if it's not a descriptive question
+      if (question.questionType !== 'Descriptive') {
+        totalPossibleMarks += question.marks;
+      }
+
       if (question.questionType === 'Descriptive') {
-        if (answer?.answer && answer.answer.trim()) {
+        descriptiveQuestionsCount++;
+        const descriptiveAnswer = answer?.answer?.trim() || '';
+        if (descriptiveAnswer) {
           hasDescriptiveAnswers = true;
-          console.log('Descriptive answer found:', {
-            questionId: question.questionId,
-            answer: answer.answer
-          });
-          
-          // Store descriptive answer for evaluation
-          this.quizAnswerService.storeAnswer(
-            question.questionId,
-            true,
-            [],
-            '0',
-            answer.answer.trim()
-          );
+          attemptedDescriptiveCount++;
         }
-      } else if (answer) {
-        // Handle non-descriptive questions as before
-        marks = this.quizService.evaluateAutoScoredQuestions(
-          question,
-          this.options[question.questionId] || [],
-          answer.userAnswer
-        ).toString();
-        totalMarks += Number(marks);
+
+        this.quizAnswerService.storeAnswer(
+          question.questionId,
+          true,
+          [],
+          '0',
+          descriptiveAnswer
+        );
+      } else {
+        const userAnswer = answer?.userAnswer || [];
+
+        if (userAnswer.length > 0) {
+          hasAttemptedAnyQuestion = true;
+          marks = this.quizService
+            .evaluateAutoScoredQuestions(
+              question,
+              this.options[question.questionId] || [],
+              userAnswer
+            )
+            .toString();
+          totalMarks += Number(marks);
+        }
 
         this.quizAnswerService.storeAnswer(
           question.questionId,
           false,
-          answer.userAnswer || [],
+          userAnswer,
           marks,
           ''
         );
       }
     });
 
+    // Calculate if auto evaluation is applicable
+    this.isAutoEvaluated = descriptiveQuestionsCount === 0 || 
+                          (descriptiveQuestionsCount > 0 && attemptedDescriptiveCount === 0);
+
+    // Calculate pass/fail status if auto evaluated
+    let isPassed = false;
+    let percentageScored = 0;
+    
+    if (this.isAutoEvaluated && totalPossibleMarks > 0) {
+      percentageScored = (totalMarks / totalPossibleMarks) * 100;
+      isPassed = percentageScored >= this.passingPercentage;
+    }
+
     console.log('Final Quiz Results:', {
       totalMarks,
+      totalPossibleMarks,
+      percentageScored,
+      isPassed,
+      isAutoEvaluated: this.isAutoEvaluated,
       totalQuestions: this.questions.length,
       hasDescriptiveAnswers,
-      userAnswers
+      hasAttemptedAnyQuestion,
+      descriptiveQuestionsCount,
+      attemptedDescriptiveCount,
+      userAnswers,
+      isAutoSubmit,
     });
 
-    // Submit the quiz with the calculated marks
-    this.quizAnswerService.submitQuiz(this.questions, totalMarks);
-    
-    if (hasDescriptiveAnswers) {
-      this.toastService.showInfo('Quiz submitted successfully! Descriptive answers will be evaluated by the examiner.');
-    } else {
-      this.toastService.showSuccess('Quiz submitted successfully! You will receive your results shortly.');
+    // If no descriptive questions are attempted, treat it as auto-evaluation
+    if (descriptiveQuestionsCount > 0 && attemptedDescriptiveCount === 0) {
+      this.toastService.showInfo(
+        'No descriptive answers provided. Evaluating based on objective questions only.'
+      );
+      hasDescriptiveAnswers = false;
     }
-    
+
+    // Submit all questions with the calculated marks and evaluation status
+    this.quizAnswerService.submitQuiz(
+      this.questions, 
+      totalMarks,
+      this.isAutoEvaluated,
+      isPassed
+    );
+
+    if (hasDescriptiveAnswers) {
+      this.toastService.showInfo(
+        'Quiz submitted successfully! Descriptive answers will be evaluated by the examiner.'
+      );
+    } else {
+      this.toastService.showSuccess(
+        `Quiz submitted successfully!`
+      );
+    }
+
     this.updateAssessmentRecord();
     this.showModal = false;
+    this.router.navigate(['/thank-you']);
   }
 
   submitFinalQuiz() {
-    
     this.showModal = true;
   }
 
   handleTimeUp() {
-    this.submitQuiz();
+    this.submitQuiz(true); // Pass true to indicate auto-submit
     this.toastService.showInfo("Time's up! We'll submit your quiz now.");
   }
 
