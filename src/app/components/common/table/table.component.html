@@ -132,6 +132,7 @@
                   column === 'url' ? copyToClipboard(row[column], row) : null
                 "
                 style="cursor: pointer"
+                [title]="row[column]"
               >
                
                 {{

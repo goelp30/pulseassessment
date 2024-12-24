@@ -48,6 +48,7 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() filterKey: string = '';
   @Input() tabAliases: { [key: string]: string } = {};
   @Input() searchPlaceholder: string = 'Search';
+  @Input() rowHoverTitleColumn: string = '';
 
   @Input() filterOptions: string[] = [];
   @Input() statusOptions: string[] = [];

@@ -27,7 +27,9 @@
   [searchQuery]="searchQuery"
   [onSearchQueryChange]="onSearchQueryChange.bind(this)"
   [buttons]="buttons"
-></app-table> 
+  [rowHoverTitleColumn]="'questionText'"
+></app-table>
+
 
 <div *ngIf="isQuestionModalVisible" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 p-4">
   <!-- Modal Box with internal scroll -->
@@ -36,7 +38,7 @@
     <div class="p-4 max-h-[90vh] overflow-y-auto">
       <app-questionmodal
       [question]="selectedQuestion"
-      [buttonLabel]="isAddModal ? 'Add' : 'Update'"
+      [buttonLabel]="isAddModal ? 'Save' : 'Update'"
       [isAddModal]="isAddModal"
       (closeModal)="handleCloseModal()">
     </app-questionmodal>
