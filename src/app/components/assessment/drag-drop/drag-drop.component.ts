@@ -282,7 +282,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   
       if (availableCounts) {
         if (value > availableCounts[countKey]) {
-          warningMessage = `The number of ${controlName.charAt(0).toUpperCase() + controlName.slice(1)} questions cannot exceed ${availableCounts[countKey]} for this subject.`;
+          warningMessage = `Available ${controlName.charAt(0).toUpperCase() + controlName.slice(1)} questions : ${availableCounts[countKey]} `;
         }
         if (value > 5) {
           warningMessage = `${controlName.charAt(0).toUpperCase() + controlName.slice(1)} value cannot exceed 5!`;
