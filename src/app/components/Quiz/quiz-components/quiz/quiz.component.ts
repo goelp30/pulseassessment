@@ -37,6 +37,8 @@ export class QuizComponent implements OnInit, OnDestroy {
   reloadCount = 0;
   showReloadWarningModal = false;
   private beforeUnloadListener: any;
+  private passingPercentage: number = 40; // You can adjust this value as needed
+  isAutoEvaluated: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -148,7 +150,7 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   isNextButtonDisabled(): boolean {
     const currentQuestion = this.questions[this.currentQuestion];
-    const currentQuestionAnswer =
+    const currentQuestionAnswer = 
       this.quizAnswerService.getUserAnswers()[currentQuestion?.questionId];
 
     // Check if the current question is the last question
@@ -169,7 +171,7 @@ export class QuizComponent implements OnInit, OnDestroy {
     }
 
     // For other question types, check for answers
-    return !currentQuestionAnswer?.userAnswer?.length;
+    return !(currentQuestionAnswer?.userAnswer?.length > 0);
   }
 
   onAnswerSelect(optionId: string) {
@@ -255,7 +257,7 @@ export class QuizComponent implements OnInit, OnDestroy {
 
       const currentQuestionAnswer =
         this.quizAnswerService.getUserAnswers()[question?.questionId];
-      const descriptiveAnswer = question?.descriptiveAnswer?.trim();
+      const descriptiveAnswer = currentQuestionAnswer?.answer?.trim();
 
       return (
         (currentQuestionAnswer?.userAnswer?.length ?? 0) > 0 ||
@@ -320,20 +322,29 @@ export class QuizComponent implements OnInit, OnDestroy {
 
     const userAnswers = this.quizAnswerService.getUserAnswers();
     let totalMarks = 0;
+    let totalPossibleMarks = 0;
     let hasDescriptiveAnswers = false;
+    let hasAttemptedAnyQuestion = false;
+    let descriptiveQuestionsCount = 0;
+    let attemptedDescriptiveCount = 0;
 
     this.questions.forEach((question) => {
       const answer = userAnswers[question.questionId];
       let marks = '0';
 
+      // Add marks to total possible marks if it's not a descriptive question
+      if (question.questionType !== 'Descriptive') {
+        totalPossibleMarks += question.marks;
+      }
+
       if (question.questionType === 'Descriptive') {
-        // Store descriptive answer even if empty
+        descriptiveQuestionsCount++;
         const descriptiveAnswer = answer?.answer?.trim() || '';
         if (descriptiveAnswer) {
           hasDescriptiveAnswers = true;
+          attemptedDescriptiveCount++;
         }
 
-        // Store descriptive answer for evaluation (empty or not)
         this.quizAnswerService.storeAnswer(
           question.questionId,
           true,
@@ -341,16 +352,11 @@ export class QuizComponent implements OnInit, OnDestroy {
           '0',
           descriptiveAnswer
         );
-
-        console.log('Descriptive answer stored:', {
-          questionId: question.questionId,
-          answer: descriptiveAnswer,
-        });
       } else {
-        // Handle MCQ/Single choice questions
         const userAnswer = answer?.userAnswer || [];
 
         if (userAnswer.length > 0) {
+          hasAttemptedAnyQuestion = true;
           marks = this.quizService
             .evaluateAutoScoredQuestions(
               question,
@@ -361,7 +367,6 @@ export class QuizComponent implements OnInit, OnDestroy {
           totalMarks += Number(marks);
         }
 
-        // Store answer even if empty
         this.quizAnswerService.storeAnswer(
           question.questionId,
           false,
@@ -372,29 +377,62 @@ export class QuizComponent implements OnInit, OnDestroy {
       }
     });
 
+    // Calculate if auto evaluation is applicable
+    this.isAutoEvaluated = descriptiveQuestionsCount === 0 || 
+                          (descriptiveQuestionsCount > 0 && attemptedDescriptiveCount === 0);
+
+    // Calculate pass/fail status if auto evaluated
+    let isPassed = false;
+    let percentageScored = 0;
+    
+    if (this.isAutoEvaluated && totalPossibleMarks > 0) {
+      percentageScored = (totalMarks / totalPossibleMarks) * 100;
+      isPassed = percentageScored >= this.passingPercentage;
+    }
+
     console.log('Final Quiz Results:', {
       totalMarks,
+      totalPossibleMarks,
+      percentageScored,
+      isPassed,
+      isAutoEvaluated: this.isAutoEvaluated,
       totalQuestions: this.questions.length,
       hasDescriptiveAnswers,
+      hasAttemptedAnyQuestion,
+      descriptiveQuestionsCount,
+      attemptedDescriptiveCount,
       userAnswers,
       isAutoSubmit,
     });
 
-    // Submit all questions with the calculated marks
-    this.quizAnswerService.submitQuiz(this.questions, totalMarks);
+    // If no descriptive questions are attempted, treat it as auto-evaluation
+    if (descriptiveQuestionsCount > 0 && attemptedDescriptiveCount === 0) {
+      this.toastService.showInfo(
+        'No descriptive answers provided. Evaluating based on objective questions only.'
+      );
+      hasDescriptiveAnswers = false;
+    }
+
+    // Submit all questions with the calculated marks and evaluation status
+    this.quizAnswerService.submitQuiz(
+      this.questions, 
+      totalMarks,
+      this.isAutoEvaluated,
+      isPassed
+    );
 
     if (hasDescriptiveAnswers) {
       this.toastService.showInfo(
         'Quiz submitted successfully! Descriptive answers will be evaluated by the examiner.'
       );
     } else {
-      this.toastService.showSuccess('Quiz submitted successfully!');
+      this.toastService.showSuccess(
+        `Quiz submitted successfully!`
+      );
     }
 
     this.updateAssessmentRecord();
     this.showModal = false;
-
-    // Navigate to thank you page
     this.router.navigate(['/thank-you']);
   }
 
