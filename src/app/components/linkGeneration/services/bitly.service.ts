@@ -7,7 +7,7 @@ import { Observable } from "rxjs";
 })
 export class BitlyService {
   private bitlyApiUrl = 'https://api-ssl.bitly.com/v4/shorten';
-  private bitlyAccessToken = '4780936227ab759d493bfd1b5b607f93ba9b2950';
+  private bitlyAccessToken = '7e4f78c65b72587726e7563404d40321275f0879';
   constructor(private http: HttpClient) {}
   shortenLink(longUrl: string): Observable<any> {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${this.bitlyAccessToken}`);

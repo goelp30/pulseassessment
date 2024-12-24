@@ -1,5 +1,5 @@
 <!-- Search Bar Section -->
-<div class="flex justify-center w-full">
+<div class="flex justify-center w-full mb-4">
   <app-searchbar
     [searchQuery]="searchQuery"
     [class]="
@@ -9,11 +9,60 @@
     (searchQueryChange)="onSearchQueryChange($event)"
   >
   </app-searchbar>
+  <!-- Additional Filters Section (Conditionally Displayed for assessmentRecords) -->
+  @if(showAdditionalFilters) {
+  <div
+    class="flex flex-wrap justify-center sm:flex-nowrap items-center gap-4 sm:gap-6 mb-2 sm:mb-8"
+  >
+    <!-- Dropdown for Filters -->
+    <!-- <div class="w-full sm:w-auto">
+      <label for="filter" class="block text-sm font-medium text-gray-700 mb-1">
+        Filter by:
+      </label>
+      <select
+        id="filter"
+        name="filter"
+        [(ngModel)]="selectedFilter"
+        (change)="onFilterChange()"
+        class="w-full px-4 py-2 border rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+      >
+        <option value="">All</option>
+        @for (filter of filterOptions; track $index) {
+        <option [value]="filter">
+          {{ filter }}
+        </option>
+        }
+      </select>
+    </div> -->
+
+    <!-- Dropdown for Status -->
+    <!-- <label for="status" class="block text-sm py-2   ml-4 font-medium text-gray-700 mb-1">
+      Status:
+    </label> -->
+
+    <div class="w-full sm:w-auto ml-4">
+      <select
+        id="status"
+        name="status"
+        [(ngModel)]="selectedStatus"
+        (change)="onStatusChange()"
+        class="w-full p-2 mb-2 border border-gray-300 rounded-full text-lg shadow-md outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-300 transition-all duration-100 transform"
+      >
+        <option value="">All</option>
+        @for (status of statusOptions; track $index) {
+        <option [value]="status">
+          {{ status }}
+        </option>
+        }
+      </select>
+    </div>
+  </div>
+  }
 </div>
 
 <!-- Dynamic Tabs Section -->
 @if(tabs.length > 0){
-<div class="flex justify-center mt-3">
+<div class="flex justify-center">
   <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
     <div class="block w-full overflow-hidden md:w-max">
       <nav>
@@ -44,65 +93,16 @@
 </div>
 }
 
-<!-- Additional Filters Section (Conditionally Displayed for assessmentRecords) -->
-@if(showAdditionalFilters) {
-<div
-  class="flex flex-wrap justify-center mt-4 sm:flex-nowrap items-center gap-4 sm:gap-6 mb-2 sm:mb-8"
->
-  <!-- Dropdown for Filters -->
-  <div class="w-full sm:w-auto">
-    <label for="filter" class="block text-sm font-medium text-gray-700 mb-1">
-      Filter by:
-    </label>
-    <select
-      id="filter"
-      name="filter"
-      [(ngModel)]="selectedFilter"
-      (change)="onFilterChange()"
-      class="w-full px-4 py-2 border rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-    >
-      <option value="">All</option>
-      @for (filter of filterOptions; track $index) {
-      <option [value]="filter">
-        {{ filter | camelCaseToSpace | titlecase }}
-      </option>
-      }
-    </select>
-  </div>
-
-  <!-- Dropdown for Status -->
-  <div class="w-full sm:w-auto">
-    <label for="status" class="block text-sm font-medium text-gray-700 mb-1">
-      Status:
-    </label>
-    <select
-      id="status"
-      name="status"
-      [(ngModel)]="selectedStatus"
-      (change)="onStatusChange()"
-      class="w-full px-4 py-2 border rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
-    >
-      <option value="">All</option>
-      @for (status of statusOptions; track $index) {
-      <option [value]="status">
-        {{ status }}
-      </option>
-      }
-    </select>
-  </div>
-</div>
-}
-
 <!-- Table Section -->
 <div class="min-h-screen p-1 sm:p-8">
   <div class="bg-white shadow-xl min-h-screen rounded-xl p-6 sm:p-8">
-    <div class="overflow-x-auto">
+    <div>
       <table
         class="min-w-full bg-white border border-gray-300 rounded-lg text-sm sm:text-base"
       >
         <thead class="bg-custom-blue">
           <tr>
-            @for(column of tableColumns; track $index){
+            @for(column of tableColumns; track column){
             <th
               class="px-2 sm:px-6 py-3 text-left text-white font-semibold border-b"
             >
@@ -110,16 +110,16 @@
             </th>
             }
             <th
-              class="px-4 sm:px-6 py-3 text-center text-white font-semibold border-b"
-              [style.width]="getActionColumnWidth()"
-            >
-              Action
-            </th>
+            class="px-4 sm:px-6 py-3 text-center text-white font-semibold border-b"
+            [style.width]="getActionColumnWidth()"
+          >
+            Action
+          </th>
           </tr>
         </thead>
         <tbody>
           @if(filteredData.length > 0){ @for(row of getPaginatedData(); track
-          $index){
+          row){
           <tr class="even:bg-gray-50">
             @for(column of tableColumns; track column){
             <td class="px-2 sm:px-6 py-3 border-b">
@@ -134,7 +134,6 @@
                 style="cursor: pointer"
                 [title]="row[column]"
               >
-               
                 {{
                   row[column]?.length > 50
                     ? (row[column]
@@ -144,7 +143,6 @@
                 }}
               </p>
               <!-- Popup Notification -->
-
               @if (showAdditionalFilters && isPopupVisible && column === 'url'
               && copiedRow===row) {
 
@@ -153,9 +151,9 @@
             </td>
             }
             <td class="px-2 sm:px-6 py-3 border-b">
-              <div class="flex justify-center gap-3">
+              <div class="flex justify-center gap-4">
                 @for(button of buttons; track button){
-                  <app-button
+                <app-button
                   [label]="getButtonLabel(button, row)"
                   [colorClass]="getCustomButtonClasses(button, row)"
                   [icon]="button.icon"

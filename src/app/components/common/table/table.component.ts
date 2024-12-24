@@ -10,7 +10,6 @@ import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../button/button.component';
 import { SearchbarComponent } from '../searchbar/searchbar.component';
 import { FormsModule } from '@angular/forms';
-import { CamelCaseToSpacePipe } from './camel-case-to-space.pipe';
 import { TextCasePipe } from "./text-case.pipe";
 
 @Component({
@@ -21,7 +20,6 @@ import { TextCasePipe } from "./text-case.pipe";
     ButtonComponent,
     SearchbarComponent,
     FormsModule,
-    CamelCaseToSpacePipe,
     TextCasePipe
 ],
   templateUrl: './table.component.html',
@@ -41,23 +39,26 @@ export class TableComponent implements OnInit, OnChanges {
     customClassFunction?: (row: any) => string;
     disableFunction?: (row: any) => boolean;
   }[] = [];
-
   @Input() searchQuery: string = '';
   @Input() onSearchQueryChange: (newQuery: string) => void = () => {};
-  @Input() tabs: string[] = [];
+  @Input() tabs: string[] = []; // Empty array means no tabs
   @Input() filterKey: string = '';
   @Input() tabAliases: { [key: string]: string } = {};
   @Input() searchPlaceholder: string = 'Search';
   @Input() rowHoverTitleColumn: string = '';
 
+  // Input properties for assessmentRecord filters
   @Input() filterOptions: string[] = [];
   @Input() statusOptions: string[] = [];
   @Input() showAdditionalFilters: boolean = false;
+  @Input() rowHoverTitleColumn: string = '';
 
+  // New Input for handling status display
   @Input() statusMapping: { [key: string]: string } = {};
 
+  // new input for custom button display
   @Input() customButtonDisplay: { [key: string]: any } = {};
-  copiedRow: any = null; // Track the copied row
+
   selectedFilter: string = '';
   selectedStatus: string = '';
 
@@ -68,8 +69,11 @@ export class TableComponent implements OnInit, OnChanges {
   activeTab: string = '';
   pageNumbers: number[] = [];
   isLoading: boolean = true;
-  isPopupVisible: boolean = false;
 
+  // For link in Assessment records
+  isPopupVisible: boolean = false;
+  copiedUrl: string | null = null;
+  copiedRow: any = null; 
   columnConfig:any = {
     subjectName: 'titlecase',
     questionText: 'sentenceCase',
@@ -80,8 +84,6 @@ export class TableComponent implements OnInit, OnChanges {
     status: 'titlecase',
   };
 
-
-
   constructor(private fireBaseService: FireBaseService<any>) {}
 
   ngOnInit(): void {
@@ -91,7 +93,7 @@ export class TableComponent implements OnInit, OnChanges {
         .getAllDataByFilter(this.tableName, 'isDisabled', false)
         .subscribe((res) => {
           this.tableData = res;
-          this.filterData();
+          this.filterData(); // Initial filter to include tab and other filters
           this.totalPages = Math.ceil(
             this.tableData.length / this.itemsPerPage
           );
@@ -114,13 +116,9 @@ export class TableComponent implements OnInit, OnChanges {
     ) {
       this.isLoading = true;
       this.filterData();
-      this.currentPage = 1; // Reset to first page
-      this.generatePagination();
       this.isLoading = false;
     }
   }
-  
-  
 
   selectTab(tab: string): void {
     this.activeTab = tab;
@@ -137,8 +135,7 @@ export class TableComponent implements OnInit, OnChanges {
 
   filterData() {
     let filtered = [...this.tableData];
-  
-    // Search filtering
+
     if (this.searchQuery) {
       filtered = filtered.filter((row) => {
         return this.tableColumns.some((column) => {
@@ -152,13 +149,9 @@ export class TableComponent implements OnInit, OnChanges {
         });
       });
     }
-  
-    // Additional filters
     if (this.showAdditionalFilters) {
       filtered = this.applyAdditionalFilters(filtered);
     }
-  
-    // Tab filtering
     if (this.activeTab && this.activeTab !== 'all') {
       filtered = filtered.filter((row) => {
         return (
@@ -167,24 +160,14 @@ export class TableComponent implements OnInit, OnChanges {
         );
       });
     }
-  
-    // Sorting by `updatedOn` or `createdOn` in descending order
-    filtered.sort((a, b) => {
-      const dateA = new Date(a.updatedOn || a.createdOn).getTime();
-      const dateB = new Date(b.updatedOn || b.createdOn).getTime();
-      return dateB - dateA; // Sort in descending order
-    });
-  
-    // Update filtered data and pagination
+
     this.filteredData = filtered;
     this.totalPages = Math.ceil(this.filteredData.length / this.itemsPerPage);
-
-    this.currentPage = Math.min(this.currentPage, this.totalPages); // Keep the current page within bounds
     this.generatePagination();
+    this.currentPage = 1;
   }
-  
-  
 
+  // Method to Apply additional filters
   applyAdditionalFilters(data: any[]): any[] {
     let filteredData = [...data];
     if (this.selectedFilter) {
@@ -205,6 +188,7 @@ export class TableComponent implements OnInit, OnChanges {
     return filteredData;
   }
 
+  // Function to get the CSS classes for status display
   getStatusClass(status: string): string {
     return this.statusMapping[status] || '';
   }
@@ -244,54 +228,19 @@ export class TableComponent implements OnInit, OnChanges {
 
   generatePagination(): void {
     const totalPages = this.totalPages;
-    let pages: (number | '...')[] = [];
-
-    if (totalPages <= 5) {
-      // If total pages are 5 or less, display all
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      // Display first page
-      pages.push(1);
-
-      //Logic to show ellipsis when needed and not add duplicate elements
-      if (this.currentPage > 3) {
-        pages.push('...');
-      }
-      // Display current page, the one before and the one after if inside boundaries
-      if (this.currentPage > 2) {
-        pages.push(this.currentPage - 1);
-      }
-      if (this.currentPage > 1 && this.currentPage <= totalPages) {
-        pages.push(this.currentPage);
-      }
-      if (this.currentPage < totalPages - 1) {
-        pages.push(this.currentPage + 1);
-      }
-      if (this.currentPage < totalPages - 2) {
-        pages.push('...');
-      }
-
-      // Display last page
-      if (totalPages !== 1) {
-        pages.push(totalPages);
-      }
-
-      // Filter out potential duplicate "..."
-      pages = pages.filter((item, index, arr) => arr.indexOf(item) === index);
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
     }
-
-    this.pageNumbers = pages as number[];
+    this.pageNumbers = pages;
   }
 
-  getButtonLabel(button: any, row: any): string {
+    getButtonLabel(button:any, row: any): string {
     if (typeof button.label === 'function') {
       return button.label(row);
     }
-    return button.label;
+      return button.label;
   }
-
   getCustomButtonClasses(button: any, row: any) {
     if (button.customClassFunction) {
       return button.customClassFunction(row);
@@ -305,6 +254,7 @@ export class TableComponent implements OnInit, OnChanges {
     }
     return false;
   }
+
 
   copyToClipboard(content: string | undefined, row: any): void {
     if (!content) return;
@@ -321,6 +271,14 @@ export class TableComponent implements OnInit, OnChanges {
       .catch((err) => console.error('Failed to copy text:', err));
   }
 
+  showPopup(): void {
+    this.isPopupVisible = true;
+
+    // Hide the popup after 2 seconds
+    setTimeout(() => {
+      this.isPopupVisible = false;
+    }, 1000);
+  }
   getActionColumnWidth(): string {
     const buttonCount = this.buttons.length;
     const baseWidth = 100; // Base width for one button
@@ -328,4 +286,5 @@ export class TableComponent implements OnInit, OnChanges {
     const totalWidth = baseWidth + (buttonCount - 1) * additionalWidth;
     return `${totalWidth}px`;
   }
+ 
 }
