@@ -27,17 +27,22 @@ export class QuestionDisplayComponent {
     this.showMarksError=this.question.assignedMarks > this.question. questionWeightage;
     this.marksChanged.emit([this.question,this.showMarksError]);
   }
-  // Copy to clipboard function
-  copyToClipboard(text: string): void {
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textarea);
-    this.isCopied = true;
-    setTimeout(() => {
-      this.isCopied = false;
-    }, 1000);
+  getOptionClass(question: any, option: any): string {
+    // Check if the option ID exists in the userAnswer array
+    const isUserAnswerSelected = question.userAnswer && question.userAnswer.includes(option.optionId);
+    if (isUserAnswerSelected) {
+      return option.isCorrectOption ? 'text-green-600' : 'text-red-600';
+    }
+    if (question.userAnswer === undefined && option.isCorrectOption) {
+      return 'text-yellow-600';
+    }
+    if (question.userAnswer !== undefined && !isUserAnswerSelected && option.isCorrectOption) {
+      return 'text-yellow-600';
+    }
+   if (question.userAnswer !== undefined && !isUserAnswerSelected && !option.isCorrectOption) {
+      return 'text-gray-600';
+    }
+  return '';  // Default case if no conditions are met
   }
+  
 }

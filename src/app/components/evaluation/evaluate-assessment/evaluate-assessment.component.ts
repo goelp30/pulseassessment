@@ -164,28 +164,43 @@ export class EvaluateAssessmentComponent implements OnInit {
         const correctOptions = question.options
           .filter((option: { isCorrectOption: any }) => option.isCorrectOption)
           .map((option: { optionId: any }) => option.optionId);
-
-        let selectedAnswers = question.userAnswer;
-        if (typeof selectedAnswers === 'string')
-          selectedAnswers = [selectedAnswers];
-
-        let correctCount = 0;
-        selectedAnswers.forEach((answer: any) => {
-          if (correctOptions.includes(answer)) correctCount++;
-        });
-        const marksPerCorrectAnswer =
-          question.questionWeightage / correctOptions.length;
-        question.marks = correctCount * marksPerCorrectAnswer;
-        const extraAnswersSelected =
-          selectedAnswers.length - correctOptions.length;
-        if (extraAnswersSelected > 0) {
-          const penaltyPerExtraAnswer =
-            question.questionWeightage / correctOptions.length;
-          question.marks -= extraAnswersSelected * penaltyPerExtraAnswer;
-          if (question.marks < 0) question.marks = 0;
+          let selectedAnswers = question.userAnswer;
+        if (typeof selectedAnswers === 'string') {
+          selectedAnswers = [selectedAnswers];  // Convert to array if it's a single string
         }
-      }
-    });
+      // Case 1: Check if the user selected all options
+        if (selectedAnswers.length === question.options.length) {
+          // Check if any of the selected answers are incorrect
+          const incorrectAnswers = selectedAnswers.filter(
+            (answer: any) => !correctOptions.includes(answer)
+          );
+    
+          // If there are any incorrect answers, assign 0 marks
+          if (incorrectAnswers.length > 0) {
+            question.marks = 0;
+          } else {
+            // If all selected answers are correct, assign full marks
+            question.marks = question.questionWeightage;
+          }
+        } else {
+          // Case 2: Apply the existing logic if not all options are selected
+          let correctCount = 0;
+          selectedAnswers.forEach((answer: any) => {
+            if (correctOptions.includes(answer)) correctCount++;
+          });
+    
+          const marksPerCorrectAnswer = question.questionWeightage / correctOptions.length;
+          question.marks = correctCount * marksPerCorrectAnswer;
+    
+          const extraAnswersSelected = selectedAnswers.length - correctOptions.length;
+          if (extraAnswersSelected > 0) {
+            const penaltyPerExtraAnswer = question.questionWeightage / correctOptions.length;
+            question.marks -= extraAnswersSelected * penaltyPerExtraAnswer;
+            if (question.marks < 0) question.marks = 0;
+          }
+        }
+    }
+  });
   }
 
   getUserTotalMarks(): number {
