@@ -173,7 +173,7 @@ export class AssessTableComponent {
   editAssessment(row: Assessment) {
     if (row.assessmentId) {
       this.asessmentService.setAsssessmentId(row.assessmentId); // Store subjectId in service
-      this.router.navigate(['/drag-and-drop']); // Navigate to /questions route
+      this.router.navigate(['/manage-assessment']); // Navigate to /questions route
     } else {
       console.error('Subject ID is missing.');
     }

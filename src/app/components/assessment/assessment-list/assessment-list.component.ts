@@ -68,7 +68,7 @@ export class AssessmentListComponent implements OnInit {
    
   }
   RouteAssessment(){
-    this.router.navigate(['/drag-and-drop']);
+    this.router.navigate(['/manage-assessment']);
     this.assessmentService.setAsssessmentId('');
   }
 }

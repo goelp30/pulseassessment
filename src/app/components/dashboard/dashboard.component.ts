@@ -31,7 +31,7 @@ export class DashboardComponent implements OnInit {
     '/assessment-list': 'Manage Assessment',
     '/assessmentrecords': 'Assessment Records',
     '/evaluation': 'Evaluate Assessments',
-    '/drag-and-drop':'Manage Assessment'
+    '/manage-assessment':'Manage Assessment'
   };
 
   constructor(

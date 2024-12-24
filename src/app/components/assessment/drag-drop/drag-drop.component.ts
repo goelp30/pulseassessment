@@ -13,7 +13,7 @@ import { AssessmentService } from '../services/assessmentServices/assessment.ser
 import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';
 import { ButtonComponent } from '../../common/button/button.component';
 @Component({
-  selector: 'app-drag-drop',
+  selector: 'manage-assessment',
   standalone: true,
   templateUrl: './drag-drop.component.html',
   styleUrls: ['./drag-drop.component.css'],
