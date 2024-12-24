@@ -50,7 +50,8 @@ export class AssessmentListComponent implements OnInit {
       dateCreated: Date.now(),
       dateUpdated:Date.now(),
       isDisabled:false,
-      isautoEvaluated:true
+      isautoEvaluated:true,
+      isTimeBound:true
     };
 
     // Save the new assessment to Firebase
@@ -67,7 +68,7 @@ export class AssessmentListComponent implements OnInit {
    
   }
   RouteAssessment(){
-    this.router.navigate(['/drag-and-drop']);
+    this.router.navigate(['/manage-assessment']);
     this.assessmentService.setAsssessmentId('');
   }
 }

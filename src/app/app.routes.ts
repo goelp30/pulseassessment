@@ -49,7 +49,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'drag-and-drop',
+    path: 'manage-assessment',
     component: DragDropComponent,
     canActivate: [authGuard],
   },

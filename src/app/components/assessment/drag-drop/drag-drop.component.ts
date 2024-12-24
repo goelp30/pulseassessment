@@ -13,11 +13,11 @@ import { AssessmentService } from '../services/assessmentServices/assessment.ser
 import { PopupModuleComponent } from '../../common/popup-module/popup-module.component';
 import { ButtonComponent } from '../../common/button/button.component';
 @Component({
-  selector: 'app-drag-drop',
+  selector: 'manage-assessment',
   standalone: true,
   templateUrl: './drag-drop.component.html',
   styleUrls: ['./drag-drop.component.css'],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule,PopupModuleComponent,ButtonComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, PopupModuleComponent, ButtonComponent],
 })
 
 export class DragDropComponent implements AfterViewInit, OnInit {
@@ -30,18 +30,18 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   createdOn: string = '';
   savedFormData: any = null;
   isAutoEvaluated: boolean = true
-  rightListForm!: FormGroup; 
-  viewMode: 'internal' | 'external' = 'internal'; 
-  validationWarnings: string[] = []; 
-  assessmentTitle: string = ''; 
-  subject_table = TableNames.Subject; 
+  rightListForm!: FormGroup;
+  viewMode: 'internal' | 'external' = 'internal';
+  validationWarnings: string[] = [];
+  assessmentTitle: string = '';
+  subject_table = TableNames.Subject;
   assess_table = TableNames.Assessment;
   isModalVisible: boolean = false;
   eConfirmationVisible: boolean = false;
   assessmentId: string = ''
   editFlag: boolean = false;
   warningTitle: string = '';
-  isNewVisible:boolean=false;
+  isNewVisible: boolean = false;
 
 
   constructor(
@@ -51,13 +51,20 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     private toastr: ToastrService,
     private assessmentService: AssessmentService
   ) { }
+  isTimeBound: boolean = true;  // default to 'Yes'
+
+  toggleTimeBound(value: boolean): void {
+    this.isTimeBound = value;
+  }
+
   handleBeforeUnload(event: BeforeUnloadEvent): string {
     const message = "You have unsaved changes! Are you sure you want to leave?";
-    event.returnValue = message;  
-    return message;               
+    event.returnValue = message;
+    return message;
   }
   // checking for atleast 2 ques
   checkTotalQuestions(): void {
+    this.totalWarning = '';
     this.rightListInputs.controls.forEach((group, i) => {
       const easyValue = group.get('easy')?.value || 0;
       const mediumValue = group.get('medium')?.value || 0;
@@ -66,13 +73,11 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       const totalSelectedForSubject = easyValue + mediumValue + hardValue + descriptiveValue;
       if (totalSelectedForSubject < 2) {
         this.totalWarning = `Please select at least 2 questions for each subject.`;
-      } else {
-        this.totalWarning = '';  
       }
     });
     this.updateSaveButtonStatus();
   }
-  
+
   ngOnInit(): void {
     window.addEventListener('beforeunload', this.handleBeforeUnload);
     this.assessmentService.assessmentId$.subscribe((assessmentId) => {
@@ -85,20 +90,20 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         this.fetchLeftList(); // Fetch all subjects if not editing
       }
     });
-  
+
     this.initializeRightListForm();
     if (this.isBrowser()) {
       this.fetchLeftList();
     }
     this.subscribeToFormChanges();
     this.setupNavigationListener();
-    if(this.rightList){
+    if (this.rightList) {
       this.rightListInputs.controls.forEach((group, i) => {
         this.checkTotalQuestions(); // Check total selected questions on initialization
       });
     }
   }
-  ngDoCheck():void{
+  ngDoCheck(): void {
     this.checkTotalQuestions();
   }
   setupNavigationListener(): void {
@@ -127,7 +132,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     let isAutoEvaluated = true;
     subjects.forEach(subject => {
       if (subject.descriptive > 0) {
-        isAutoEvaluated = false; 
+        isAutoEvaluated = false;
       }
     });
     return isAutoEvaluated;
@@ -143,7 +148,8 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         dateUpdated: Date.now(),
         isDisabled: false,
         isautoEvaluated: this.isAutoEvaluated,
-        isLinkGenerated:false
+        isLinkGenerated: false,
+        isTimeBound: this.isTimeBound
       };
       this.firebaseService.create(this.assess_table + '/' + uniqueId, assessment)
         .then(() => {
@@ -161,7 +167,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         if (existingTitles.includes(title.toLowerCase())) {
           resolve(false);
         } else {
-          resolve(true); 
+          resolve(true);
         }
       }, (error) => {
         reject('Failed to fetch assessment data for uniqueness check: ' + error);
@@ -172,7 +178,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     this.rightList = [];
     this.rightListForm.reset();
     this.initializeRightListForm();
-    this.fetchLeftList(); 
+    this.fetchLeftList();
   }
   fetchLeftList(): void {
     this.firebaseService.getAllDataByFilter(this.subject_table, 'isDisabled', false).subscribe((subjects: any[]) => {
@@ -197,7 +203,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
           .sort((a, b) => a.subjectName.localeCompare(b.subjectName));
 
         // Filter out subjects that are already in the right list
-        this.leftList = this.leftList.filter(subject => 
+        this.leftList = this.leftList.filter(subject =>
           !this.rightList.some(rightSubject => rightSubject.subjectId === subject.subjectId)
         );
 
@@ -235,13 +241,13 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     hard: string[];
     descriptive: string[];
   } = {
-    easy: [],
-    medium: [],
-    hard: [],
-    descriptive: []
-  };
-  enabledQuestions: any[] = []; 
-    calculateQuestionCounts(subjectId: string): void {
+      easy: [],
+      medium: [],
+      hard: [],
+      descriptive: []
+    };
+  enabledQuestions: any[] = [];
+  calculateQuestionCounts(subjectId: string): void {
     this.firebaseService.listensToChangeWithFilter('questions', 'subjectId', subjectId).subscribe((questions: any[]) => {
       let easyCount = 0;
       let mediumCount = 0;
@@ -254,10 +260,10 @@ export class DragDropComponent implements AfterViewInit, OnInit {
           mediumCount++;
         } else if (question.questionLevel.toLowerCase() === 'hard') {
           hardCount++;
-        }else if (question.questionType.toLowerCase() === 'descriptive') {
+        } else if (question.questionType.toLowerCase() === 'descriptive') {
           descriptiveCount++;
         }
-        
+
       });
       this.questionCounts[subjectId] = {
         easyCount,
@@ -275,12 +281,19 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     if (input.disabled) {
       value = 0;
     }
-    // Validate input values (don't allow values outside of the specified range)
+
     this.getQuestionCountsForSubject(subjectId).then((availableCounts) => {
       let warningMessage = '';
       const countKey = `${controlName}Count` as keyof typeof availableCounts;
-  
+
       if (availableCounts) {
+        if (availableCounts[countKey] === 0) {
+          this.rightListInputs.at(index).get(controlName)?.disable();
+          value = 0;
+        } else {
+          this.rightListInputs.at(index).get(controlName)?.enable();
+        }
+
         if (value > availableCounts[countKey]) {
           warningMessage = `Available ${controlName.charAt(0).toUpperCase() + controlName.slice(1)} questions : ${availableCounts[countKey]} `;
         }
@@ -293,8 +306,8 @@ export class DragDropComponent implements AfterViewInit, OnInit {
           input.value = '0';
           value = 0;
         }
-  
-        // Store the warning message for each input
+
+        // Update the newValidationWarnings
         if (controlName === 'easy') {
           this.newValidationWarnings.easy[index] = warningMessage;
         } else if (controlName === 'medium') {
@@ -304,45 +317,25 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         } else if (controlName === 'descriptive') {
           this.newValidationWarnings.descriptive[index] = warningMessage;
         }
-  
-        // Update the form control value for the current input
+
         this.rightListInputs.at(index).get(controlName)?.setValue(value);
-        // Now calculate the sum of selected values for all subjects in real-time
-        let totalSelected = 0;
-  
-        // Iterate through each subject and sum up the values
-        this.rightListInputs.controls.forEach((group, i) => {
-          const easyValue = group.get('easy')?.value || 0;
-          const mediumValue = group.get('medium')?.value || 0;
-          const hardValue = group.get('hard')?.value || 0;
-          const descriptiveValue = group.get('descriptive')?.value || 0;
-          totalSelected += easyValue + mediumValue + hardValue + descriptiveValue;
-        });
-  
-        // Real-time total check and warning message
-        if (totalSelected < 2) {
-          this.totalWarning = 'Please select at least 2 questions from each subject.';
-        } else {
-          this.totalWarning = '';  // Clear the warning if total is 2 or more
-        }
-  
-        // Update Save button status
-        this.updateSaveButtonStatus();
+        this.checkTotalQuestions();
       }
     });
   }
-  
-  
+
+
   updateSaveButtonStatus(): void {
-    const hasWarnings = this.rightList.some((subject, index) => {
+    const hasIndividualWarnings = this.rightList.some((subject, index) => {
       return this.newValidationWarnings.easy[index] ||
-             this.newValidationWarnings.medium[index] ||
-             this.newValidationWarnings.hard[index] ||
-             this.newValidationWarnings.descriptive[index];
+        this.newValidationWarnings.medium[index] ||
+        this.newValidationWarnings.hard[index] ||
+        this.newValidationWarnings.descriptive[index];
     });
-  this.disable = hasWarnings;
+
+    this.disable = hasIndividualWarnings || !!this.totalWarning;
   }
-      async getQuestionCountsForSubject(subjectId: string): Promise<any> {
+  async getQuestionCountsForSubject(subjectId: string): Promise<any> {
     let counts = {
       easyCount: 0,
       mediumCount: 0,
@@ -386,30 +379,30 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       this.assessmentTitleWarning = '';
     }
   }
-  rightListWarning='';
+  rightListWarning = '';
   checkRightList(): boolean {
     const isRightListNotEmpty = this.rightList && this.rightList.length > 0;
     if (!isRightListNotEmpty) {
-        this.rightListWarning = "Right list is empty";
+      this.rightListWarning = "Right list is empty";
     } else {
-        this.rightListWarning = "";
+      this.rightListWarning = "";
     }
 
     return isRightListNotEmpty;
-}
-canSave(): boolean {
-  const isFormValid = this.rightListForm.valid;
-  const isAssessmentTitleValid = this.assessmentTitle.trim().length > 0;
-  const isTitleUnique = !this.assessmentTitleWarning;
-  const isAllSubjectsValid = !this.disable;
-  const isRightListNotEmpty = this.checkRightList();
+  }
+  canSave(): boolean {
+    const isFormValid = this.rightListForm.valid;
+    const isAssessmentTitleValid = this.assessmentTitle.trim().length > 0;
+    const isTitleUnique = !this.assessmentTitleWarning;
+    const isAllSubjectsValid = !this.disable;
+    const isRightListNotEmpty = this.checkRightList();
 
-  // Check if there's a warning about selecting at least 2 questions
-  const hasTotalSelectedWarning = this.totalWarning !== ''; // Check if totalWarning is not empty
+    // Check if there's a warning about selecting at least 2 questions
+    const hasTotalSelectedWarning = this.totalWarning !== ''; // Check if totalWarning is not empty
 
-  // Disable save if there are validation warnings (including the totalSelected warning)
-  return isFormValid && isAssessmentTitleValid && isTitleUnique && isAllSubjectsValid && isRightListNotEmpty && !hasTotalSelectedWarning;
-}
+    // Disable save if there are validation warnings (including the totalSelected warning)
+    return isFormValid && isAssessmentTitleValid && isTitleUnique && isAllSubjectsValid && isRightListNotEmpty && !hasTotalSelectedWarning;
+  }
   onSave(): void {
     if (!this.canSave()) {
       this.showValidationErrorToast();
@@ -418,7 +411,7 @@ canSave(): boolean {
     }
   }
   showValidationErrorToast(): void {
-    this.toastr.warning('Please fix the validation issues before saving.',' Validation Error');
+    this.toastr.warning('Please fix the validation issues before saving.', ' Validation Error');
   }
   navigateToAssessments() {
     this.router.navigate(['/assessment-list']);
@@ -431,26 +424,40 @@ canSave(): boolean {
           const assessment = assessments[0];
           this.assessmentTitle = assessment.assessmentName;
           this.viewMode = assessment.assessmentType;
+          this.isTimeBound = assessment.isTimeBound; 
+          //timebound here
           this.firebaseService.listensToChangeWithFilter(TableNames.AssessmentList, 'assessmentId', this.assessmentId).subscribe((assessmentLists: any[]) => {
             if (assessmentLists && assessmentLists.length > 0) {
-              const assessmentList = assessmentLists[0]; 
-              const subjectsWithRatings = assessmentList.subjects; 
-              
+              const assessmentList = assessmentLists[0];
+              const subjectsWithRatings = assessmentList.subjects;
+
               this.rightList = Object.values(subjectsWithRatings).map((subject: any) => ({
                 subjectId: subject.subjectId,
                 subjectName: subject.subjectName
               }));
 
               const rightListInputs = this.fb.array(
-                Object.values(subjectsWithRatings).map((subject: any) =>
-                  this.fb.group({
+                Object.values(subjectsWithRatings).map((subject: any) => {
+                  const group = this.fb.group({
                     item: [subject],
-                    easy: [subject.easy, [Validators.min(0), Validators.max(5)]],
-                    medium: [subject.medium, [Validators.min(0), Validators.max(5)]],
-                    hard: [subject.hard, [Validators.min(0), Validators.max(5)]],
-                    descriptive: [subject.descriptive, [Validators.min(0), Validators.max(5)]],
-                  })
-                )
+                    easy: [{ value: subject.easy, disabled: false }, [Validators.min(0), Validators.max(5)]],
+                    medium: [{ value: subject.medium, disabled: false }, [Validators.min(0), Validators.max(5)]],
+                    hard: [{ value: subject.hard, disabled: false }, [Validators.min(0), Validators.max(5)]],
+                    descriptive: [{ value: subject.descriptive, disabled: false }, [Validators.min(0), Validators.max(5)]],
+                  });
+
+                  // Fetch question counts and disable fields with zero count
+                  this.getQuestionCountsForSubject(subject.subjectId).then((counts) => {
+                    (['easy', 'medium', 'hard', 'descriptive'] as const).forEach((type) => {
+                      const countKey = `${type}Count` as keyof typeof counts;
+                      if (counts[countKey] === 0) {
+                        group.get(type)?.disable();
+                      }
+                    });
+                  });
+
+                  return group;
+                })
               );
               this.rightListForm.setControl('rightListInputs', rightListInputs);
 
@@ -484,21 +491,21 @@ canSave(): boolean {
         this.leftList = leftListDom.map((item) => {
           const subject = this.subjectList.find((sub) => sub.subjectName === item);
           return {
-            subjectId: subject ? subject.subjectId : '', 
+            subjectId: subject ? subject.subjectId : '',
             subjectName: item
           };
         });
         this.rightList = rightListDom.map((item) => {
           const subject = this.subjectList.find((sub) => sub.subjectName === item);
           return {
-            subjectId: subject ? subject.subjectId : '', 
+            subjectId: subject ? subject.subjectId : '',
             subjectName: item
           };
         });
         this.updateRightListForm(this.rightList);
-        
+
         // Update left list to exclude items in the right list
-        this.leftList = this.subjectList.filter(subject => 
+        this.leftList = this.subjectList.filter(subject =>
           !this.rightList.some(rightSubject => rightSubject.subjectId === subject.subjectId)
         );
       };
@@ -516,17 +523,18 @@ canSave(): boolean {
     this.updateValidations();
   }
   ngOnDestroy(): void {
-      window.removeEventListener('beforeunload', this.handleBeforeUnload);
+    window.removeEventListener('beforeunload', this.handleBeforeUnload);
   }
   subscribeToFormChanges(): void {
     this.rightListForm.valueChanges.subscribe(() => {
+      this.checkTotalQuestions();
     });
-    
   }
+
   updateRightListForm(newRightList: any[]): void {
     const updatedInputs = this.fb.array(
       newRightList.map((subject) => {
-        const existingSubjectInput = this.rightListInputs.controls.find((control) => {
+        const existingSubjectInput = this.rightListInputs.controls.find((control: any) => {
           const subjectControl = control.value;
           return subjectControl.item.subjectId === subject.subjectId;
         });
@@ -558,8 +566,9 @@ canSave(): boolean {
     );
 
     this.rightListForm.setControl('rightListInputs', updatedInputs);
-    this.updateValidations();
+    this.checkTotalQuestions();
   }
+
   updateValidations(): void {
     this.rightListInputs.controls.forEach((group, index) => {
       ['easy', 'medium', 'hard', 'descriptive'].forEach(type => {
@@ -567,8 +576,8 @@ canSave(): boolean {
       });
     });
   }
-  onCreateNew(){
-    this.isNewVisible=false;
+  onCreateNew() {
+    this.isNewVisible = false;
   }
   saveFormData(): void {
     this.fetchQuestionCountsForRightList();
@@ -576,7 +585,7 @@ canSave(): boolean {
       return (group.get('descriptive')?.value || 0) > 0;
     });
     this.isAutoEvaluated = !hasDescriptiveGreaterThanZero;
-  
+
     if (this.assessmentTitle.trim().length === 0) {
       this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
       return;
@@ -592,7 +601,7 @@ canSave(): boolean {
         this.addAssessment().then((assessmentId: string) => {
           if (this.rightListForm.valid) {
             const subjects = this.mapRightListInputs(this.rightList);
-  
+
             const newAssessmentList: AssessmentList = {
               assessmentId,
               dateCreated: Date.now(),
@@ -600,7 +609,7 @@ canSave(): boolean {
               isDisable: false,
               subjects: subjects,
             };
-  
+
             this.firebaseService.create('assessmentList/' + assessmentId, newAssessmentList)
               .then(() => {
                 this.toastr.success('Assessment Created', 'Created');
@@ -634,23 +643,24 @@ canSave(): boolean {
     if (this.assessmentId) {
       const subjects = this.mapRightListInputs(this.rightList);
       const originalAssessment = this.assessmentList.find((assessment) => assessment.assessmentId === this.assessmentId);
-      const originalDateCreated = originalAssessment ? originalAssessment.dateCreated : Date.now(); 
+      const originalDateCreated = originalAssessment ? originalAssessment.dateCreated : Date.now();
       const updatedAssessmentList: AssessmentList = {
         assessmentId: this.assessmentId,
-        dateCreated: originalDateCreated,  
-        dateUpdated: Date.now(),   
-        isDisable:false,      
-        subjects: subjects,            
+        dateCreated: originalDateCreated,
+        dateUpdated: Date.now(),
+        isDisable: false,
+        subjects: subjects,
       };
       const updatedAssessment: Assessment = {
         assessmentId: this.assessmentId,
         assessmentName: this.assessmentTitle,
         assessmentType: this.viewMode,
-        dateCreated: originalDateCreated,   
-        dateUpdated: Date.now(),              
-        isDisabled: false,                    
+        dateCreated: originalDateCreated,
+        dateUpdated: Date.now(),
+        isDisabled: false,
         isautoEvaluated: this.isAutoEvaluated,
-        isLinkGenerated:false
+        isLinkGenerated: false,
+          isTimeBound: this.isTimeBound 
       };
 
       this.firebaseService.update('assessment/' + this.assessmentId, updatedAssessment)
@@ -659,14 +669,14 @@ canSave(): boolean {
             .then(() => {
               this.assessmentList = this.assessmentList.map((assessment) => {
                 if (assessment.assessmentId === this.assessmentId) {
-                  return updatedAssessmentList; 
+                  return updatedAssessmentList;
                 }
                 return assessment;
               });
               this.toastr.success('Assessment and Assessment List Updated successfully', 'Updated');
-              this.resetRightListAndForm();  
-              this.assessmentTitle = '';     
-              this.navigateToAssessments(); 
+              this.resetRightListAndForm();
+              this.assessmentTitle = '';
+              this.navigateToAssessments();
               console.log(this.updateAssessment, updatedAssessmentList);
             })
             .catch((error) => {
@@ -736,17 +746,17 @@ canSave(): boolean {
     console.log('Page has been reset!');
     this.eConfirmationVisible = false;
   }
-  actionType: 'reset' | 'navigate' = 'reset'; 
+  actionType: 'reset' | 'navigate' = 'reset';
   onReset(): void {
-    this.actionType = 'reset'; 
-    this.eConfirmationVisible = true; 
+    this.actionType = 'reset';
+    this.eConfirmationVisible = true;
   }
   onBack(): void {
-    this.actionType = 'navigate'; 
-    this.eConfirmationVisible = true; 
+    this.actionType = 'navigate';
+    this.eConfirmationVisible = true;
   }
   updateSubjectsCanDeleted(subjectIds: string[]): Promise<void> {
-    const updatePromises = subjectIds.map(subjectId => 
+    const updatePromises = subjectIds.map(subjectId =>
       this.firebaseService.update(`${TableNames.Subject}/${subjectId}`, { canDelete: false })
     );
 

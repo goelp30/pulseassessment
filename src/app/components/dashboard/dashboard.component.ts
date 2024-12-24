@@ -31,7 +31,7 @@ export class DashboardComponent implements OnInit {
     '/assessment-list': 'Manage Assessment',
     '/assessmentrecords': 'Assessment Records',
     '/evaluation': 'Evaluate Assessments',
-    '/drag-and-drop':'Add Assessment'
+    '/manage-assessment':'Manage Assessment'
   };
 
   constructor(
@@ -55,7 +55,7 @@ export class DashboardComponent implements OnInit {
     });
   }
   updatePageLabel(url: string): void {
-    const label = this.routeLabelMap[url] || 'Dashboard';  // Fallback to 'Dashboard'
+    const label = this.routeLabelMap[url] || '';  // Fallback to 'Dashboard'
     this.pageLabelService.updatePageLabel(label);  // Update the label through the service
   }
 

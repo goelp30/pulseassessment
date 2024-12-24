@@ -7,6 +7,7 @@
         <app-button [icon]="'fas fa-sync'" [label]="'Reset'"
             [colorClass]="'bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-2 space-x-2'"
             (action)="onReset()"></app-button>
+        
     </div>
     <!-- create -->
      @if(isNewVisible){
@@ -64,7 +65,7 @@
 
         <div class="mb-6">
             <label for="assessmentTitle" class=" block text-lg font-semibold mb-3">
-                Enter Assessment Title:
+                Enter assessment title:
             </label>
             <input type="text" required id="assessmentTitle" [(ngModel)]="assessmentTitle"
                 class="border rounded w-1/3 py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -86,17 +87,37 @@
                 <!-- Internal View Radio -->
                 <label class="inline-flex items-center mr-6">
                     <input type="radio" name="viewMode" value="internal" [(ngModel)]="viewMode"
-                        (change)="toggleViewMode('internal')" class="radio-btn" />
+                        (change)="toggleViewMode('internal')" />
                     <span class="ml-2 text-gray-700">Internal </span>
                 </label>
                 <!-- External View Radio -->
                 <label class="inline-flex items-center">
                     <input type="radio" name="viewMode" value="external" [(ngModel)]="viewMode"
-                        (change)="toggleViewMode('external')" class="radio-btn" />
+                        (change)="toggleViewMode('external')"  />
                     <span class="ml-2 text-gray-700">External </span>
                 </label>
             </div>
         </div>
+        <div class="mb-3 w-full">
+            <h2 for="timeBound" class="block text-lg font-semibold mb-3">
+              Is this assessment time bound?
+            </h2>
+            <div class="flex items-center">
+              <!-- Time Bound Yes -->
+              <label class="inline-flex items-center mr-6">
+                <input type="radio" name="timeBound" [(ngModel)]="isTimeBound" [value]="true"  />
+                <span class="ml-2 text-gray-700">Yes</span>
+              </label>
+              <!-- Time Bound No -->
+              <label class="inline-flex items-center">
+                <input type="radio" name="timeBound" [(ngModel)]="isTimeBound" [value]="false"  />
+                <span class="ml-2 text-gray-700">No</span>
+              </label>
+            </div>
+          </div>
+          
+        
+        
 
         <div class="my-10">
             <hr />
@@ -116,10 +137,6 @@
                     </li>}
                 </ul>
             </div>
-
-            <!-- New button to move all subjects -->
-            <!-- Button to move subjects between left and right -->
-            <!-- Button to move subjects between left and right -->
             <div class="flex items-center justify-center">
                 <button (click)="toggleMoveAllSubjects()"
                     class="bg-custom-blue hover:opacity-80 transition-opacity text-white rounded-md px-4 py-2 space-x-2"
@@ -127,8 +144,6 @@
                     <span class="text-2xl" [innerHTML]="leftList.length > 0 ? '&raquo;' : '&laquo;'"></span>
                 </button>
             </div>
-
-
 
             <!-- Right List -->
             <div class="flex-1">
@@ -153,7 +168,7 @@
         <!-- Form for Selected Items -->
          @if(rightList.length > 0){
         <div>
-            <h3 class="text-lg font-semibold mb-4">Enter Details for Selected Subjects:</h3>
+            <h3 class="text-lg font-semibold mb-4">Enter details for selected subjects:</h3>
             <form [formGroup]="rightListForm">
                 <ul formArrayName="rightListInputs">
                     
