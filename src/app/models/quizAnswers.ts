@@ -1,5 +1,6 @@
-export interface Answer {
+export interface QuizAnswer {
   questionId: string;
+  quizId: string;
   isDescriptive: boolean;
   marks: string;
   userAnswer: string[];
@@ -8,34 +9,6 @@ export interface Answer {
   questionType: string;
   isEvaluated: boolean;
   evaluatedAt: string;
-  quizId?: string; // Optional for backward compatibility
-}
-
-export interface QuizAnswer {
-  userId: string;
-  assessmentId: string;
-  answers: { [key: string]: Answer };
-  totalMarks: number;
-  submittedAt: string;
-  isAutoEvaluated: boolean;
-  isPassed: boolean;
-  // Backward compatibility fields
-  questionId?: string;
-  quizId?: string;
-  isDescriptive?: boolean;
-  marks?: string;
-  userAnswer?: string[];
-  answer?: string;
-  maxMarks?: string;
-  questionType?: string;
-  isEvaluated?: boolean;
-  evaluatedAt?: string;
-}
-
-export interface QuizAnswers {
-  [quizId: string]: {
-    [questionId: string]: Answer;
-  };
 }
 
 export interface AssessmentData {
@@ -49,4 +22,8 @@ export interface AssessmentData {
   maxMarks: string;
   percentage: string;
 }
-
+export interface QuizAnswers {
+  [quizId: string]: {
+    [questionId: string]: QuizAnswer;
+  };
+}

@@ -232,8 +232,8 @@ validateOptions(): boolean {
       return false;
     }
   } else if (questionType === 'Multi') {
-    if (activeOptionsCount < 3 || correctOptionsCount < 2) {
-      this.warningMessage = 'Multi-choice questions must have at least 3 options and 2 correct options';
+    if (activeOptionsCount < 3 || correctOptionsCount < 2 || correctOptionsCount === activeOptionsCount) {
+      this.warningMessage = 'Multi-choice questions must have at least 3 options and 2 correct options, but not all options can be correct.';
       return false;
     }
   }
@@ -263,15 +263,16 @@ get isSaveDisabled(): boolean {
     }
   }
 
- // Validation for Multi-choice questions
- if (questionType === 'Multi') {
-  if (
-    activeOptionsCount < 3 || // At least 3 options
-    correctOptionsCount < 2 // At least 2 correct options
-  ) {
-    return true;
+  // Validation for Multi-choice questions
+  if (questionType === 'Multi') {
+    if (
+      activeOptionsCount < 3 || // At least 3 options
+      correctOptionsCount < 2 || // At least 2 correct options
+      correctOptionsCount === activeOptionsCount // Not all options can be correct
+    ) {
+      return true;
+    }
   }
-}
 
   // No restrictions for Descriptive questions
   return false; // All conditions passed
@@ -358,7 +359,6 @@ async saveQuestion(): Promise<void> {
       createdOn: Date.now(),
       updatedOn: Date.now(),
       isQuesDisabled: false,
-      marks: 0 // Initialize marks
     };
   
     try {
@@ -391,7 +391,6 @@ async saveQuestion(): Promise<void> {
       createdOn: this.question.createdOn, // Retain the original creation date
       updatedOn: Date.now(), // Update the last modified timestamp
       isQuesDisabled: false,
-      marks: 0 // Initialize marks
     };
   
     try {
