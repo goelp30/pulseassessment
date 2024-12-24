@@ -33,7 +33,7 @@ import { Subscription } from 'rxjs';
 export class SubjectTableComponent  implements OnInit{
   // Data properties
   subjects: Subject[] = [];
-  tableColumns: (keyof Subject)[] = ['subjectName','subjectId'];
+  tableColumns: (keyof Subject)[] = ['subjectName'];
   columnAliases: { [key: string]: string[] } = {
     subjectName: ['Subject Name'],
   };
