@@ -14,7 +14,6 @@ export interface Question {
   selectedAnswer?: any;
   descriptiveAnswer?: string;
   options?: Option[];
-  marks: number;
 }
 
 export interface Option {

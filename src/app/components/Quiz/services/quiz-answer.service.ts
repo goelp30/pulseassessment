@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Answer, QuizAnswer, QuizAnswers, AssessmentData } from '../../../models/quizAnswers';
+import { QuizAnswer, QuizAnswers, AssessmentData } from '../../../models/quizAnswers';
 import { FireBaseService } from '../../../../sharedServices/FireBaseService';
 import { Question } from '../../../models/question';
 
@@ -17,7 +17,6 @@ export class QuizAnswerService {
   setUserId(userId: string) {
     this.userId = userId;
   }
-
   setAssessmentId(assessmentID: string) {
     this.assessmentID = assessmentID;
   }
@@ -34,33 +33,23 @@ export class QuizAnswerService {
     }
 
     // Create new answer object
-    const answer: Answer = {
+    const quizAnswer: QuizAnswer = {
       questionId: questionId,
+      quizId: this.quizId,
       isDescriptive: isDescriptive,
       marks: marks,
-      userAnswer: userAnswer,
+      userAnswer: userAnswer, // This will override previous answers
       answer: descriptiveAnswer,
       questionType: isDescriptive ? 'Descriptive' : 'Single',
       isEvaluated: !isDescriptive,
-      evaluatedAt: !isDescriptive ? new Date().toISOString() : '',
-      quizId: this.quizId // Add quizId for backward compatibility
+      evaluatedAt: !isDescriptive ? new Date().toISOString() : ''
     };
 
     // Override the previous answer in memory
-    this.userAnswers[this.quizId][questionId] = answer;
+    this.userAnswers[this.quizId][questionId] = quizAnswer;
 
-    // Store in both new and old format for backward compatibility
-    const promises = [
-      // New format
-      this.fireBaseService.update(`/QuizAnswer/${this.quizId}/${questionId}`, answer),
-      // Old format (if needed)
-      this.fireBaseService.update(`quizAnswers/${questionId}`, {
-        ...answer,
-        quizId: this.quizId
-      })
-    ];
-
-    return Promise.all(promises)
+    // Immediately update in Firebase
+    this.fireBaseService.update(`/QuizAnswer/${this.quizId}/${questionId}`, quizAnswer)
       .then(() => {
         console.log('Answer updated in Firebase:', {
           questionId,
@@ -86,36 +75,67 @@ export class QuizAnswerService {
     const hasDescriptiveQuestions = questions.some(q => q.questionType === 'Descriptive');
     const maxMarks = questions.reduce((sum, q) => sum + (q.questionWeightage || 0), 0).toString();
     const percentage = (totalMarks / parseInt(maxMarks)) * 100;
-    const result = percentage >= 70 ? 'Pass' : 'Fail';
-
-    const quizAnswer: QuizAnswer = {
+    
+    const assessmentData: AssessmentData = {
+      assessmentID: this.assessmentID,
+      quizId: this.quizId,
+      isEvaluated: isAutoEvaluated,
       userId: this.userId,
-      assessmentId: this.assessmentID,
-      answers: this.userAnswers[this.quizId] || {},
-      totalMarks: totalMarks,
+      result: isPassed ? 'Pass' : 'Fail',
       submittedAt: new Date().toISOString(),
-      isAutoEvaluated: !hasDescriptiveQuestions, // Set based on question types
-      isPassed: !hasDescriptiveQuestions ? (percentage >= 70) : false // Only set pass/fail if no descriptive questions
+      totalMarks: totalMarks.toString(),
+      maxMarks: maxMarks,
+      percentage: percentage.toFixed(2)
     };
 
-    // Store in both formats for backward compatibility
-    const promises = [
-      // New format
-      this.fireBaseService.create('quizAnswers', quizAnswer),
-      // Old format assessment data
-      this.fireBaseService.create(`AssessmentData/${this.quizId}`, {
-        assessmentID: this.assessmentID,
-        quizId: this.quizId,
-        isEvaluated: !hasDescriptiveQuestions,
-        userId: this.userId,
-        result: hasDescriptiveQuestions ? 'Pending' : result,
-        submittedAt: new Date().toISOString(),
-        totalMarks: totalMarks.toString(),
-        maxMarks: maxMarks,
-        percentage: percentage.toFixed(2)
-      })
-    ];
+    this.fireBaseService.create(`/AssessmentData/${this.quizId}`, assessmentData)
+      .then(() => {
+        console.log('Assessment Data saved successfully:', assessmentData);
+        
+        const quizAnswers = this.getUserAnswers();
+        const batchUpdate: { [key: string]: QuizAnswer } = {};
 
-    return Promise.all(promises);
+        Object.keys(quizAnswers).forEach(questionId => {
+          const answer = quizAnswers[questionId];
+          const question = questions.find(q => q.questionId === questionId);
+          
+          if (question?.questionType === 'Descriptive') {
+            batchUpdate[`/QuizAnswer/${this.quizId}/${questionId}`] = {
+              questionId: answer.questionId,
+              quizId: this.quizId,
+              isDescriptive: true,
+              marks: '0',
+              userAnswer: [],
+              answer: answer.answer || '',
+              maxMarks: question.questionWeightage?.toString() || '0',
+              questionType: 'Descriptive',
+              isEvaluated: false,
+              evaluatedAt: ''
+            };
+          } else {
+            batchUpdate[`/QuizAnswer/${this.quizId}/${questionId}`] = {
+              questionId: answer.questionId,
+              quizId: this.quizId,
+              isDescriptive: false,
+              marks: answer.marks,
+              userAnswer: answer.userAnswer || [],
+              answer: '',
+              maxMarks: question?.questionWeightage?.toString() || '0',
+              questionType: question?.questionType || '',
+              isEvaluated: true,
+              evaluatedAt: new Date().toISOString()
+            };
+          }
+        });
+
+        console.log('Saving quiz answers to Firebase:', batchUpdate);
+        return this.fireBaseService.batchUpdate(batchUpdate);
+      })
+      .then(() => {
+        console.log('Quiz Answer data saved successfully with marks!');
+      })
+      .catch(error => {
+        console.error('Error saving quiz data:', error);
+      });
   }
 }

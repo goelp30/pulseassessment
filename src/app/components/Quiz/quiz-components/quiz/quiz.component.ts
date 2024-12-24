@@ -37,7 +37,7 @@ export class QuizComponent implements OnInit, OnDestroy {
   reloadCount = 0;
   showReloadWarningModal = false;
   private beforeUnloadListener: any;
-  private passingPercentage: number = 40; // You can adjust this value as needed
+  private passingPercentage: number = 70;
   isAutoEvaluated: boolean = false;
 
   constructor(
@@ -150,7 +150,7 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   isNextButtonDisabled(): boolean {
     const currentQuestion = this.questions[this.currentQuestion];
-    const currentQuestionAnswer = 
+    const currentQuestionAnswer =
       this.quizAnswerService.getUserAnswers()[currentQuestion?.questionId];
 
     // Check if the current question is the last question
@@ -171,7 +171,7 @@ export class QuizComponent implements OnInit, OnDestroy {
     }
 
     // For other question types, check for answers
-    return !(currentQuestionAnswer?.userAnswer?.length > 0);
+    return !currentQuestionAnswer?.userAnswer?.length;
   }
 
   onAnswerSelect(optionId: string) {
@@ -257,7 +257,7 @@ export class QuizComponent implements OnInit, OnDestroy {
 
       const currentQuestionAnswer =
         this.quizAnswerService.getUserAnswers()[question?.questionId];
-      const descriptiveAnswer = currentQuestionAnswer?.answer?.trim();
+      const descriptiveAnswer = question?.descriptiveAnswer?.trim();
 
       return (
         (currentQuestionAnswer?.userAnswer?.length ?? 0) > 0 ||
@@ -324,7 +324,6 @@ export class QuizComponent implements OnInit, OnDestroy {
     let totalMarks = 0;
     let totalPossibleMarks = 0;
     let hasDescriptiveAnswers = false;
-    let hasAttemptedAnyQuestion = false;
     let descriptiveQuestionsCount = 0;
     let attemptedDescriptiveCount = 0;
 
@@ -332,10 +331,8 @@ export class QuizComponent implements OnInit, OnDestroy {
       const answer = userAnswers[question.questionId];
       let marks = '0';
 
-      // Add marks to total possible marks if it's not a descriptive question
-      if (question.questionType !== 'Descriptive') {
-        totalPossibleMarks += question.marks;
-      }
+      // Add marks to total possible marks for ALL questions
+      totalPossibleMarks += question.questionWeightage;
 
       if (question.questionType === 'Descriptive') {
         descriptiveQuestionsCount++;
@@ -345,18 +342,24 @@ export class QuizComponent implements OnInit, OnDestroy {
           attemptedDescriptiveCount++;
         }
 
+        // Store descriptive answer for evaluation
         this.quizAnswerService.storeAnswer(
           question.questionId,
           true,
           [],
-          '0',
+          '0', // Descriptive answers start with 0 marks until evaluated
           descriptiveAnswer
         );
+
+        console.log('Descriptive answer stored:', {
+          questionId: question.questionId,
+          answer: descriptiveAnswer,
+        });
       } else {
+        // Handle MCQ/Single choice questions
         const userAnswer = answer?.userAnswer || [];
 
         if (userAnswer.length > 0) {
-          hasAttemptedAnyQuestion = true;
           marks = this.quizService
             .evaluateAutoScoredQuestions(
               question,
@@ -367,6 +370,7 @@ export class QuizComponent implements OnInit, OnDestroy {
           totalMarks += Number(marks);
         }
 
+        // Store answer even if empty
         this.quizAnswerService.storeAnswer(
           question.questionId,
           false,
@@ -386,6 +390,7 @@ export class QuizComponent implements OnInit, OnDestroy {
     let percentageScored = 0;
     
     if (this.isAutoEvaluated && totalPossibleMarks > 0) {
+      // Calculate percentage including all questions' weightage
       percentageScored = (totalMarks / totalPossibleMarks) * 100;
       isPassed = percentageScored >= this.passingPercentage;
     }
@@ -398,7 +403,6 @@ export class QuizComponent implements OnInit, OnDestroy {
       isAutoEvaluated: this.isAutoEvaluated,
       totalQuestions: this.questions.length,
       hasDescriptiveAnswers,
-      hasAttemptedAnyQuestion,
       descriptiveQuestionsCount,
       attemptedDescriptiveCount,
       userAnswers,
@@ -407,9 +411,7 @@ export class QuizComponent implements OnInit, OnDestroy {
 
     // If no descriptive questions are attempted, treat it as auto-evaluation
     if (descriptiveQuestionsCount > 0 && attemptedDescriptiveCount === 0) {
-      this.toastService.showInfo(
-        'No descriptive answers provided. Evaluating based on objective questions only.'
-      );
+      
       hasDescriptiveAnswers = false;
     }
 
@@ -423,9 +425,10 @@ export class QuizComponent implements OnInit, OnDestroy {
 
     if (hasDescriptiveAnswers) {
       this.toastService.showInfo(
-        'Quiz submitted successfully! Descriptive answers will be evaluated by the examiner.'
+        'Quiz submitted successfully!.'
       );
     } else {
+      const resultMessage = isPassed ? 'Passed' : 'Failed';
       this.toastService.showSuccess(
         `Quiz submitted successfully!`
       );
@@ -442,7 +445,7 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   handleTimeUp() {
     this.submitQuiz(true); // Pass true to indicate auto-submit
-    this.toastService.showInfo("Time's up! We'll submit your quiz now.");
+    this.toastService.showInfo("Time's up!");
   }
 
   ngOnDestroy() {
