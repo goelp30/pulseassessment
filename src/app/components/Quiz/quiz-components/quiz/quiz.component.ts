@@ -37,7 +37,6 @@ export class QuizComponent implements OnInit, OnDestroy {
   reloadCount = 0;
   showReloadWarningModal = false;
   private beforeUnloadListener: any;
-  showAutoSubmitModal = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -328,45 +327,45 @@ export class QuizComponent implements OnInit, OnDestroy {
       let marks = '0';
 
       if (question.questionType === 'Descriptive') {
-        // For descriptive questions, check if there's an answer
-        if (answer?.answer && answer.answer.trim()) {
+        // Store descriptive answer even if empty
+        const descriptiveAnswer = answer?.answer?.trim() || '';
+        if (descriptiveAnswer) {
           hasDescriptiveAnswers = true;
-          this.quizAnswerService.storeAnswer(
-            question.questionId,
-            true,
-            [],
-            '0',
-            answer.answer.trim()
-          );
-        } else if (isAutoSubmit) {
-          // For auto-submit, store empty answer for unattempted descriptive questions
-          this.quizAnswerService.storeAnswer(
-            question.questionId,
-            true,
-            [],
-            '0',
-            ''
-          );
         }
+
+        // Store descriptive answer for evaluation (empty or not)
+        this.quizAnswerService.storeAnswer(
+          question.questionId,
+          true,
+          [],
+          '0',
+          descriptiveAnswer
+        );
+
+        console.log('Descriptive answer stored:', {
+          questionId: question.questionId,
+          answer: descriptiveAnswer,
+        });
       } else {
-        // For MCQ/Single choice questions
-        if (answer?.userAnswer?.length) {
-          // Question was attempted
+        // Handle MCQ/Single choice questions
+        const userAnswer = answer?.userAnswer || [];
+
+        if (userAnswer.length > 0) {
           marks = this.quizService
             .evaluateAutoScoredQuestions(
               question,
               this.options[question.questionId] || [],
-              answer.userAnswer
+              userAnswer
             )
             .toString();
           totalMarks += Number(marks);
         }
 
-        // Store answer whether attempted or not
+        // Store answer even if empty
         this.quizAnswerService.storeAnswer(
           question.questionId,
           false,
-          answer?.userAnswer || [],
+          userAnswer,
           marks,
           ''
         );
@@ -381,7 +380,7 @@ export class QuizComponent implements OnInit, OnDestroy {
       isAutoSubmit,
     });
 
-    // Submit the quiz with the calculated marks
+    // Submit all questions with the calculated marks
     this.quizAnswerService.submitQuiz(this.questions, totalMarks);
 
     if (hasDescriptiveAnswers) {
@@ -395,10 +394,8 @@ export class QuizComponent implements OnInit, OnDestroy {
     this.updateAssessmentRecord();
     this.showModal = false;
 
-    // Only navigate if it's not an auto-submit
-    if (!isAutoSubmit) {
-      this.router.navigate(['/thank-you']);
-    }
+    // Navigate to thank you page
+    this.router.navigate(['/thank-you']);
   }
 
   submitFinalQuiz() {
@@ -406,13 +403,8 @@ export class QuizComponent implements OnInit, OnDestroy {
   }
 
   handleTimeUp() {
-    this.submitQuiz(true);
-    this.showAutoSubmitModal = true;
-  }
-
-  closeAutoSubmitModal() {
-    this.showAutoSubmitModal = false;
-    this.router.navigate(['/thank-you']);
+    this.submitQuiz(true); // Pass true to indicate auto-submit
+    this.toastService.showInfo("Time's up! We'll submit your quiz now.");
   }
 
   ngOnDestroy() {

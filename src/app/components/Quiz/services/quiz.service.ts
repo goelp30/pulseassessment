@@ -15,8 +15,9 @@ export class QuizService {
 
   getAssessmentById(assessmentId: string): Observable<AssessmentList | null> {
     return this.firebaseService.getAllData('assessmentList').pipe(
-      map((assessments: AssessmentList[]) =>
-        assessments.find((a) => a.assessmentId === assessmentId) || null
+      map(
+        (assessments: AssessmentList[]) =>
+          assessments.find((a) => a.assessmentId === assessmentId) || null
       ),
       catchError((error) => {
         console.error('Error fetching assessments:', error);
@@ -36,10 +37,12 @@ export class QuizService {
           console.error('Error fetching questions:', error);
           return of([]);
         })
-      ); 
+      );
   }
 
-  getOptionsForQuestions(questionIds: string[]): Observable<{ [key: string]: Option[] }> {
+  getOptionsForQuestions(
+    questionIds: string[]
+  ): Observable<{ [key: string]: Option[] }> {
     return this.firebaseService.getAllData('options').pipe(
       map((options: Option[]) => {
         const optionsMap: { [key: string]: Option[] } = {};
@@ -69,7 +72,9 @@ export class QuizService {
 
     subjectIds.forEach((subjectId) => {
       const subject = assessment.subjects[subjectId];
-      const subjectQuestions = questions.filter((q) => q.subjectId === subjectId);
+      const subjectQuestions = questions.filter(
+        (q) => q.subjectId === subjectId
+      );
 
       const easyQuestions = subjectQuestions.filter(
         (q) => q.questionLevel === 'Easy' && q.questionType !== 'Descriptive'
@@ -109,40 +114,52 @@ export class QuizService {
     }
     return array;
   }
-  evaluateAutoScoredQuestions(question: Question, options: Option[], userAnswer: any): number {
+  evaluateAutoScoredQuestions(
+    question: Question,
+    options: Option[],
+    userAnswer: any
+  ): number {
     let marks = 0;
     if (question.questionType === 'Single') {
-      const selectedOptionId = Array.isArray(userAnswer) ? userAnswer[0] : userAnswer;
-      const selectedOption = options.find(option => option.optionId === selectedOptionId);
+      const selectedOptionId = Array.isArray(userAnswer)
+        ? userAnswer[0]
+        : userAnswer;
+      const selectedOption = options.find(
+        (option) => option.optionId === selectedOptionId
+      );
       marks = selectedOption?.isCorrectOption ? question.questionWeightage : 0;
       console.log('Single Choice Question Marks:', {
         questionId: question.questionId,
         questionText: question.questionText,
         selectedAnswer: selectedOptionId,
-        correctOption: options.find(opt => opt.isCorrectOption)?.optionId,
+        correctOption: options.find((opt) => opt.isCorrectOption)?.optionId,
         isCorrect: selectedOption?.isCorrectOption,
-        marksAwarded: marks
+        marksAwarded: marks,
       });
-    } 
-    else if (question.questionType === 'Multi') {
+    } else if (question.questionType === 'Multi') {
       const correctOptions = options
-        .filter(option => option.isCorrectOption)
-        .map(option => option.optionId);
-      
-      let selectedAnswers = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
-      
+        .filter((option) => option.isCorrectOption)
+        .map((option) => option.optionId);
+
+      let selectedAnswers = Array.isArray(userAnswer)
+        ? userAnswer
+        : [userAnswer];
+
       let correctCount = 0;
       selectedAnswers.forEach((answerId: string) => {
         if (correctOptions.includes(answerId)) {
           correctCount++;
         }
       });
-      const marksPerCorrectAnswer = question.questionWeightage / correctOptions.length;
+      const marksPerCorrectAnswer =
+        question.questionWeightage / correctOptions.length;
       marks = correctCount * marksPerCorrectAnswer;
       let penalty = 0;
-      const extraAnswersSelected = selectedAnswers.length - correctOptions.length;
+      const extraAnswersSelected =
+        selectedAnswers.length - correctOptions.length;
       if (extraAnswersSelected > 0) {
-        const penaltyPerExtraAnswer = question.questionWeightage / correctOptions.length;
+        const penaltyPerExtraAnswer =
+          question.questionWeightage / correctOptions.length;
         penalty = extraAnswersSelected * penaltyPerExtraAnswer;
         marks -= penalty;
         if (marks < 0) marks = 0;
@@ -155,26 +172,33 @@ export class QuizService {
         correctCount,
         marksPerCorrect: marksPerCorrectAnswer,
         penalty: penalty,
-        finalMarks: marks
+        finalMarks: marks,
       });
-    }
-    else if (question.questionType === 'Descriptive') {
+    } else if (question.questionType === 'Descriptive') {
       marks = 0;
     }
     return marks;
   }
-  calculateTotalMarks(questions: Question[], options: { [key: string]: Option[] }, userAnswers: { [key: string]: any }): number {
+  calculateTotalMarks(
+    questions: Question[],
+    options: { [key: string]: Option[] },
+    userAnswers: { [key: string]: any }
+  ): number {
     return questions.reduce((total, question) => {
       if (question.questionType === 'Descriptive') {
         return total;
       }
       const questionOptions = options[question.questionId] || [];
       const userAnswer = userAnswers[question.questionId];
-      
+
       if (!userAnswer) {
         return total;
       }
-      const marks = this.evaluateAutoScoredQuestions(question, questionOptions, userAnswer);
+      const marks = this.evaluateAutoScoredQuestions(
+        question,
+        questionOptions,
+        userAnswer
+      );
       return total + marks;
     }, 0);
   }
