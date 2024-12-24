@@ -35,6 +35,7 @@ export class QuestiontableComponent implements OnInit {
     questionTime: 60,
     createdOn: Date.now(),
     updatedOn: Date.now(),
+    marks: 0
   };
 
   isQuestionModalVisible: boolean = false;
@@ -162,9 +163,10 @@ export class QuestiontableComponent implements OnInit {
       questionTime: 1,
       createdOn: Date.now(),
       updatedOn: Date.now(),
+      marks: 0
     };
     this.isQuestionModalVisible = true;
-    this.isAddModal=true; // Open only for adding a new question
+    this.isAddModal = true;
   }
   
 

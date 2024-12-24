@@ -7,6 +7,4 @@ import { Component } from '@angular/core';
   templateUrl: './link-expired.component.html',
   styleUrl: './link-expired.component.css'
 })
-export class LinkExpiredComponent {
-
-}
+export class LinkExpiredComponent {}

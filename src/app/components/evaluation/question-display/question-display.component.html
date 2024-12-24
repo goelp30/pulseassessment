@@ -1,21 +1,15 @@
 <div class="relative my-6 p-6 border border-gray-300 rounded-lg bg-white">
-  <!-- Display Question Number -->
   <div class="text-lg font-md font-bold text-gray-800">
     Q. {{ question.questionText | sentenceCase }}
   </div>
-  <!-- Display Marks for Non-Descriptive Questions -->
   @if(question.questionType !== 'Descriptive'){
-  <div
-    class="text-right text-gray-600 text-sm font-bold mb-0 absolute bottom-5 right-5"
-  >
+  <div class="text-right text-gray-600 text-sm font-bold mb-0 absolute bottom-5 right-5">
     Marks:
-    <span
-      [ngClass]="{
+    <span [ngClass]="{
         'text-red-600': question.marks == 0,
         'text-green-600': question.marks > 0
-      }"
-    >
-      {{ question.marks || 0 }} / {{ question.questionWeitage }}
+      }">
+      {{ question.marks || 0 }} / {{ question.questionWeightage}}
     </span>
   </div>
 
@@ -23,26 +17,18 @@
   <!-- Single-Answer Question -->
   @if(question.questionType == 'Single'){
   <div class="space-y-1 font-mono">
-    @for(option of question.options;track question.options){
+    @for(option of question.options;track option.optionId){
     <div class="flex items-center space-x-2">
-      <input
-        type="radio"
-        name="{{ question.questionId }}"
-        class="cursor-pointer"
-        [checked]="question.userAnswer == option.optionId"
-        disabled
-      />
+      <input type="radio" name="{{ question.questionId }}" class="cursor-pointer"
+        [checked]="question.userAnswer == option.optionId" disabled />
 
-      <label
-        class="text-md font-semibold"
-        [ngClass]="{
+      <label class="text-md font-semibold" [ngClass]="{
           'text-green-600':
             question.userAnswer == option.optionId && option.isCorrectOption,
           'text-red-600':
             question.userAnswer == option.optionId && !option.isCorrectOption,
           'text-gray-600': question.userAnswer == undefined
-        }"
-      >
+        }">
         {{ option.optionText | sentenceCase }}
       </label>
     </div>
@@ -52,18 +38,11 @@
   <!-- Multi-Answer Question -->
   @if(question.questionType === 'Multi'){
   <div class="space-y-1 font-mono">
-    @for(option of question.options;track question.options){
+    @for(option of question.options;track option.optionId){
     <div class="flex items-center space-x-2">
-      <input
-        type="checkbox"
-        name="{{ question.questionId }}"
-        class="cursor-pointer"
-        [checked]="question.userAnswer?.includes(option.optionId)"
-        disabled
-      />
-      <label
-        class="text-md font-semibold"
-        [ngClass]="{
+      <input type="checkbox" name="{{ question.questionId }}" class="cursor-pointer"
+        [checked]="question.userAnswer?.includes(option.optionId)" disabled />
+      <label class="text-md font-semibold" [ngClass]="{
           'text-green-600':
             question.userAnswer?.includes(option.optionId) &&
             option.isCorrectOption,
@@ -71,8 +50,7 @@
             question.userAnswer?.includes(option.optionId) &&
             !option.isCorrectOption,
           'text-gray-600': !question.userAnswer?.includes(option.optionId)
-        }"
-      >
+        }">
         {{ option.optionText | sentenceCase }}
       </label>
     </div>
@@ -84,64 +62,44 @@
   @if(question.questionType === 'Descriptive'){
   <div class="space-y-4 py-3">
     <div>
-      <!-- <pre
-        class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono overflow-x-auto whitespace-pre-wrap"
-        >{{ question.answer }}
-    </pre
-      > -->
-
-      <!--Code Header -->
-      <div
-        class="bg-gray-800 rounded-t-lg text-gray-400 px-4 py-2 flex justify-between items-center"
-      >
+      <div class="bg-gray-800 rounded-t-lg text-gray-400 px-4 py-2 flex justify-between items-center">
         <span class="text-xs font-mono">Answer...</span>
-        <!-- Copy Icon -->
-        <button
-          class="text-white rounded-md p-1"
-          (click)="copyToClipboard(question.answer)"
-          title="Copy to clipboard"
-        >
-          <!-- Popup Notification -->
+        <button class="text-white rounded-md p-1" (click)="copyToClipboard(question.answer)" title="Copy to clipboard">
           @if (isCopied) {
           <div class="link_copy">Copied!</div>
           }
           <i class="fas fa-copy"></i>
         </button>
       </div>
-      <!-- Code Area -->
-      <pre
-        class="p-4 rounded-b-lg font-mono text-sm whitespace-pre-wrap overflow-x-auto"
-        style="line-height: 1.5; background-color: #1e1e1e; color: #d4d4d4"
-        >{{ question.answer }}
+      <pre class="p-4 rounded-b-lg font-mono text-sm whitespace-pre-wrap overflow-x-auto"
+        style="line-height: 1.5; background-color: #1e1e1e; color: #d4d4d4">{{ question.answer }}
       </pre>
     </div>
     @if(!isDisabled){
     <!-- Marks for Descriptive Answer -->
+    <div class="flex flex-col items-end space-y-1">
     <div class="flex justify-end items-center space-x-2">
-      <label for="marks-input" class="text-gray-600 text-sm font-bold"
-        >Enter Marks:
+      <label for="marks-input" class="text-gray-600 text-sm font-bold">Enter Marks:
       </label>
-      <input
-        id="marks-input"
-        type="number"
-        [(ngModel)]="question.assignedMarks"
-        [max]="question.questionWeitage"
-        min="0"
-        step="1"
-        placeholder="    /{{ question.questionWeitage }}"
+      <input id="marks-input" type="number" [(ngModel)]="question.assignedMarks" [max]="question.questionWeightage"
+        min="0" step="1" placeholder="    /{{ question.questionWeightage }}"
         class="p-1 w-16 border border-gray-200 rounded-md bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-200"
-        (ngModelChange)="onMarksChange()"
-        [disabled]="isDisabled"
-      />
+        (ngModelChange)="onMarksChange()" [disabled]="isDisabled" />
+
+
     </div>
+    @if(showMarksError){
+    <div class="text-red-600 text-xs mt-1">
+      <span>Marks cannot exceed the question weightage!</span>
+    </div>}
+</div>
+
 
     } @else {
     <div class="text-right text-gray-600 text-sm font-bold">
       Marks:
-      <span
-        [ngClass]="{ 'text-green-700': marks > 0, 'text-red-600': marks == 0 }"
-      >
-        {{ marks }} / {{ question.questionWeitage }}
+      <span [ngClass]="{ 'text-green-700': marks > 0, 'text-red-600': marks == 0 }">
+        {{ marks }} / {{ question.questionWeightage}}
       </span>
     </div>
     }

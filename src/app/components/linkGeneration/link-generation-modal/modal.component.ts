@@ -1,14 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  OnInit,
-  OnChanges,
-  SimpleChanges,
-  OnDestroy,
-  ViewChild,
-} from '@angular/core';
+import {Component,EventEmitter,Input,Output,OnInit,OnChanges,SimpleChanges,OnDestroy,ViewChild,} from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SearchbarComponent } from '../../common/searchbar/searchbar.component';
@@ -18,6 +8,7 @@ import { Candidate } from '../../../models/candidate';
 import { Employee } from '../../../models/employee';
 import { Subscription } from 'rxjs';
 import { BitlyService } from '../services/bitly.service';
+import { Assessment } from '../../../models/assessment';
 
 @Component({
   selector: 'app-modal',
@@ -27,6 +18,7 @@ import { BitlyService } from '../services/bitly.service';
   styleUrls: ['./modal.component.css'],
   providers: [DatePipe],
 })
+
 export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild(SearchbarComponent) searchBar!: SearchbarComponent;
   @Input() link: string = '';
@@ -49,12 +41,12 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
   isSending: boolean = false;
   minDateTime: string = '';
   sendMessage: string = 'Data has been sent successfully!';
-  showPastTimeError: boolean = false; // New property to control error message visibility
+  showPastTimeError: boolean = false; 
 
   private subscription: Subscription = new Subscription();
 
   constructor(
-    private firebaseService: FireBaseService<any>,
+    private firebaseService: FireBaseService<Candidate|Employee|Assessment>,
     private bitlyService: BitlyService
   ) {}
 
@@ -65,14 +57,11 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
 
   setMinDateTime(): void {
     const currentDate = new Date();
-    // Extract the local date and time, formatted as 'YYYY-MM-DDTHH:MM'
     const year = currentDate.getFullYear();
     const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
     const day = currentDate.getDate().toString().padStart(2, '0');
     const hours = currentDate.getHours().toString().padStart(2, '0');
     const minutes = currentDate.getMinutes().toString().padStart(2, '0');
-
-    // Construct the minDateTime in local time format
     this.minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
@@ -248,20 +237,19 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     }
     this.dateTime();
     this.isSending = true;
-    // This updates isLinkGenerated in assessment table
     this.updateIsLinkGenerated();
     this.selectedNames.forEach((user) => {
       const userLink = this.buildUrlWithUserId(this.link, user);
-      // this.bitlyService.shortenLink(userLink).subscribe(
-      // (response) => {
-      // const shortenedUrl = response.link;
+      this.bitlyService.shortenLink(userLink).subscribe(
+      (response) => {
+      const shortenedUrl = response.link;
       const recordKey = `${this.assessmentId}_${
         user.candidateId || user.employeeId
       }`;
       const record = {
         assessmentId: this.assessmentId,
-        // url: shortenedUrl,
-        url: userLink,
+        url: shortenedUrl,
+        // url: userLink,
         email: user.employeeEmail || user.candidateEmail,
         userId: user.candidateId || user.employeeId || null,
         userName: user.candidateName || user.employeeName,
@@ -280,15 +268,15 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
         .catch((error) => {
           console.error('Error saving record:', error);
         });
-      // },
-      // (error) => {
-      //   console.error('Error shortening link:', error);
-      //   if (error.error) {
-      //     console.error('Error details:', error.error);
-      //   }
-      //   this.isSending = false;
-      // }
-      // );
+      },
+      (error) => {
+        console.error('Error shortening link:', error);
+        if (error.error) {
+          console.error('Error details:', error.error);
+        }
+        this.isSending = false;
+      }
+      );
     });
 
     setTimeout(() => {
@@ -320,13 +308,11 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     );
   }
 
-  // Helper function to build URL for a specific user based on type
   private buildUrlWithUserId(baseUrl: string, user: any): string {
     const userId = user.candidateId || user.employeeId;
     return `${baseUrl}/${encodeURIComponent(userId)}`;
   }
 
-  // Reset all selection data
   resetSelectionData(): void {
     this.selectedNames = [];
     this.selectAll = false;

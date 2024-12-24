@@ -7,6 +7,4 @@ import { Component } from '@angular/core';
   templateUrl: './invalid.component.html',
   styleUrl: './invalid.component.css'
 })
-export class InvalidComponent {
-
-}
+export class InvalidComponent {}

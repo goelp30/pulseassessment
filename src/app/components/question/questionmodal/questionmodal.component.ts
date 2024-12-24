@@ -359,6 +359,7 @@ async saveQuestion(): Promise<void> {
       createdOn: Date.now(),
       updatedOn: Date.now(),
       isQuesDisabled: false,
+      marks: 0 // Initialize marks
     };
   
     try {
@@ -391,6 +392,7 @@ async saveQuestion(): Promise<void> {
       createdOn: this.question.createdOn, // Retain the original creation date
       updatedOn: Date.now(), // Update the last modified timestamp
       isQuesDisabled: false,
+      marks: 0 // Initialize marks
     };
   
     try {

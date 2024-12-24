@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ButtonComponent } from "../../common/button/button.component";
 
 @Component({
   selector: 'app-evaluation-header',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, ButtonComponent],
   templateUrl: './evaluation-header.component.html',
   styleUrl: './evaluation-header.component.css',
 })
@@ -14,12 +15,8 @@ export class EvaluationHeaderComponent {
   @Input() userMarks: number = 0;
   @Input() totalMarks: number = 0;
   @Input() result?: string;
-
-  calculateResult(): string {
-    if (this.totalMarks === 0) {
-       return 'Fail'; // Or handle it differently if no total marks
-    }
-    const passPercentage = 0.7; // 70%
-    return this.userMarks / this.totalMarks >= passPercentage ? 'Pass' : 'Fail';
-}
+  @Output() backClick: EventEmitter<void> = new EventEmitter<void>();
+  onBackClick() {
+    this.backClick.emit();
+  }
 }

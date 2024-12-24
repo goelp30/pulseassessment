@@ -11,37 +11,26 @@
   <!-- Content (questions and options) -->
   <div *ngIf="!loading" class="flex flex-col lg:flex-row gap-6">
     <div class="flex-1">
-      <app-question-display
-        [question]="currentQuestionData"
-        [options]="currentQuestionOptions"
-        [questionNumber]="currentQuestion + 1"
-        [totalQuestions]="questions.length"
-        (answerSelect)="onAnswerSelect($event)"
-        (descriptiveAnswerChange)="onDescriptiveAnswerChange($event)"
-        (textAreaTouched)="onDescriptiveQuestionTouched()"
-        (reviewToggle)="toggleReview()">
+      <app-question-display [question]="currentQuestionData" [options]="currentQuestionOptions"
+        [questionNumber]="currentQuestion + 1" [totalQuestions]="questions.length"
+        (answerSelect)="onAnswerSelect($event)" (descriptiveAnswerChange)="onDescriptiveAnswerChange($event)"
+        (textAreaTouched)="onDescriptiveQuestionTouched()" (reviewToggle)="toggleReview()">
       </app-question-display>
 
       <!-- Navigation and Submit buttons -->
       <div class="flex justify-between items-center mt-6 space-x-4">
-        <button
-          (click)="previousQuestion()"
-          [disabled]="currentQuestion === 0"
-          class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50">
+        <button (click)="previousQuestion()" [disabled]="currentQuestion === 0"
+          class="px-6 py-2 bg-custom-blue text-white rounded-md hover:opacity-80 transition-opacity disabled:opacity-50">
           Previous
         </button>
 
-        <button
-        *ngIf="allQuestionsVisited()"
-          (click)="submitFinalQuiz()"
-          class="px-8 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+        <button *ngIf="allQuestionsVisited()" (click)="submitFinalQuiz()"
+          class="px-8 py-2 bg-green-500 text-white rounded-md hover:opacity-80 transition-opacity">
           Submit Quiz
         </button>
 
-        <button
-          (click)="nextQuestion()"
-          [disabled]="isNextButtonDisabled()"
-          class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50">
+        <button (click)="nextQuestion()" [disabled]="isNextButtonDisabled()"
+          class="px-6 py-2 bg-custom-blue text-white rounded-md hover:opacity-80 transition-opacity disabled:opacity-50">
           Next
         </button>
       </div>
@@ -49,27 +38,20 @@
 
     <!-- Timer and Question Navigator -->
     <div class="w-full lg:w-64 space-y-4">
-      <app-quiz-timer
-  [totalTime]="totalQuestionTime"
-  (timeUp)="handleTimeUp()">
-</app-quiz-timer>
+      <app-quiz-timer [totalTime]="totalQuestionTime" (timeUp)="handleTimeUp()">
+      </app-quiz-timer>
 
-      <app-question-navigator
-        [questions]="questions"
-        [currentQuestionIndex]="currentQuestion"
+      <app-question-navigator [questions]="questions" [currentQuestionIndex]="currentQuestion"
         (questionSelect)="goToQuestion($event)">
       </app-question-navigator>
     </div>
   </div>
 
-   <!-- Submission Modal -->
-   <app-submission-modal 
-   [show]="showModal" 
-   [questions]="questions"
-   (onConfirm)="submitQuiz()"
-   (onCancel)="showModal = false">
- </app-submission-modal>
- 
+  <!-- Submission Modal -->
+  <app-submission-modal [show]="showModal" [questions]="questions" (onConfirm)="submitQuiz()"
+    (onCancel)="showModal = false">
+  </app-submission-modal>
+
   <!-- Reload Warning Modal -->
   <div *ngIf="showReloadWarningModal" class="modal-overlay">
     <div class="modal-content warning-modal">
