@@ -51,7 +51,7 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() filterOptions: string[] = [];
   @Input() statusOptions: string[] = [];
   @Input() showAdditionalFilters: boolean = false;
-  @Input() rowHoverTitleColumn: string = '';
+
 
   // New Input for handling status display
   @Input() statusMapping: { [key: string]: string } = {};
