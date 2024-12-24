@@ -1,17 +1,17 @@
 .cursor-grab {
-    cursor: grab;
-  }
-  .cursor-grabbing {
-    cursor: grabbing;
-  }
-  .bg-purple-500 {
-    background-color: #6b46c1;
-  }
-  .text-white {
-    color: white;
-  }
-  
-  /* Equal size for both lists with scrollbars */
+  cursor: grab;
+}
+.cursor-grabbing {
+  cursor: grabbing;
+}
+.bg-purple-500 {
+  background-color: #6b46c1;
+}
+.text-white {
+  color: white;
+}
+
+/* Equal size for both lists with scrollbars */
 #sortable-left,
 #sortable-right {
   max-height: 300px; /* Fixed height for both lists */
@@ -64,6 +64,6 @@ body {
 .dark .sortable-item:hover {
   background-color: #555;
 }
-.intra{
-  background-color: rgb(37, 150, 190)
+.intra {
+  background-color: rgb(37, 150, 190);
 }
