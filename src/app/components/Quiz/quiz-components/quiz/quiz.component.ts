@@ -32,6 +32,7 @@ export class QuizComponent implements OnInit, OnDestroy {
   loading = true;
   userId: string = '';
   assessmentId: string = '';
+  timestamp: string = '';
   showModal = false;
   totalQuestionTime: number = 0; // New property to store total question time
   reloadCount = 0;
@@ -97,8 +98,10 @@ export class QuizComponent implements OnInit, OnDestroy {
     if (state?.userId) {
       //--------
       this.userId = state.userId;
+      this.timestamp = state.timestamp;
       this.quizAnswerService.setUserId(this.userId); // Set userId in the service
     }
+    
 
     this.loadAssessmentData();
   }
@@ -303,7 +306,7 @@ export class QuizComponent implements OnInit, OnDestroy {
     }
   }
   private updateAssessmentRecord() {
-    const recordKey = `${this.assessmentId}_${this.userId}`;
+    const recordKey = `${this.assessmentId}_${this.userId}_${this.timestamp}`;
     this.firebaseService
       .update(`assessmentRecords/${recordKey}`, {
         inProgress: false,

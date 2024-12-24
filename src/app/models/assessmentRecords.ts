@@ -13,4 +13,5 @@ export interface assessmentRecords {
   isValid: boolean;
   assessmentType: string;
   status?: string;
+  timestamp:string
 }

@@ -24,13 +24,15 @@ export class LinkStatusGuard implements CanActivate {
   ): Observable<boolean> {
     const userId = route.params['userId'];
     const assessmentId = route.params['assessmentId'];
+    const timestamp = route.params['timestamp'];
 
     return this.firebaseService.getAllData('assessmentRecords').pipe(
       map((data: assessmentRecords[]) => {
         const assessmentRecord = data.find(
           (assessment) =>
             assessment.userId === userId &&
-            assessment.assessmentId === assessmentId
+            assessment.assessmentId === assessmentId &&
+            assessment.timestamp === timestamp
         );
 
         if (!assessmentRecord) {

@@ -243,13 +243,15 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
       // this.bitlyService.shortenLink(userLink).subscribe(
       // (response) => {
       // const shortenedUrl = response.link;
+
+      const timestamp = Date.now().toString();
       const recordKey = `${this.assessmentId}_${
         user.candidateId || user.employeeId
-      }`;
+      }_${timestamp}`;
       const record = {
         assessmentId: this.assessmentId,
         // url: shortenedUrl,
-        url: userLink,
+        url: userLink + `/${timestamp}`,
         email: user.employeeEmail || user.candidateEmail,
         userId: user.candidateId || user.employeeId || null,
         userName: user.candidateName || user.employeeName,
@@ -261,6 +263,7 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
         isCompleted: false,
         isValid: true,
         isAccessed: false,
+        timestamp: timestamp
       };
 
       this.firebaseService

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { assessmentRecords } from '../../../../models/assessmentRecords';
 import { TableComponent } from '../../../common/table/table.component';
 import { TableNames } from '../../../../enums/TableName';
-import { filter, Subject, takeUntil } from 'rxjs';
+import { filter, Subject, takeUntil, timestamp } from 'rxjs';
 import { NavigationEnd, Router } from '@angular/router';
 
 @Component({
@@ -84,6 +84,7 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
       .getAllData('assessmentRecords')
       .pipe(takeUntil(this.destroy$))
       .subscribe((data: assessmentRecords[]) => {
+        
         this.assessments = data.map((assessment) => ({
           ...assessment,
           status: this.getStatus(assessment) || 'Unknown',
@@ -96,7 +97,7 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
 
   invalidateAssessment(assessment: assessmentRecords) {
     if (this.isInvalidDisabled(assessment)) return;
-    const recordKey = `${assessment.assessmentId}_${assessment.userId}`;
+    const recordKey = `${assessment.assessmentId}_${assessment.userId}_${assessment.timestamp}`;
     assessment.isValid = false;
     this.updateState(recordKey, { isValid: false })
       .then(() => {
