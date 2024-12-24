@@ -35,7 +35,7 @@ export class TableComponent implements OnInit, OnChanges {
     colorClass: string;  
     action: Function; 
     icon?: string;
-    title?:string;
+    title?: string;
     customClassFunction?: (row: any) => string;
     disableFunction?: (row: any) => boolean;
   }[] = [];
@@ -54,6 +54,7 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() statusMapping: { [key: string]: string } = {};
 
   @Input() customButtonDisplay: { [key: string]: any } = {};
+  copiedRow: any = null; // Track the copied row
   selectedFilter: string = '';
   selectedStatus: string = '';
 
@@ -98,9 +99,13 @@ export class TableComponent implements OnInit, OnChanges {
     ) {
       this.isLoading = true;
       this.filterData();
+      this.currentPage = 1; // Reset to first page
+      this.generatePagination();
       this.isLoading = false;
     }
   }
+  
+  
 
   selectTab(tab: string): void {
     this.activeTab = tab;
@@ -117,7 +122,8 @@ export class TableComponent implements OnInit, OnChanges {
 
   filterData() {
     let filtered = [...this.tableData];
-
+  
+    // Search filtering
     if (this.searchQuery) {
       filtered = filtered.filter((row) => {
         return this.tableColumns.some((column) => {
@@ -131,9 +137,13 @@ export class TableComponent implements OnInit, OnChanges {
         });
       });
     }
+  
+    // Additional filters
     if (this.showAdditionalFilters) {
       filtered = this.applyAdditionalFilters(filtered);
     }
+  
+    // Tab filtering
     if (this.activeTab && this.activeTab !== 'all') {
       filtered = filtered.filter((row) => {
         return (
@@ -142,12 +152,22 @@ export class TableComponent implements OnInit, OnChanges {
         );
       });
     }
-
+  
+    // Sorting by `updatedOn` or `createdOn` in descending order
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.updatedOn || a.createdOn).getTime();
+      const dateB = new Date(b.updatedOn || b.createdOn).getTime();
+      return dateB - dateA; // Sort in descending order
+    });
+  
+    // Update filtered data and pagination
     this.filteredData = filtered;
     this.totalPages = Math.ceil(this.filteredData.length / this.itemsPerPage);
+    this.currentPage = Math.min(this.currentPage, this.totalPages); // Ensure current page is within bounds
     this.generatePagination();
-    this.currentPage = 1;
   }
+  
+  
 
   applyAdditionalFilters(data: any[]): any[] {
     let filteredData = [...data];
@@ -208,11 +228,45 @@ export class TableComponent implements OnInit, OnChanges {
 
   generatePagination(): void {
     const totalPages = this.totalPages;
-    const pages = [];
-    for (let i = 1; i <= totalPages; i++) {
-      pages.push(i);
+    let pages: (number | '...')[] = [];
+
+    if (totalPages <= 5) {
+      // If total pages are 5 or less, display all
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Display first page
+      pages.push(1);
+
+      //Logic to show ellipsis when needed and not add duplicate elements
+      if (this.currentPage > 3) {
+        pages.push('...');
+      }
+      // Display current page, the one before and the one after if inside boundaries
+      if (this.currentPage > 2) {
+        pages.push(this.currentPage - 1);
+      }
+      if (this.currentPage > 1 && this.currentPage <= totalPages) {
+        pages.push(this.currentPage);
+      }
+      if (this.currentPage < totalPages - 1) {
+        pages.push(this.currentPage + 1);
+      }
+      if (this.currentPage < totalPages - 2) {
+        pages.push('...');
+      }
+
+      // Display last page
+      if (totalPages !== 1) {
+        pages.push(totalPages);
+      }
+
+      // Filter out potential duplicate "..."
+      pages = pages.filter((item, index, arr) => arr.indexOf(item) === index);
     }
-    this.pageNumbers = pages;
+
+    this.pageNumbers = pages as number[];
   }
 
   getButtonLabel(button: any, row: any): string {
@@ -236,10 +290,7 @@ export class TableComponent implements OnInit, OnChanges {
     return false;
   }
 
-  copiedRow: any = null; // Track the copied row
- 
- 
-copyToClipboard(content: string | undefined, row: any): void {
+  copyToClipboard(content: string | undefined, row: any): void {
     if (!content) return;
     navigator.clipboard
       .writeText(content)
