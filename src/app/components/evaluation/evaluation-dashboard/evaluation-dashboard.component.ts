@@ -28,9 +28,10 @@ export class EvaluationDashboardComponent implements OnInit, OnDestroy {
   tableName: string = 'List of Evaluations';
   isLoading: boolean = true;
   columnAliases = {
-    userName: ['User Name'],
-    userEmail: ['User Email'],
-    quizId: ['Quiz Id'],
+    userName: ['Name'],
+    userEmail: ['Email'],
+    assessmentID: ['Assessment Id'],
+    assessmentName: ['Assessment Name'],
     status: ['Status'],
   };
   buttons = [

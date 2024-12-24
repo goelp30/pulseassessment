@@ -84,7 +84,7 @@ export class EvaluateAssessmentComponent implements OnInit {
                       return {
                         ...item,
                         questionText: question?.questionText,
-                        questionWeitage: question?.questionWeightage,
+                        questionWeightage : question?.questionWeightage,
                         questionType: question?.questionType,
                         options: options,
                       };
@@ -116,7 +116,7 @@ export class EvaluateAssessmentComponent implements OnInit {
     this.attemptedQuestions.forEach((question) => {
       if (question.questionType === 'Descriptive') {
         const marks = question.assigned_marks;
-        const weightage = question.questionWeitage;
+        const weightage = question.questionWeightage;
 
         if (marks === undefined || marks === null || marks > weightage) {
           allMarksValid = false;
@@ -158,7 +158,7 @@ export class EvaluateAssessmentComponent implements OnInit {
           (option: { optionId: any }) => option.optionId == question.userAnswer
         );
         question.marks = selectedOption?.isCorrectOption
-          ? question.questionWeitage
+          ? question.questionWeightage
           : 0;
       } else if (question.questionType === 'Multi') {
         const correctOptions = question.options
@@ -174,13 +174,13 @@ export class EvaluateAssessmentComponent implements OnInit {
           if (correctOptions.includes(answer)) correctCount++;
         });
         const marksPerCorrectAnswer =
-          question.questionWeitage / correctOptions.length;
+          question.questionWeightage / correctOptions.length;
         question.marks = correctCount * marksPerCorrectAnswer;
         const extraAnswersSelected =
           selectedAnswers.length - correctOptions.length;
         if (extraAnswersSelected > 0) {
           const penaltyPerExtraAnswer =
-            question.questionWeitage / correctOptions.length;
+            question.questionWeightage / correctOptions.length;
           question.marks -= extraAnswersSelected * penaltyPerExtraAnswer;
           if (question.marks < 0) question.marks = 0;
         }
@@ -200,13 +200,13 @@ export class EvaluateAssessmentComponent implements OnInit {
 
   getTotalMarks(): number {
     return this.evaluationList.reduce((totalMarks, question) => {
-      return totalMarks + (question.questionWeitage || 0);
+      return totalMarks + (question.questionWeightage || 0);
     }, 0);
   }
 
   onMarksChange(question: any): void {
     const marks = parseInt(question.assigned_marks || '0', 10);
-    const weightage = parseInt(question.questionWeitage || '0', 10);
+    const weightage = parseInt(question.questionWeightage || '0', 10);
 
     // Ensure marks are within valid range
     if (marks > weightage) {
