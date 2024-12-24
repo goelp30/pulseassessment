@@ -80,20 +80,20 @@
         <!-- Toggle Section -->
         <div class="mb-3 w-full">
             <h2 for="assessmentTitle" class="block text-lg font-semibold mb-3">
-                For Whom You Are Creating This Assessment
+                For whom you are creating this assessment?
             </h2>
             <div class="flex items-center">
                 <!-- Internal View Radio -->
                 <label class="inline-flex items-center mr-6">
                     <input type="radio" name="viewMode" value="internal" [(ngModel)]="viewMode"
                         (change)="toggleViewMode('internal')" class="radio-btn" />
-                    <span class="ml-2 text-gray-700">Internal View</span>
+                    <span class="ml-2 text-gray-700">Internal </span>
                 </label>
                 <!-- External View Radio -->
                 <label class="inline-flex items-center">
                     <input type="radio" name="viewMode" value="external" [(ngModel)]="viewMode"
                         (change)="toggleViewMode('external')" class="radio-btn" />
-                    <span class="ml-2 text-gray-700">External View</span>
+                    <span class="ml-2 text-gray-700">External </span>
                 </label>
             </div>
         </div>
