@@ -39,7 +39,7 @@ export const routes: Routes = [
   { path: 'alreadyattended', component: AlreadyAttendedComponent },
   { path: 'invalid', component: InvalidComponent },
   {
-    path: 'termsandconditions/:assessmentId/:userId',
+    path: 'termsandconditions/:assessmentId/:userId/:timestamp',
     component: TermsConditionsComponent,
     canActivate: [LinkStatusGuard],
   },

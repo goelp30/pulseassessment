@@ -14,6 +14,7 @@ import { assessmentRecords } from '../../../models/assessmentRecords';
 export class TermsConditionsComponent implements OnInit {
   userId: string = '';
   assessmentId: string = '';
+  timestamp : string = "";
   isLoading: boolean = false;
   assessmentDetails: assessmentRecords[] = [];
 
@@ -32,12 +33,13 @@ export class TermsConditionsComponent implements OnInit {
     this.activatedRoute.params.subscribe((params) => {
       this.userId = params['userId'];
       this.assessmentId = params['assessmentId'];
+      this.timestamp = params['timestamp'];
     });
   }
 
   onAcceptTerms(): void {
     this.isLoading = true;
-    const recordKey = `${this.assessmentId}_${this.userId}`;
+    const recordKey = `${this.assessmentId}_${this.userId}_${this.timestamp}`;
     this.firebaseService
       .update(`assessmentRecords/${recordKey}`, {
         isAccessed: true,
@@ -45,7 +47,7 @@ export class TermsConditionsComponent implements OnInit {
       })
       .then(() => {
         this.router.navigate(['/app-quiz'], {
-          state: { assessmentId: this.assessmentId, userId: this.userId },
+          state: { assessmentId: this.assessmentId, userId: this.userId , timestamp: this.timestamp},
         });
       })
       .catch((error) => {
