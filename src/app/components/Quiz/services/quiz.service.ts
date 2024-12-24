@@ -102,9 +102,19 @@ export class QuizService {
   }
 
   private getRandomQuestions(questions: Question[], count: number): Question[] {
-    if (!questions || questions.length === 0) return [];
-    const shuffled = this.shuffleArray(questions);
-    return shuffled.slice(0, count);
+    if (!questions || questions.length === 0 || count === 0) return [];
+    
+    // If count is greater than or equal to available questions, return all questions
+    if (count >= questions.length) return questions;
+
+    const [head, ...rest] = questions;
+    const randomQuestions = (new Array(count - 1)).fill(0).map(() => {
+      const index = Math.floor(Math.random() * rest.length);
+      return rest.splice(index, 1)[0];
+    });
+
+    // Return the head (first question) along with random selections from the rest
+    return [head, ...randomQuestions];
   }
 
   private shuffleArray(array: any[]): any[] {

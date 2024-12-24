@@ -7,6 +7,7 @@ import { QuestionDisplayComponent } from '../question-display/question-display.c
 import { QuestionNavigatorComponent } from '../question-navigator/question-navigator.component';
 import { QuizTimerComponent } from '../quiz-timer/quiz-timer.component';
 import { SubmissionModalComponent } from '../submission-modal/submission-modal.component';
+import { AutoSubmissionModalComponent } from '../auto-submission-modal/auto-submission-modal.component';
 import { QuizAnswerService } from '../../services/quiz-answer.service';
 import { ToastService } from '../../services/toast.service';
 import { FireBaseService } from '../../../../../sharedServices/FireBaseService';
@@ -20,6 +21,7 @@ import { assessmentRecords } from '../../../../models/assessmentRecords';
     QuestionNavigatorComponent,
     QuizTimerComponent,
     SubmissionModalComponent,
+    AutoSubmissionModalComponent,
   ],
   selector: 'app-quiz',
   templateUrl: './quiz.component.html',
@@ -39,6 +41,7 @@ export class QuizComponent implements OnInit, OnDestroy {
   private beforeUnloadListener: any;
   private passingPercentage: number = 70;
   isAutoEvaluated: boolean = false;
+  showAutoSubmitModal = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -382,13 +385,14 @@ export class QuizComponent implements OnInit, OnDestroy {
     });
 
     // Calculate if auto evaluation is applicable
-    this.isAutoEvaluated = descriptiveQuestionsCount === 0 || 
-                          (descriptiveQuestionsCount > 0 && attemptedDescriptiveCount === 0);
+    this.isAutoEvaluated =
+      descriptiveQuestionsCount === 0 ||
+      (descriptiveQuestionsCount > 0 && attemptedDescriptiveCount === 0);
 
     // Calculate pass/fail status if auto evaluated
     let isPassed = false;
     let percentageScored = 0;
-    
+
     if (this.isAutoEvaluated && totalPossibleMarks > 0) {
       // Calculate percentage including all questions' weightage
       percentageScored = (totalMarks / totalPossibleMarks) * 100;
@@ -411,30 +415,31 @@ export class QuizComponent implements OnInit, OnDestroy {
 
     // If no descriptive questions are attempted, treat it as auto-evaluation
     if (descriptiveQuestionsCount > 0 && attemptedDescriptiveCount === 0) {
-      
       hasDescriptiveAnswers = false;
     }
 
     // Submit all questions with the calculated marks and evaluation status
     this.quizAnswerService.submitQuiz(
-      this.questions, 
+      this.questions,
       totalMarks,
       this.isAutoEvaluated,
       isPassed
     );
 
     if (hasDescriptiveAnswers) {
-      this.toastService.showInfo(
-        'Quiz submitted successfully!.'
-      );
+      this.toastService.showInfo('Quiz submitted successfully!.');
     } else {
       const resultMessage = isPassed ? 'Passed' : 'Failed';
-      this.toastService.showSuccess(
-        `Quiz submitted successfully!`
-      );
+      this.toastService.showSuccess(`Quiz submitted successfully!`);
     }
 
     this.updateAssessmentRecord();
+
+    if (isAutoSubmit) {
+      // Don't navigate here for auto-submit
+      return;
+    }
+
     this.showModal = false;
     this.router.navigate(['/thank-you']);
   }
@@ -444,8 +449,13 @@ export class QuizComponent implements OnInit, OnDestroy {
   }
 
   handleTimeUp() {
-    this.submitQuiz(true); // Pass true to indicate auto-submit
-    this.toastService.showInfo("Time's up!");
+    this.submitQuiz(true);
+    this.showAutoSubmitModal = true;
+  }
+
+  handleAutoSubmitOk() {
+    this.showAutoSubmitModal = false;
+    this.router.navigate(['/thank-you']);
   }
 
   ngOnDestroy() {
