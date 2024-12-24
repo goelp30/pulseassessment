@@ -125,69 +125,28 @@ export class AssessTableComponent {
     this.selectedAssessmentToDelete = assessment;
     this.eConfirmationVisible = true;
   }
-  // Proceed with the deletion of the assessment
   deleteAssessment() {
     if (this.selectedAssessmentToDelete) {
-      const assessmentToDelete = this.selectedAssessmentToDelete;
-      assessmentToDelete.isDisabled = true; // Mark as disabled in the Assessment table
+      const assessmentToDelete = { ...this.selectedAssessmentToDelete }; // Create a copy of the selected assessment to delete
+      assessmentToDelete.isDisabled = true; // Mark the assessment as disabled (soft delete)
   
-      // First, update the 'Assessment' table to mark it as disabled
+      // Update the assessment in the Firestore or your database to set isDisabled as true
       this.fireBaseService
-        .update(
-          `${this.tableName}/${assessmentToDelete.assessmentId}`,
-          assessmentToDelete
-        )
+        .update(`${this.tableName}/${assessmentToDelete.assessmentId}`, assessmentToDelete)
         .then(() => {
-          // Once the assessment is marked as disabled, update the related AssessmentList entries
-          this.fireBaseService
-            .getAllDataByFilter(this.assessmentListTable, 'isDisable', false)
-            .subscribe((assessmentList: AssessmentList[]) => {
-              const assessmentsToUpdate = assessmentList.filter(
-                (entry) => entry.assessmentId === assessmentToDelete.assessmentId
-              );
-  
-              // If no related entries are found, show success toast directly
-              if (assessmentsToUpdate.length === 0) {
-                this.toastr.success('Assessment deleted successfully', 'Deleted');
-                this.eConfirmationVisible = false; // Close the modal
-                this.getAssessments(); // Refresh the assessments list after deletion
-                return;
-              }
-  
-              // If related entries exist, update them and wait for all updates
-              const updatePromises = assessmentsToUpdate.map((assessment) => {
-                assessment.isDisable = true; // Mark as disabled in the AssessmentList table
-                return this.fireBaseService.update(
-                  `${this.assessmentListTable}/${assessment.assessmentId}`,
-                  assessment
-                );
-              });
-  
-              // Wait for all related entries to be updated
-              Promise.all(updatePromises)
-                .then(() => {
-                  // After all updates are complete, show the success toast
-                  this.toastr.success('Assessment deleted successfully', 'Deleted');
-                  this.eConfirmationVisible = false; // Close the modal
-                  this.getAssessments(); // Refresh the assessments list after deletion
-                })
-                .catch((error) => {
-                  console.error('Error updating AssessmentList entries:', error);
-                  this.toastr.error('Failed to update related records', 'Error');
-                });
-            });
+          // Show success toast if the assessment is marked as disabled
+          this.toastr.error('Assessment deleted successfully', 'Deleted', { timeOut: 1000 });
+          this.getAssessments(); // Refresh the assessments list to reflect the change
+          this.eConfirmationVisible = false; // Close the delete confirmation modal
         })
         .catch((error) => {
-          console.error('Error deleting assessment:', error);
-          this.toastr.error('Failed to delete assessment', 'Error');
+          // Handle errors if the update fails
+          console.error('Error disabling assessment:', error);
+          this.toastr.error('Failed to delete assessment', 'Error', { timeOut: 1000 });
         });
     }
   }
   
-  
-
-  // View the details of the assessment and related subjects
-  // In AssessTableComponent (TypeScript)
   viewAssessment(row: any) {
     this.selectedAssessment = { ...row };
     this.isEditMode = false;

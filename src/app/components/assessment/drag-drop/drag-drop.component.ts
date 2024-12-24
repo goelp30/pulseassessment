@@ -582,7 +582,7 @@ canSave(): boolean {
       return (group.get('descriptive')?.value || 0) > 0;
     });
     this.isAutoEvaluated = !hasDescriptiveGreaterThanZero;
-
+  
     if (this.assessmentTitle.trim().length === 0) {
       this.assessmentTitleWarning = "Assessment Title cannot be empty or just spaces.";
       return;
@@ -598,33 +598,30 @@ canSave(): boolean {
         this.addAssessment().then((assessmentId: string) => {
           if (this.rightListForm.valid) {
             const subjects = this.mapRightListInputs(this.rightList);
-
-            const updatedAssessmentList: AssessmentList = {
+  
+            const newAssessmentList: AssessmentList = {
               assessmentId,
               dateCreated: Date.now(),
               dateUpdated: Date.now(),
               isDisable: false,
               subjects: subjects,
             };
-
-            this.firebaseService.create('assessmentList/' + assessmentId, updatedAssessmentList)
+  
+            this.firebaseService.create('assessmentList/' + assessmentId, newAssessmentList)
               .then(() => {
-                this.assessmentList.unshift(updatedAssessmentList);
                 this.toastr.success('Assessment Created', 'Created');
                 this.resetRightListAndForm();
                 this.assessmentTitle = '';
-                this.isNewVisible = true;
+                this.navigateToAssessments();
+                // this.isNewVisible = true;
                 this.updateSubjectsCanDeleted(Object.keys(subjects))
-                .then(() => {
-                  if(this.editFlag){
-                    this.toastr.success('Subjects updated successfully', 'Updated');
-                  }
-                 
-                })
-                .catch((error) => {
-                  console.error('Error updating subjects:', error);
-                  this.toastr.error('Failed to update subjects. Please try again.');
-                });
+                  .then(() => {
+                    // Do not show any additional toasts here
+                  })
+                  .catch((error) => {
+                    console.error('Error updating subjects:', error);
+                    this.toastr.error('Failed to update subjects. Please try again.');
+                  });
               })
               .catch((error) => {
                 console.error('Error saving data:', error);
@@ -689,37 +686,37 @@ canSave(): boolean {
         });
     }
   }
-  saveAssessmentAndSubjects(): void {
-    this.addAssessment().then((assessmentId: string) => {
-      if (this.rightListForm.valid) {
-        const subjects = this.mapRightListInputs(this.rightList);
-        const assessmentList: AssessmentList = {
-          assessmentId,
-          dateCreated: Date.now(),
-          dateUpdated: Date.now(),
-          isDisable:false,
-          subjects: subjects,
-        };
+  // saveAssessmentAndSubjects(): void {
+  //   this.addAssessment().then((assessmentId: string) => {
+  //     if (this.rightListForm.valid) {
+  //       const subjects = this.mapRightListInputs(this.rightList);
+  //       const assessmentList: AssessmentList = {
+  //         assessmentId,
+  //         dateCreated: Date.now(),
+  //         dateUpdated: Date.now(),
+  //         isDisable:false,
+  //         subjects: subjects,
+  //       };
 
-        this.firebaseService.create('assessmentList/' + assessmentId, assessmentList)
-          .then(() => {
-            this.assessmentList.unshift(assessmentList);
-            this.fetchLeftList();
-            this.toastr.success('Assessment Created successfully', 'Created');
-            this.resetRightListAndForm();
-            this.assessmentTitle = '';  
-          })
-          .catch((error) => {
-            console.error('Error saving data:', error);
-            this.toastr.error('Failed to save data. Please try again.');
-          });
-      } else {
-        this.toastr.warning('Please fill in the form correctly.');
-      }
-    }).catch((error) => {
-      this.toastr.error('Failed to create assessment. ' + error);
-    });
-  }
+  //       this.firebaseService.create('assessmentList/' + assessmentId, assessmentList)
+  //         .then(() => {
+  //           this.assessmentList.unshift(assessmentList);
+  //           this.fetchLeftList();
+  //           this.toastr.success('Assessment Created successfully', 'Created');
+  //           this.resetRightListAndForm();
+  //           this.assessmentTitle = '';  
+  //         })
+  //         .catch((error) => {
+  //           console.error('Error saving data:', error);
+  //           this.toastr.error('Failed to save data. Please try again.');
+  //         });
+  //     } else {
+  //       this.toastr.warning('Please fill in the form correctly.');
+  //     }
+  //   }).catch((error) => {
+  //     this.toastr.error('Failed to create assessment. ' + error);
+  //   });
+  // }
   setRightListFormControls(controls: any[]): void {
     const rightListInputs = this.rightListForm.get('rightListInputs') as FormArray;
     while (rightListInputs.length) {
