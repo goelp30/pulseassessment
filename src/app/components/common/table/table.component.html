@@ -13,7 +13,7 @@
 
 <!-- Dynamic Tabs Section -->
 @if(tabs.length > 0){
-<div class="flex justify-center">
+<div class="flex justify-center mt-3">
   <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
     <div class="block w-full overflow-hidden md:w-max">
       <nav>
@@ -23,7 +23,7 @@
         >
           @for(tab of tabs; track tab){
           <li
-            class="relative inline-flex items-center justify-center px-4 mt-2 py-1 font-sans text-base antialiased font-normal leading-relaxed text-center bg-transparent cursor-pointer select-none text-blue-gray-900"
+            class="relative inline-flex items-center justify-center px-4 py-1 font-sans text-base antialiased font-normal leading-relaxed text-center bg-transparent cursor-pointer select-none text-blue-gray-900"
             [class.bg-white]="activeTab === tab"
             (click)="selectTab(tab)"
           >
@@ -47,7 +47,7 @@
 <!-- Additional Filters Section (Conditionally Displayed for assessmentRecords) -->
 @if(showAdditionalFilters) {
 <div
-  class="flex flex-wrap justify-center sm:flex-nowrap items-center gap-4 sm:gap-6 mb-2 sm:mb-8"
+  class="flex flex-wrap justify-center mt-4 sm:flex-nowrap items-center gap-4 sm:gap-6 mb-2 sm:mb-8"
 >
   <!-- Dropdown for Filters -->
   <div class="w-full sm:w-auto">
