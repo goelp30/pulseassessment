@@ -7,17 +7,16 @@
 
 <div class="flex items-center p-3 bg-custom-blue text-white rounded-t-lg">
   <h1 class="text-3xl font-semibold text-center flex-grow">
-    {{ assessmentName }}
+    {{ assessmentName  | sentenceCase  }}
   </h1>
 </div>
-
 <div class="text-end p-3">
   <div class="text-lg font-semibold">
-    <span>Marks Scored:</span>
+    <span>Total Marks:</span>
     <span
       [ngClass]="{
-        'text-red-600': userMarks === 0,
-        'text-green-600': totalMarks !== 0
+        'text-red-600': userMarks == 0,
+        'text-green-600': userMarks !== 0
       }"
       class="font-semibold">
       {{ userMarks || 0 }} / {{ totalMarks }}
