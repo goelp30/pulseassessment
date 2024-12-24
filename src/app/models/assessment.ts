@@ -7,5 +7,6 @@ export type Assessment = {
   isDisabled:boolean,
   isautoEvaluated:boolean,
   isLinkGenerated?:boolean,
+  isTimeBound:boolean,
 };
 

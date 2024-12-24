@@ -54,6 +54,7 @@ export class AssessTableComponent {
     isDisabled: false,
     isautoEvaluated: true,
     isLinkGenerated: false,
+    isTimeBound:true
   };
   isEditMode: boolean = false;
   eConfirmationVisible: boolean = false;
