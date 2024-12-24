@@ -58,6 +58,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
   }
   // checking for atleast 2 ques
   checkTotalQuestions(): void {
+    this.totalWarning = '';
     this.rightListInputs.controls.forEach((group, i) => {
       const easyValue = group.get('easy')?.value || 0;
       const mediumValue = group.get('medium')?.value || 0;
@@ -66,8 +67,6 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       const totalSelectedForSubject = easyValue + mediumValue + hardValue + descriptiveValue;
       if (totalSelectedForSubject < 2) {
         this.totalWarning = `Please select at least 2 questions for each subject.`;
-      } else {
-        this.totalWarning = '';  
       }
     });
     this.updateSaveButtonStatus();
@@ -275,12 +274,19 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     if (input.disabled) {
       value = 0;
     }
-    // Validate input values (don't allow values outside of the specified range)
+
     this.getQuestionCountsForSubject(subjectId).then((availableCounts) => {
       let warningMessage = '';
       const countKey = `${controlName}Count` as keyof typeof availableCounts;
-  
+
       if (availableCounts) {
+        if (availableCounts[countKey] === 0) {
+          this.rightListInputs.at(index).get(controlName)?.disable();
+          value = 0;
+        } else {
+          this.rightListInputs.at(index).get(controlName)?.enable();
+        }
+
         if (value > availableCounts[countKey]) {
           warningMessage = `Available ${controlName.charAt(0).toUpperCase() + controlName.slice(1)} questions : ${availableCounts[countKey]} `;
         }
@@ -293,8 +299,8 @@ export class DragDropComponent implements AfterViewInit, OnInit {
           input.value = '0';
           value = 0;
         }
-  
-        // Store the warning message for each input
+
+        // Update the newValidationWarnings
         if (controlName === 'easy') {
           this.newValidationWarnings.easy[index] = warningMessage;
         } else if (controlName === 'medium') {
@@ -304,43 +310,23 @@ export class DragDropComponent implements AfterViewInit, OnInit {
         } else if (controlName === 'descriptive') {
           this.newValidationWarnings.descriptive[index] = warningMessage;
         }
-  
-        // Update the form control value for the current input
+
         this.rightListInputs.at(index).get(controlName)?.setValue(value);
-        // Now calculate the sum of selected values for all subjects in real-time
-        let totalSelected = 0;
-  
-        // Iterate through each subject and sum up the values
-        this.rightListInputs.controls.forEach((group, i) => {
-          const easyValue = group.get('easy')?.value || 0;
-          const mediumValue = group.get('medium')?.value || 0;
-          const hardValue = group.get('hard')?.value || 0;
-          const descriptiveValue = group.get('descriptive')?.value || 0;
-          totalSelected += easyValue + mediumValue + hardValue + descriptiveValue;
-        });
-  
-        // Real-time total check and warning message
-        if (totalSelected < 2) {
-          this.totalWarning = 'Please select at least 2 questions from each subject.';
-        } else {
-          this.totalWarning = '';  // Clear the warning if total is 2 or more
-        }
-  
-        // Update Save button status
-        this.updateSaveButtonStatus();
+        this.checkTotalQuestions();
       }
     });
   }
-  
+
   
   updateSaveButtonStatus(): void {
-    const hasWarnings = this.rightList.some((subject, index) => {
+    const hasIndividualWarnings = this.rightList.some((subject, index) => {
       return this.newValidationWarnings.easy[index] ||
              this.newValidationWarnings.medium[index] ||
              this.newValidationWarnings.hard[index] ||
              this.newValidationWarnings.descriptive[index];
     });
-  this.disable = hasWarnings;
+
+    this.disable = hasIndividualWarnings || !!this.totalWarning;
   }
       async getQuestionCountsForSubject(subjectId: string): Promise<any> {
     let counts = {
@@ -442,15 +428,27 @@ canSave(): boolean {
               }));
 
               const rightListInputs = this.fb.array(
-                Object.values(subjectsWithRatings).map((subject: any) =>
-                  this.fb.group({
+                Object.values(subjectsWithRatings).map((subject: any) => {
+                  const group = this.fb.group({
                     item: [subject],
-                    easy: [subject.easy, [Validators.min(0), Validators.max(5)]],
-                    medium: [subject.medium, [Validators.min(0), Validators.max(5)]],
-                    hard: [subject.hard, [Validators.min(0), Validators.max(5)]],
-                    descriptive: [subject.descriptive, [Validators.min(0), Validators.max(5)]],
-                  })
-                )
+                    easy: [{ value: subject.easy, disabled: false }, [Validators.min(0), Validators.max(5)]],
+                    medium: [{ value: subject.medium, disabled: false }, [Validators.min(0), Validators.max(5)]],
+                    hard: [{ value: subject.hard, disabled: false }, [Validators.min(0), Validators.max(5)]],
+                    descriptive: [{ value: subject.descriptive, disabled: false }, [Validators.min(0), Validators.max(5)]],
+                  });
+
+                  // Fetch question counts and disable fields with zero count
+                  this.getQuestionCountsForSubject(subject.subjectId).then((counts) => {
+                    (['easy', 'medium', 'hard', 'descriptive'] as const).forEach((type) => {
+                      const countKey = `${type}Count` as keyof typeof counts;
+                      if (counts[countKey] === 0) {
+                        group.get(type)?.disable();
+                      }
+                    });
+                  });
+
+                  return group;
+                })
               );
               this.rightListForm.setControl('rightListInputs', rightListInputs);
 
@@ -520,13 +518,14 @@ canSave(): boolean {
   }
   subscribeToFormChanges(): void {
     this.rightListForm.valueChanges.subscribe(() => {
+      this.checkTotalQuestions();
     });
-    
   }
+
   updateRightListForm(newRightList: any[]): void {
     const updatedInputs = this.fb.array(
       newRightList.map((subject) => {
-        const existingSubjectInput = this.rightListInputs.controls.find((control) => {
+        const existingSubjectInput = this.rightListInputs.controls.find((control: any) => {
           const subjectControl = control.value;
           return subjectControl.item.subjectId === subject.subjectId;
         });
@@ -558,8 +557,9 @@ canSave(): boolean {
     );
 
     this.rightListForm.setControl('rightListInputs', updatedInputs);
-    this.updateValidations();
+    this.checkTotalQuestions();
   }
+
   updateValidations(): void {
     this.rightListInputs.controls.forEach((group, index) => {
       ['easy', 'medium', 'hard', 'descriptive'].forEach(type => {
