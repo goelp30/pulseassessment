@@ -240,16 +240,16 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
     this.updateIsLinkGenerated();
     this.selectedNames.forEach((user) => {
       const userLink = this.buildUrlWithUserId(this.link, user);
-      // this.bitlyService.shortenLink(userLink).subscribe(
-      // (response) => {
-      // const shortenedUrl = response.link;
+      this.bitlyService.shortenLink(userLink).subscribe(
+      (response) => {
+      const shortenedUrl = response.link;
       const recordKey = `${this.assessmentId}_${
         user.candidateId || user.employeeId
       }`;
       const record = {
         assessmentId: this.assessmentId,
-        // url: shortenedUrl,
-        url: userLink,
+        url: shortenedUrl,
+        // url: userLink,
         email: user.employeeEmail || user.candidateEmail,
         userId: user.candidateId || user.employeeId || null,
         userName: user.candidateName || user.employeeName,
@@ -268,15 +268,15 @@ export class ModalComponent implements OnInit, OnChanges, OnDestroy {
         .catch((error) => {
           console.error('Error saving record:', error);
         });
-      // },
-      // (error) => {
-      //   console.error('Error shortening link:', error);
-      //   if (error.error) {
-      //     console.error('Error details:', error.error);
-      //   }
-      //   this.isSending = false;
-      // }
-      // );
+      },
+      (error) => {
+        console.error('Error shortening link:', error);
+        if (error.error) {
+          console.error('Error details:', error.error);
+        }
+        this.isSending = false;
+      }
+      );
     });
 
     setTimeout(() => {
