@@ -232,8 +232,8 @@ validateOptions(): boolean {
       return false;
     }
   } else if (questionType === 'Multi') {
-    if (activeOptionsCount < 3 || correctOptionsCount < 2 || correctOptionsCount === activeOptionsCount) {
-      this.warningMessage = 'Multi-choice questions must have at least 3 options and 2 correct options, but not all options can be correct.';
+    if (activeOptionsCount < 3 || correctOptionsCount < 2) {
+      this.warningMessage = 'Multi-choice questions must have at least 3 options and 2 correct options';
       return false;
     }
   }
@@ -263,16 +263,15 @@ get isSaveDisabled(): boolean {
     }
   }
 
-  // Validation for Multi-choice questions
-  if (questionType === 'Multi') {
-    if (
-      activeOptionsCount < 3 || // At least 3 options
-      correctOptionsCount < 2 || // At least 2 correct options
-      correctOptionsCount === activeOptionsCount // Not all options can be correct
-    ) {
-      return true;
-    }
+ // Validation for Multi-choice questions
+ if (questionType === 'Multi') {
+  if (
+    activeOptionsCount < 3 || // At least 3 options
+    correctOptionsCount < 2 // At least 2 correct options
+  ) {
+    return true;
   }
+}
 
   // No restrictions for Descriptive questions
   return false; // All conditions passed
