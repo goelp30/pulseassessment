@@ -109,6 +109,7 @@ export class AssessTableComponent {
   onSearchQueryChange(newQuery: string): void {
     this.searchQuery = newQuery;
   }
+  // getting all assessments
   getAssessments() {
     this.fireBaseService
       .getAllDataByFilter(this.tableName, 'isDisabled', false)

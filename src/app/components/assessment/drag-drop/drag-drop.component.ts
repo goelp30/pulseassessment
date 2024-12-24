@@ -56,6 +56,7 @@ export class DragDropComponent implements AfterViewInit, OnInit {
     event.returnValue = message;  
     return message;               
   }
+  // checking for atleast 2 ques
   checkTotalQuestions(): void {
     this.rightListInputs.controls.forEach((group, i) => {
       const easyValue = group.get('easy')?.value || 0;
@@ -63,23 +64,16 @@ export class DragDropComponent implements AfterViewInit, OnInit {
       const hardValue = group.get('hard')?.value || 0;
       const descriptiveValue = group.get('descriptive')?.value || 0;
       const totalSelectedForSubject = easyValue + mediumValue + hardValue + descriptiveValue;
-  
-      // Check for each subject individually if it has at least 2 questions selected
       if (totalSelectedForSubject < 2) {
-        // Set the warning message for the specific subject
         this.totalWarning = `Please select at least 2 questions for each subject.`;
       } else {
-        // Clear the warning message for this subject if it's fine
         this.totalWarning = '';  
       }
     });
-  
-    // Update Save button status
     this.updateSaveButtonStatus();
   }
   
   ngOnInit(): void {
-  //  try
     window.addEventListener('beforeunload', this.handleBeforeUnload);
     this.assessmentService.assessmentId$.subscribe((assessmentId) => {
       if (assessmentId) {

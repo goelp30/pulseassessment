@@ -9,7 +9,8 @@
             (action)="onReset()"></app-button>
     </div>
     <!-- create -->
-    <app-popup-module *ngIf="isNewVisible" [isVisible]="isNewVisible" [modalTitle]="'Confirm '"
+     @if(isNewVisible){
+    <app-popup-module [isVisible]="isNewVisible" [modalTitle]="'Confirm '"
         (closeModalEvent)="closeModal()">
         <!-- Confirmation Content -->
         <div class="text-gray-800">
@@ -23,10 +24,11 @@
                     New Assessment</button>
             </div>
         </div>
-    </app-popup-module>
+    </app-popup-module>}
 
     <!-- Confirmation Popup -->
-    <app-popup-module *ngIf="eConfirmationVisible" [isVisible]="eConfirmationVisible"
+     @if(eConfirmationVisible){
+    <app-popup-module [isVisible]="eConfirmationVisible"
         [modalTitle]="actionType === 'reset' ? 'Confirm Reset' : 'Confirm Navigation'" (closeModalEvent)="closeModal()">
         <!-- Confirmation Content -->
         <div class="text-gray-800">
@@ -49,7 +51,7 @@
                 </button>
             </div>
         </div>
-    </app-popup-module>
+    </app-popup-module>}
 
 
 
@@ -69,9 +71,10 @@
                 placeholder="Enter title here..." (ngModelChange)="onAssessmentTitleChange()" />
 
             <!-- Display Warning -->
-            <div *ngIf="assessmentTitleWarning" class="warning-message text-red-900">
+             @if(assessmentTitleWarning){
+            <div class="warning-message text-red-900">
                 {{ assessmentTitleWarning }}
-            </div>
+            </div>}
         </div>
 
         <!-- Toggle Section -->
@@ -105,11 +108,12 @@
                 <h3 class="text-lg font-semibold mb-3">Available Subjects</h3>
                 <ul id="sortable-left"
                     class="bg-gray-50 border rounded-lg shadow p-2 min-h-[200px] max-h-[300px] overflow-auto">
-                    <li *ngFor="let item of leftList"
+                    @for(item of leftList; track item){
+                    <li 
                         class="flex items-center justify-between px-4 py-2 cursor-grab hover:bg-gray-100">
                         <span>{{ item.subjectName }}</span>
                         <span class="text-gray-500">☰</span>
-                    </li>
+                    </li>}
                 </ul>
             </div>
 
@@ -131,120 +135,132 @@
                 <h3 class="text-lg font-semibold mb-3">Selected Subjects</h3>
                 <ul id="sortable-right"
                     class="bg-gray-50 border rounded-lg shadow p-2 min-h-[200px] max-h-[300px] overflow-auto">
-                    <li *ngIf="rightList.length === 0"
+                   @if(rightList.length === 0){
+                    <li 
                         class="text-center text-gray-500 italic py-2 flex justify-center items-center pointer-events-none">
                         Drag your subjects here
-                    </li>
-                    <li *ngFor="let item of rightList"
+                    </li>}
+                    @for(item of rightList; track item){
+                    <li 
                         class="flex items-center justify-between px-4 py-2 cursor-grab hover:bg-gray-100">
                         <span>{{ item.subjectName }}</span>
                         <span class="text-gray-500">☰</span>
-                    </li>
+                    </li>}
                 </ul>
             </div>
         </div>
 
         <!-- Form for Selected Items -->
-        <div *ngIf="rightList.length > 0">
+         @if(rightList.length > 0){
+        <div>
             <h3 class="text-lg font-semibold mb-4">Enter Details for Selected Subjects:</h3>
             <form [formGroup]="rightListForm">
                 <ul formArrayName="rightListInputs">
-                    <li *ngFor="let group of rightListInputs.controls; let i = index" class="py-2 border-b">
-                        <div class="flex flex-col gap-2">
-                            <span class="font-bold text-xl">{{ group.value.item.subjectName | titlecase }} 
-                                </span>
-                            <div [formGroupName]="i" class="grid grid-cols-2 gap-3">
+                    
+                        @for (group of rightListInputs.controls; track group; let i = $index) {
+                          <li class="py-2 border-b">
+                            <div class="flex flex-col gap-2">
+                              <span class="font-bold text-xl">{{ group.value.item.subjectName | titlecase }}</span>
+                              <div [formGroupName]="i" class="grid grid-cols-2 gap-3">
                                 <!-- Easy Dropdown -->
                                 <div>
+                                  <div class="flex items-center">
+                                    <label class="w-28">Easy:</label>
                                     <div class="flex items-center">
-                                        <label class="w-28">Easy:</label>
-                                        <div class="flex items-center">
-                                            <select formControlName="easy" class="border rounded px-2 py-1 w-32"
-                                                (change)="onInputChange($event, i, 'easy', rightList[i].subjectId)">
-                                                <option *ngFor="let option of [0, 1, 2, 3, 4, 5]" [value]="option">
-                                                    {{ option }}
-                                                </option>
-                                            </select>
-                                        </div>
+                                      <select formControlName="easy" class="border rounded px-2 py-1 w-32"
+                                        (change)="onInputChange($event, i, 'easy', rightList[i].subjectId)">
+                                        @for (option of [0, 1, 2, 3, 4, 5]; track option) {
+                                          <option [value]="option">{{ option }}</option>
+                                        }
+                                      </select>
                                     </div>
-                                    <!-- Add a container div for the warning message, ensuring it's on the next line -->
-                                    <div *ngIf="newValidationWarnings.easy[i]" class="text-red-700 mt-2">
-                                        {{ newValidationWarnings.easy[i] }}
+                                  </div>
+                                  @if (newValidationWarnings.easy[i]) {
+                                    <div class="text-red-700 mt-2">
+                                      {{ newValidationWarnings.easy[i] }}
                                     </div>
+                                  }
                                 </div>
                                 <!-- Medium Dropdown -->
                                 <div>
+                                  <div class="flex items-center">
+                                    <label class="w-28">Medium:</label>
                                     <div class="flex items-center">
-                                        <label class="w-28">Medium:</label>
-                                        <div class="flex items-center">
-                                            <select formControlName="medium" class="border rounded px-2 py-1 w-32"
-                                                (change)="onInputChange($event, i, 'medium', rightList[i].subjectId)">
-                                                <option *ngFor="let option of [0, 1, 2, 3, 4, 5]" [value]="option">
-                                                    {{ option }}
-                                                </option>
-                                            </select>
-                                        </div>
+                                      <select formControlName="medium" class="border rounded px-2 py-1 w-32"
+                                        (change)="onInputChange($event, i, 'medium', rightList[i].subjectId)">
+                                        @for (option of [0, 1, 2, 3, 4, 5]; track option) {
+                                          <option [value]="option">{{ option }}</option>
+                                        }
+                                      </select>
                                     </div>
-                                    <div *ngIf="newValidationWarnings.medium[i]" class="text-red-700 mt-2">
-                                        {{ newValidationWarnings.medium[i] }}
+                                  </div>
+                                  @if (newValidationWarnings.medium[i]) {
+                                    <div class="text-red-700 mt-2">
+                                      {{ newValidationWarnings.medium[i] }}
                                     </div>
+                                  }
                                 </div>
-
                                 <!-- Hard Dropdown -->
                                 <div>
+                                  <div class="flex items-center">
+                                    <label class="w-28">Hard:</label>
                                     <div class="flex items-center">
-                                        <label class="w-28">Hard:</label>
-                                        <div class="flex items-center">
-                                            <select formControlName="hard" class="border rounded px-2 py-1 w-32"
-                                                (change)="onInputChange($event, i, 'hard', rightList[i].subjectId)">
-                                                <option *ngFor="let option of [0, 1, 2, 3, 4, 5]" [value]="option">
-                                                    {{ option }}
-                                                </option>
-                                            </select>
-                                        </div>
+                                      <select formControlName="hard" class="border rounded px-2 py-1 w-32"
+                                        (change)="onInputChange($event, i, 'hard', rightList[i].subjectId)">
+                                        @for (option of [0, 1, 2, 3, 4, 5]; track option) {
+                                          <option [value]="option">{{ option }}</option>
+                                        }
+                                      </select>
                                     </div>
-                                    <div *ngIf="newValidationWarnings.hard[i]" class="text-red-700 mt-2">
-                                        {{ newValidationWarnings.hard[i] }}
+                                  </div>
+                                  @if (newValidationWarnings.hard[i]) {
+                                    <div class="text-red-700 mt-2">
+                                      {{ newValidationWarnings.hard[i] }}
                                     </div>
-
+                                  }
                                 </div>
-
                                 <!-- Descriptive Dropdown -->
                                 <div>
+                                  <div class="flex items-center">
+                                    <label class="w-28">Descriptive:</label>
                                     <div class="flex items-center">
-                                        <label class="w-28">Descriptive:</label>
-                                        <div class="flex items-center">
-                                            <select formControlName="descriptive" class="border rounded px-2 py-1 w-32"
-                                                (change)="onInputChange($event, i, 'descriptive', rightList[i].subjectId)">
-                                                <option *ngFor="let option of [0, 1, 2, 3, 4, 5]" [value]="option">
-                                                    {{ option }}
-                                                </option>
-                                            </select>
-                                        </div>
+                                      <select formControlName="descriptive" class="border rounded px-2 py-1 w-32"
+                                        (change)="onInputChange($event, i, 'descriptive', rightList[i].subjectId)">
+                                        @for (option of [0, 1, 2, 3, 4, 5]; track option) {
+                                          <option [value]="option">{{ option }}</option>
+                                        }
+                                      </select>
                                     </div>
-                                    <div *ngIf="newValidationWarnings.descriptive[i]" class="text-red-700 mt-2">
-                                        {{ newValidationWarnings.descriptive[i] }}
+                                  </div>
+                                  @if (newValidationWarnings.descriptive[i]) {
+                                    <div class="text-red-700 mt-2">
+                                      {{ newValidationWarnings.descriptive[i] }}
                                     </div>
+                                  }
                                 </div>
+                              </div>
+                              <!-- Validation Warning -->
+                              @if (validationWarnings[i]) {
+                                <span class="text-red-500 text-sm">
+                                  {{ validationWarnings[i] }}
+                                </span>
+                              }
+                              <!-- Show warning if right list is empty -->
+                              @if (rightListWarning) {
+                                <div class="text-red-700 mt-2">
+                                  {{ rightListWarning }}
+                                </div>
+                              }
                             </div>
-
-                            <!-- Validation Warning -->
-                            <span *ngIf="validationWarnings[i]" class="text-red-500 text-sm">
-                                {{ validationWarnings[i] }}
-                            </span>
-                            <!-- Show warning if right list is empty -->
-                            <div *ngIf="rightListWarning" class="text-red-700 mt-2">
-                                {{ rightListWarning }}
-                            </div>
-                        </div>
-
-                    </li>
+                          </li>
+                        }
                 </ul>
             </form>
-        </div>
-        <div *ngIf="totalWarning && rightList.length > 0" class="text-red-700 mt-2">
+        </div>}
+        @if(totalWarning && rightList.length > 0){
+        <div  class="text-red-700 mt-2">
             {{ totalWarning }}
-        </div>
+        </div>}
         <!-- Save Button -->
         <div class="flex justify-center mt-6">
             <button (click)="onSave()" [ngClass]="{
