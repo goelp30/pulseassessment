@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-
+ 
 @Component({
   selector: 'app-thank-you',
   standalone: true,
@@ -35,7 +35,7 @@ import { RouterLink } from '@angular/router';
       background-color: #f5f5f5;
       padding: 20px;
     }
-
+ 
     .thank-you-content {
       background: white;
       padding: 40px;
@@ -45,19 +45,19 @@ import { RouterLink } from '@angular/router';
       max-width: 500px;
       width: 100%;
     }
-
+ 
     h1 {
       color: #2c3e50;
       margin-bottom: 20px;
       font-size: 2.5em;
     }
-
+ 
     .message {
       margin: 20px 0;
       color: #666;
       line-height: 1.6;
     }
-
+ 
     /* Success Checkmark Animation */
     .success-checkmark {
       width: 80px;
@@ -65,7 +65,7 @@ import { RouterLink } from '@angular/router';
       margin: 0 auto 20px;
       position: relative;
     }
-
+ 
     .check-icon {
       width: 80px;
       height: 80px;
@@ -74,7 +74,7 @@ import { RouterLink } from '@angular/router';
       box-sizing: content-box;
       border: 4px solid #4CAF50;
     }
-
+ 
     .check-icon::before {
       top: 3px;
       left: -2px;
@@ -82,7 +82,7 @@ import { RouterLink } from '@angular/router';
       transform-origin: 100% 50%;
       border-radius: 100px 0 0 100px;
     }
-
+ 
     .check-icon::after {
       top: 0;
       left: 30px;
@@ -91,7 +91,7 @@ import { RouterLink } from '@angular/router';
       border-radius: 0 100px 100px 0;
       animation: rotate-circle 4.25s ease-in;
     }
-
+ 
     .icon-line {
       height: 5px;
       background-color: #4CAF50;
@@ -100,7 +100,7 @@ import { RouterLink } from '@angular/router';
       position: absolute;
       z-index: 10;
     }
-
+ 
     .icon-line.line-tip {
       top: 46px;
       left: 14px;
@@ -108,7 +108,7 @@ import { RouterLink } from '@angular/router';
       transform: rotate(45deg);
       animation: icon-line-tip 0.75s;
     }
-
+ 
     .icon-line.line-long {
       top: 38px;
       right: 8px;
@@ -116,7 +116,7 @@ import { RouterLink } from '@angular/router';
       transform: rotate(-45deg);
       animation: icon-line-long 0.75s;
     }
-
+ 
     .icon-circle {
       top: -4px;
       left: -4px;
@@ -128,7 +128,7 @@ import { RouterLink } from '@angular/router';
       box-sizing: content-box;
       border: 4px solid rgba(76, 175, 80, .5);
     }
-
+ 
     .icon-fix {
       top: 8px;
       width: 5px;
@@ -139,7 +139,7 @@ import { RouterLink } from '@angular/router';
       transform: rotate(-45deg);
       background-color: white;
     }
-
+ 
     @keyframes rotate-circle {
       0% {
         transform: rotate(-45deg);
@@ -154,7 +154,7 @@ import { RouterLink } from '@angular/router';
         transform: rotate(-405deg);
       }
     }
-
+ 
     @keyframes icon-line-tip {
       0% {
         width: 0;
@@ -182,7 +182,7 @@ import { RouterLink } from '@angular/router';
         top: 46px;
       }
     }
-
+ 
     @keyframes icon-line-long {
       0% {
         width: 0;
@@ -207,4 +207,4 @@ import { RouterLink } from '@angular/router';
     }
   `]
 })
-export class ThankYouComponent {} 
+export class ThankYouComponent {}

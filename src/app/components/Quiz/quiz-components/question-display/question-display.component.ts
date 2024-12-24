@@ -1,4 +1,13 @@
-import { Component, Input, Output, EventEmitter, ViewChildren, QueryList, ElementRef, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ViewChildren,
+  QueryList,
+  ElementRef,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Option, Question } from '../../../../models/question';
@@ -8,7 +17,7 @@ import { Option, Question } from '../../../../models/question';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './question-display.component.html',
-  styleUrls: ['./question-display.component.css']
+  styleUrls: ['./question-display.component.css'],
 })
 export class QuestionDisplayComponent implements OnInit {
   @ViewChildren('radioInput') radioInputs!: QueryList<ElementRef>;
@@ -20,7 +29,10 @@ export class QuestionDisplayComponent implements OnInit {
   @Input() totalQuestions!: number;
   @Output() answerSelect = new EventEmitter<string>();
   @Output() reviewToggle = new EventEmitter<void>();
-  @Output() descriptiveAnswerChange = new EventEmitter<{ questionId: string, answer: string }>();
+  @Output() descriptiveAnswerChange = new EventEmitter<{
+    questionId: string;
+    answer: string;
+  }>();
   @Output() textAreaTouched = new EventEmitter<void>();
 
   descriptiveAnswers: { [questionId: string]: string } = {};
@@ -32,7 +44,8 @@ export class QuestionDisplayComponent implements OnInit {
   clearSavedAnswer(): void {
     const key = `question_${this.question.questionId}`;
     localStorage.removeItem(key);
-    this.question.selectedAnswer = this.question.questionType === 'Multi' ? [] : null;
+    this.question.selectedAnswer =
+      this.question.questionType === 'Multi' ? [] : null;
     this.descriptiveAnswers[this.question.questionId] = '';
   }
 
@@ -44,16 +57,17 @@ export class QuestionDisplayComponent implements OnInit {
       this.question.selectedAnswer = optionId;
       this.answerSelect.emit(optionId);
     } else if (this.question.questionType === 'Multi') {
-      const selectedAnswers = Array.isArray(this.question.selectedAnswer) ? 
-                            [...this.question.selectedAnswer] : [];
+      const selectedAnswers = Array.isArray(this.question.selectedAnswer)
+        ? [...this.question.selectedAnswer]
+        : [];
       const index = selectedAnswers.indexOf(optionId);
-      
+
       if (index > -1) {
         selectedAnswers.splice(index, 1);
       } else {
         selectedAnswers.push(optionId);
       }
-      
+
       this.question.selectedAnswer = selectedAnswers;
       this.answerSelect.emit(optionId);
     }
@@ -65,8 +79,10 @@ export class QuestionDisplayComponent implements OnInit {
 
   isOptionSelected(optionId: string): boolean {
     if (this.question.questionType === 'Multi') {
-      return Array.isArray(this.question.selectedAnswer) && 
-             this.question.selectedAnswer.includes(optionId);
+      return (
+        Array.isArray(this.question.selectedAnswer) &&
+        this.question.selectedAnswer.includes(optionId)
+      );
     }
     return this.question.selectedAnswer === optionId;
   }
@@ -86,7 +102,7 @@ export class QuestionDisplayComponent implements OnInit {
     this.descriptiveAnswers[this.question.questionId] = value;
     this.descriptiveAnswerChange.emit({
       questionId: this.question.questionId,
-      answer: value
+      answer: value,
     });
   }
 
