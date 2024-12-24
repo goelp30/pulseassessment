@@ -26,10 +26,10 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
   tableColumns: string[] = [ 'assessmentName', 'userName', 'email', 'status', 'url', ];
   columnAliases: { [key: string]: string[] } = {
     assessmentName: ['Assessment Name'],
-    userName: ['User Name'],
+    userName: ['Name'],
     email: ['Email'],
     status: ['Status'],
-    url: ['Url'],
+    url: ['URL'],
   };
   searchPlaceholder: string = this.selectedFilter;
   buttons = [
@@ -142,7 +142,8 @@ export class AssessmentRecordsComponent implements OnInit, OnDestroy {
   isInvalidDisabled(assessment: assessmentRecords): boolean {
     return (
       assessment.status === 'Invalid' ||
-      assessment.status?.includes('Expired') ||
+      assessment.status === 'Completed' ||
+      assessment.status?.includes('Expired' ) ||
       false
     );
   }
