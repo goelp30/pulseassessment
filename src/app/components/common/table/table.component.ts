@@ -118,6 +118,8 @@ export class TableComponent implements OnInit, OnChanges {
       this.isLoading = false;
     }
   }
+  
+  
 
   selectTab(tab: string): void {
     this.activeTab = tab;
@@ -134,7 +136,8 @@ export class TableComponent implements OnInit, OnChanges {
 
   filterData() {
     let filtered = [...this.tableData];
-
+  
+    // Search filtering
     if (this.searchQuery) {
       filtered = filtered.filter((row) => {
         return this.tableColumns.some((column) => {
@@ -148,9 +151,13 @@ export class TableComponent implements OnInit, OnChanges {
         });
       });
     }
+  
+    // Additional filters
     if (this.showAdditionalFilters) {
       filtered = this.applyAdditionalFilters(filtered);
     }
+  
+    // Tab filtering
     if (this.activeTab && this.activeTab !== 'all') {
       filtered = filtered.filter((row) => {
         return (
@@ -159,12 +166,23 @@ export class TableComponent implements OnInit, OnChanges {
         );
       });
     }
-
+  
+    // Sorting by `updatedOn` or `createdOn` in descending order
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.updatedOn || a.createdOn).getTime();
+      const dateB = new Date(b.updatedOn || b.createdOn).getTime();
+      return dateB - dateA; // Sort in descending order
+    });
+  
+    // Update filtered data and pagination
     this.filteredData = filtered;
     this.totalPages = Math.ceil(this.filteredData.length / this.itemsPerPage);
+
     this.currentPage = Math.min(this.currentPage, this.totalPages); // Keep the current page within bounds
     this.generatePagination();
   }
+  
+  
 
   applyAdditionalFilters(data: any[]): any[] {
     let filteredData = [...data];
@@ -294,7 +312,6 @@ export class TableComponent implements OnInit, OnChanges {
       .then(() => {
         this.isPopupVisible = true;
         this.copiedRow = row;
-
         setTimeout(() => {
           this.isPopupVisible = false;
           this.copiedRow = null; // Clear the copied row after timeout
