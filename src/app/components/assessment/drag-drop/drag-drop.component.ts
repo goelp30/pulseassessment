@@ -616,7 +616,10 @@ canSave(): boolean {
                 this.isNewVisible = true;
                 this.updateSubjectsCanDeleted(Object.keys(subjects))
                 .then(() => {
-                  this.toastr.success('Subjects updated successfully', 'Updated');
+                  if(this.editFlag){
+                    this.toastr.success('Subjects updated successfully', 'Updated');
+                  }
+                 
                 })
                 .catch((error) => {
                   console.error('Error updating subjects:', error);
