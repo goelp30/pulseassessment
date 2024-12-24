@@ -131,16 +131,26 @@
                 (click)="
                   column === 'url' ? copyToClipboard(row[column], row) : null
                 "
-                style="cursor: pointer"
-                [title]="row[column]"
-              >
-                {{
-                  row[column]?.length > 50
-                    ? (row[column]
-                        | textCase : columnConfig[column]
-                        | slice : 0 : 50) + "..."
-                    : (row[column] | textCase : columnConfig[column])
-                }}
+                style="cursor: pointer">
+                @if(column === 'questionText'){
+                  <span
+                  [title]="row[column]"
+                >
+                  {{
+                    row[column]?.length > 50
+                      ? (row[column] | textCase : columnConfig[column] | slice : 0 : 50) + "..."
+                      : (row[column] | textCase : columnConfig[column])
+                  }}
+                </span>}
+              <!-- Render other columns without title, applying pipes as needed -->
+              @if(column !== 'questionText'){
+                <span>
+                  {{
+                    row[column]?.length > 50
+                      ? (row[column] | textCase : columnConfig[column] | slice : 0 : 50) + "..."
+                      : (row[column] | textCase : columnConfig[column])
+                  }}
+                </span>}
               </p>
               <!-- Popup Notification -->
               @if (showAdditionalFilters && isPopupVisible && column === 'url'
