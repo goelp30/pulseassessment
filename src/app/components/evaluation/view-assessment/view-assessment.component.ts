@@ -86,7 +86,7 @@ export class ViewAssessmentComponent implements OnInit, OnDestroy {
                       return {
                         ...item,
                         questionText: question?.questionText,
-                        questionWeitage: question?.questionWeightage,
+                        questionWeightage: question?.questionWeightage,
                         questionType: question?.questionType,
                         options: options,
                       };
@@ -149,7 +149,7 @@ export class ViewAssessmentComponent implements OnInit, OnDestroy {
   // Calculate the total possible marks
   getTotalMarks(): number {
     return this.evaluationList.reduce((totalMarks, question) => {
-      return totalMarks + (question.questionWeitage || 0);
+      return totalMarks + (question.questionWeightage || 0);
     }, 0);
   }
 

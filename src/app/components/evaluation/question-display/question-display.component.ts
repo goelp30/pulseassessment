@@ -24,7 +24,7 @@ export class QuestionDisplayComponent {
 
   onMarksChange(): void {
     this.question.assigned_marks = this.question.assignedMarks;
-    this.showMarksError=this.question.assignedMarks > this.question.questionWeitage;
+    this.showMarksError=this.question.assignedMarks > this.question. questionWeightage;
     this.marksChanged.emit([this.question,this.showMarksError]);
   }
   // Copy to clipboard function
